@@ -5673,7 +5673,7 @@ function vocabug({
 }
 
 // src/utils/version.ts
-var VERSION = "1.0.4";
+var VERSION = "1.0.5";
 
 // bin/vocabug/index.ts
 var encodings = [

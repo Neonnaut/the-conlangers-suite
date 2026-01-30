@@ -4979,7 +4979,7 @@ function nesca({
 }
 
 // src/utils/version.ts
-var VERSION = "1.0.4";
+var VERSION = "1.0.5";
 
 // bin/nesca/index.ts
 var encodings = [
