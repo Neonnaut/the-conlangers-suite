@@ -20,6 +20,8 @@ import { latin_to_hangul, hangul_to_latin } from "./hangul";
 import { latin_to_greek, greek_to_latin } from "./greek";
 import Carryover_Associator from "./carryover_associator";
 
+import Chance_Mapper from "./chance_mapper";
+
 type Match_Result = {
    start: number; // actual match start
    end: number; // exclusive end index
@@ -46,6 +48,8 @@ class Transformer {
 
    public lettercase_mapper: Lettercase_Mapper;
 
+   public chance_mapper: Chance_Mapper;
+
    private syllable_boundaries: string[];
 
    private debug: boolean = false;
@@ -57,6 +61,7 @@ class Transformer {
 
       graphemes: string[],
       lettercase_mapper: Lettercase_Mapper,
+      chance_mapper: Chance_Mapper,
       syllable_boundaries: string[],
       //transforms: Transform[],
       stages: { transforms: Transform[]; name: string }[],
@@ -68,6 +73,7 @@ class Transformer {
       this.logger = logger;
       this.graphemes = graphemes;
       this.lettercase_mapper = lettercase_mapper;
+      this.chance_mapper = chance_mapper;
       this.syllable_boundaries = syllable_boundaries;
       this.associateme_mapper = associateme_mapper;
       this.debug = output_mode === "debug";
@@ -773,20 +779,8 @@ class Transformer {
       word_stream: string[],
       transform: Transform,
    ): string[] {
-      const {
-         t_type,
-         target,
-         result,
-         conditions,
-         exceptions,
-         chance,
-         line_num,
-      } = transform;
-
-      // CHANCE CONDITION
-      if (chance != null && Math.random() * 100 >= chance) {
-         return word_stream;
-      } // 🎲 Roll failed
+      const { t_type, target, result, conditions, exceptions, line_num } =
+         transform;
 
       // ROUTINE
       if (t_type != "rule" && t_type != "cluster-field") {
@@ -1043,6 +1037,15 @@ class Transformer {
             break;
          }
          if (
+            t.chance != null &&
+            this.chance_mapper.get_is_success(t.chance) === false
+         ) {
+            // Failed chance roll on the matching chance
+            word.record_skip("CHANCE FAILED - SKIPPED transform", t.line_num);
+            continue;
+         }
+
+         if (
             t.target.length == 0 &&
             (t.t_type === "rule" || t.t_type === "cluster-field")
          ) {
@@ -1069,9 +1072,11 @@ class Transformer {
    }
 
    do_stages(word: Word) {
+      this.chance_mapper.roll_all();
+
       for (const stage of this.stages) {
          if (stage.name) {
-            word.record_banner(`STAGE: ${stage.name}`);
+            word.record_banner(`stage = ${stage.name}`);
          }
          word = this.do_transforms(word, stage.transforms);
       }

@@ -31,6 +31,14 @@ const routineRules = [
   { token: "link", regex: /=/ },
   { token: "meta", regex: />/}
 ];
+
+const chanceRules = [
+  {
+    token: "attributeName", regex: /[0-9]+%/
+  },
+  { token: "link", regex: /=/ }
+];
+
 const listRules = [
   { token: "escape",   regex: escapeRegex},
   { token: "link",     regex: /,/ }
@@ -38,7 +46,7 @@ const listRules = [
 
 const decoratorRulesVocabug = [
   { token: "link", regex: /\.|=/ },
-  { token: "meta", regex: /categories|words|units|alphabet|invisible|graphemes|syllable-boundaries|features|feature-field|stage|distribution|optionals-weight|disabled/ },
+  { token: "meta", regex: /categories|words|units|alphabet|invisible|graphemes|syllable-boundaries|features|feature-field|stage|distribution|optionals-weight|disabled|name/ },
   { token: "attributeName", regex: /flat|zipfian|gusein-zade|shallow|\d{1,2}%/ }
 ];
 
@@ -105,7 +113,7 @@ const featureFieldRules = [
 type State = {
   directive: ('none'|'decorator'|'categories'|'words'|'units'|'list'|'graphemes'|'stage'|'features'|'feature-field'|'letter-case-field'|'feature-field-header'
   );
-  sub_directive: ('none'|'routine'|'cluster-block');
+  sub_directive: ('none'|'routine'|'cluster-block'|'chance');
   feature_matrix: boolean;
   transform: boolean;
   doIndent: boolean;
@@ -114,7 +122,7 @@ type State = {
   featureList: string[];
 
   we_on_newline: boolean;
-header_for_feature_field: number;
+  header_for_feature_field: number;
   insideUnit: boolean;
 };
 
@@ -469,7 +477,7 @@ function parser(app: string): StreamParser<State> {
                 stream.match(/\s*/);
 
                 if (state.we_on_newline) {
-                    if (state.sub_directive === 'routine') {
+                    if (state.sub_directive === 'routine' || state.sub_directive === 'chance') {
                         state.sub_directive = 'none';
                     }
 
@@ -494,6 +502,19 @@ function parser(app: string): StreamParser<State> {
                         state.we_on_newline = false;
                         return "meta";
                     }
+
+                    // chance
+                    if (stream.match(/<@chance/)) {
+                        state.sub_directive = 'chance';
+                        state.we_on_newline = false;
+                        return "meta";                        
+                    }
+
+                    if (stream.match(/>/)) {
+                        if (state.we_on_newline) {
+                            return "meta";
+                        };
+                    }
                 }
 
                 // ROUTINE
@@ -507,6 +528,14 @@ function parser(app: string): StreamParser<State> {
                 // CLUSTER-FIELD
                 else if (state.sub_directive == 'cluster-block') {
                     for (const rule of clusterRules) {
+                        if (stream.match(rule.regex)) {
+                            return rule.token;
+                        }
+                    }
+                }
+                // CHANCE
+                else if (state.sub_directive == 'chance') {
+                    for (const rule of chanceRules) {
                         if (stream.match(rule.regex)) {
                             return rule.token;
                         }
@@ -536,6 +565,7 @@ function parser(app: string): StreamParser<State> {
                     }
                     
                 } else { // Syntax etc.
+                    state.we_on_newline = false;
                     
                     // Generic tokens
                     for (const rule of transformRules) {

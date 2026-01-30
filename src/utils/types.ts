@@ -23,6 +23,11 @@ export type Word_Step =
         line_num: number;
      }
    | {
+        type: "skip";
+        action: string;
+        line_num: number;
+     }
+   | {
         type: "banner";
         action: string;
      }

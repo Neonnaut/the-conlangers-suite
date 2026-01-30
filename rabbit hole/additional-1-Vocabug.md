@@ -19,7 +19,7 @@ words:
 words:
   Example2
 ```
->
+
 
 ## Long form category keys
 

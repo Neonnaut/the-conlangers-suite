@@ -1,24 +1,8 @@
-
-## 9. letter-case-field
-
-Need to write documentation
-
-Capitalise uppercase decapitalise lowercase paragraph-mode
-
-## 8. Naming each stage
-
-```
-stage "latin-to-portuguese":
-  example -> example
-```
-
-When debug mode is on, and the word is being processed on that stage, the stage name is printed out
-
-## 7. Transform sub-stage
+## 1. Transform sub-stage
 
 sub-stage
 
-Sub-stage saves rules to be used later in a stage to be used as many times as needed. The rules inside the `sub-stage` directive do not run until invoked using `<sub-stage = "the name">` in a stage directive:
+Sub-stage saves rules to be used later in a stage and can be used as many times as needed. The rules inside the `sub-stage` directive do not run until invoked using `<sub-stage = "the-name-of-the-substage">` in a stage directive:
 
 ```
 sub-stage "resyllabify":
@@ -35,7 +19,7 @@ stage:
 
 In the above example we saved two rules as a macro under the name "resyllabify" and used that macro twice.
 
-## 6. Automatic Syllables 
+## 2. Automatic Syllables 
 
 removes all `.` from a word first
 
@@ -69,7 +53,7 @@ notice that we did not get "pa.Na.pat.ta"
 
 multiple syllable shapes
 
-## 5. Feature bundles
+## 3. Feature bundles
 
 ```
 features:
@@ -93,7 +77,7 @@ When one transform has a transformation, and debug mode is on, the name is print
 >
 ```
 
-## 3. If, then, else
+## 5. If, then, else
 
 Using an If block, You can make transformations execute on a word if, or if not, other transformation(s) were applied to the word.
 
@@ -125,14 +109,9 @@ Note: The above example is actually quite bogus if it were a historical sound ch
 block
     hook, event, flag, header
 
-## 2. Chance
 
-`<@chance = 10%`
 
-Chance that the transformation will occur, after getting `TARGET` match, and it meets the environment.
-This is useful for sporadic sound change.
-
-## 1. Flags
+## 6. Flags
 
 `<@right-to-left`
 
@@ -148,7 +127,7 @@ The target of one change may not be used as the environment of the next
 
 --------------------------
 
-## 11. Word class
+## 7. Word class
 
 generated words would have meta information that they were in a pos or word class
 
@@ -156,26 +135,26 @@ Tranforms could then have a condition that targets a word only when it has that 
 
 `<@class = noun`
 
-## 12. Escapes
+## 8. Escapes
 
 Right now, escape chars could interfere with PUA
 
-## 13. Meta tag decorator
+## 9. Meta tag decorator
 
 @meta.name = languageX
 
 @meta.author = name
 
 
-## 14. Reverse changes
+## 10. Reverse changes
 
 @stage.reverse-sound-change
 
-## 15. Able to chain changes:
+## 11. Able to chain changes:
 
 `a -> e -> i`
 
-## 16. Ignore
+## 12. Ignore
 
 This would "skip" graphemes in the TARGET, CONDITION and EXCEPTION, like so:
 
@@ -187,7 +166,7 @@ This would "skip" graphemes in the TARGET, CONDITION and EXCEPTION, like so:
 ; 'tt' becomes 'd'. Ignore any '.' between 't's
 ```
 
-## 17. Positioner
+## 13. Positioner
 
 Positioners, enclosed in `-[` and `]`, allows a grapheme to the left of it to be captured only when it is the Nth in the word:
 
@@ -205,7 +184,7 @@ If we want to match the last occurence of a grapheme in a word, use `-1`. For th
 
 
 
-## 18. A way to do sandhi.
+## 14. A way to do external sandhi.
 
 For example:
 ```
@@ -213,13 +192,13 @@ For example:
 ; da ag ==> dan ag
 ```
 
-## 19. Association factory
+## 15. Association factory
 
 `<factory = shift-right`
 
 Would shift association to left or right
 
-## Schema
+## 16. Schema
 
 Will divide input into the real word, word class
 
@@ -227,7 +206,7 @@ schema:
   word = %[\,]%[\,]%[\,] _ {\, #}
   class = %[\,]%[\,]%[\,] _ {\, #}
 
-## Clean-up
+## 17. Clean-up
 
 A cleanup rule, marked with the modifier cleanup after the rule name, applies after every subsequent rule:
 

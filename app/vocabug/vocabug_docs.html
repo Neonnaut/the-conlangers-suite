@@ -97,7 +97,12 @@
         <li><a href="#vocAlphabetisation">The alphabet directive</a></li>
           <li><a href="#vocInvisibility">The invisible directive</a></li>
         <li><a href="#vocGraphemes">The graphemes directive</a></li>
-        <li><a href="#nescaStage">The stage directive</a></li>
+        <li><a href="#nescaStage">The stage directive</a>
+        <ol class="nice-list">
+          <li><a href="#nescaStageName">Naming stages</a>
+        </ol>
+        
+        </li>
         <li><a href="#nescaTheChange">The change</a>
         <ol class="nice-list">
           <li><a href="#nescaConcurrentChange">Concurrent change</a></li>
@@ -162,7 +167,7 @@
 
         <li><a href="#nescaClusterfield">Cluster-field</a></li>
 
-        <li><a href="#nescaAdvancedRules">Advanced rules</a>
+        <li><a href="#nescaAdvanced">Advanced</a>
           <ol class="nice-list">
             <li><a href="#nescaRoutine">Routine</a></li>
             <li><a href="#nescaTargetMark">Target-mark</a></li>
@@ -180,6 +185,15 @@
             
         </ol>
         </li>
+        
+
+        <li><a href="#nescaBlock">Blocks</a>
+        <ol class="nice-list">
+          <li><a href="#nescaChance">Chance block</a></li>
+        </ol>
+        </li>
+
+
         <li><a href="#vocabugQuestionsAndAnswers">Questions and answers</a></li>
       </ol>
 
@@ -687,13 +701,13 @@
         
       <h3 id="vocCategoryinCategory"><a class="head-num">4.1</a>Categories inside categories and set-categories</h3>
       <p>You can use categories inside categories, as long as the referenced category has previously been defined. For example:</p>
-      <div class="prog-pre"><code class="regexp">@</code><code class="directive">categories</code><code class="link">.</code><code class="directive">distribution</code> <code class="link">=</code> <code class="attribute">flat</code>
+      <div class="prog-pre"><code class="link">@</code><code class="directive">categories</code><code class="link">.</code><code class="directive">distribution</code> <code class="link">=</code> <code class="attribute">flat</code>
 <span class="directive">categories</span><code class="link">:</code>
   <span class="catkey">L</span> <span class="link">=</span> aa<span class="link">,</span> ii<span class="link">,</span> ee<span class="link">,</span> oo
   <span class="catkey">V</span> <span class="link">=</span> a<span class="link">,</span> i<span class="link">,</span> e<span class="link">,</span> o<span class="link">,</span> <span class="catkey">L</span></div>
       <p>In the example above, <code class="example">V</code> has a 20% chance of being a long vowel.</p>
       <p>You can also enclose a set of graphemes in curly braces <code class="example">{</code> and <code class="example">}</code>. This is called a 'set-category'. This set will be treated as if it were a reference to a category in terms of frequency. For example, we could write the same example as this:</p>
-      <div class="prog-pre"><code class="regexp">@</code><code class="directive">categories</code><code class="link">.</code><code class="directive">distribution</code> <code class="link">=</code> <code class="attribute">flat</code>
+      <div class="prog-pre"><code class="link">@</code><code class="directive">categories</code><code class="link">.</code><code class="directive">distribution</code> <code class="link">=</code> <code class="attribute">flat</code>
 <span class="directive">categories</span><code class="link">:</code>
   <span class="catkey">V</span> <span class="link">=</span> a<span class="link">,</span> i<span class="link">,</span> e<span class="link">,</span> o<span class="link">,</span> <span class="cm-matchingBracket"><span class="regexp">{</span></span>aa<span class="link">,</span> ii<span class="link">,</span> ee<span class="link">,</span> oo<span class="cm-matchingBracket"><span class="regexp">}</span></span></div>
       <p>Assigning weights to categories in categories and set-categories is possible.</p>
@@ -758,7 +772,7 @@
       <h4 id="vocOptionalsWeight"><a class="head-num">5.4.1</a>Optionals weight</h4>
       <p>By default, an optional-set has a 10% chance of being included in the word. You can change this probability with a decorator.</p>
 
-      <div class="prog-pre"><code class="regexp">@</code><code class="directive">words</code><code class="link">.</code><code class="directive">optionals-weight</code> <code class="link">=</code> <code class="attribute">10%</code><br><code class="directive">words</code><code class="link">:</code><br>  example</div>
+      <div class="prog-pre"><code class="link">@</code><code class="directive">words</code><code class="link">.</code><code class="directive">optionals-weight</code> <code class="link">=</code> <code class="attribute">10%</code><br><code class="directive">words</code><code class="link">:</code><br>  example</div>
 
       <h3 id="vocSupraSet"><a class="head-num">5.5</a>Supra-set</h3>
       <p>A 'supra-set', is applied over the entire word, and there can only be one supra set. Square brackets <code class="example">[</code> and <code class="example">]</code>, denotes each item in the supra-set and their location in the word. The items of a supra-set can only be a category, or the null grapheme <code class="example">^</code>. Only one item in the supra-set will be picked for that generated word.</p>
@@ -841,6 +855,12 @@
       <p>If you want to capture graphemes that are normally syntax characters in transforms, you will need to <a href="#vocEscapeTransform">escape them</a>.</p>
 
       <p>When this document uses examples to explain transformations, the last comment shows an example word transforming. For example <code class="example">; amda ==> ampa</code> means the rule will transform the word <code class="example">amda</code> into <code class="example">ampa</code></p>
+
+      <h3 id="nescaStageName"><a class="head-num">11.1</a>Naming stages</h2>
+      <p>Using a decorator on a stage, you can name that stage. In debug mode, the name of the stage will be printed out when each word is being processed on that stage.</p>
+      <div class="prog-pre"><code class="link">@</code><code class="directive">stage</code><code class="link">.</code><code class="directive">name</code> <code class="link">=</code> <code class="attribute">My Transform Stage</code>
+<code class="directive">stage</code><code class="link">:</code>
+<span class="comment">; Your transforms go here</span></div>
 
       <h2 id="nescaTheChange"><a class="head-num">12</a>The change</h2>
       <p>The format of a rule's <code class="example">CHANGE</code> can be expressed as <code class="example">TARGET -> REPLACEMENT</code>.</p>
@@ -1149,7 +1169,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
         <li>Cluster-fields can use <code class="example">^</code> to delete the target sequence</li>
       </ul>
 
-      <h2 id="nescaAdvancedRules"><a class="head-num">21</a>Advanced transforms</h2>
+      <h2 id="nescaAdvanced"><a class="head-num">21</a>Advanced</h2>
 
       <h3 id="nescaRoutine"><a class="head-num">21.1</a>Routine</h3>
       <p>The routine transform provides useful functions that you can call at any point in the transform block. You call a routine on a newline with <code class="example">&lt;routine</code>, optional space, <code class="example">=</code>, optional space, the routine, and a closing <code class="example">&gt;</code>.</p>
@@ -1528,7 +1548,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
       
       <p>This transform targets all variants of <code class="example">a</code> and carries over that association to <code class="example">e</code>.</p>
 
-      <h2 id="nescaLetterCaseField"><a class="head-num">21.7</a>Letter case field</h2>
+      <h3 id="nescaLetterCaseField"><a class="head-num">21.7</a>Letter case field</h3>
       <p>This program can change the case of letters or the whole word with routines or with paragraph mode. However your language may not have the expected correspondences  between lowercase and uppercase. some examples:</p>
 
       <p><b>Turkish</b>: The lowercase <code class="example">i</code> becomes uppercase <code class="example">İ</code>, and the uppercase <code class="example">I</code> becomes lowercase <code class="example">ı</code></p>
@@ -1544,7 +1564,21 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
 <span class="catkey">uppercase</span> I İ 'O TH
 </div>
 
-      <h2 id="vocabugQuestionsAndAnswers"><a class="head-num">22</a>Questions and answers</h2>
+      <h2 id="nescaBlock"><a class="head-num">22</a>Blocks</h2>
+      <p>Blocks modify the behaviour of transforms that are inside them with 'condition and event' logic.</p>
+      <p>They begin with a <code class="example">&gt;@</code> at the beginning of a line, and end with a <code class="example">&lt;</code> on the beginning of a line.</p>
+
+      <h3 id="nescaChance"><a class="head-num">22.1</a>Chance block</h3>
+      <p>This block will indicate a chance that the transformations inside the block will occur or not. They cannot be nested. This is useful for sporadic sound change.</p>
+      <div class="prog-pre"><span class="directive">stage</span><span class="link">:</span>
+<span class="directive">&lt;@chance</span> <span class="link">=</span> <span class="attribute">60%</span>
+   a <span class="link">-></span> b
+   x <span class="link">-></span> y
+<span class="directive">&gt;</span></div>
+
+      <p>The above example has a 60% chance of occuring on each word.</p>
+
+      <h2 id="vocabugQuestionsAndAnswers"><a class="head-num">23</a>Questions and answers</h2>
       <p>Here are some common questions and answers about Vocabug:</p>
       
       <p><b>The Generate button is greyed out</b></p>

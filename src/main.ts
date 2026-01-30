@@ -20,6 +20,8 @@ import Word_Bank from "./word_bank";
 
 import type { App, Log } from "./utils/types";
 
+import Chance_Mapper from "./transforma/chance_mapper";
+
 type Vocabug_Options = {
    file: string;
    num_of_words?: number | string;
@@ -58,11 +60,14 @@ export function vocabug({
 
       const lettercase_mapper = new Lettercase_Mapper();
 
+      const chance_mapper = new Chance_Mapper();
+
       const p = new Parser(
          logger,
          app,
          escape_mapper,
          lettercase_mapper,
+         chance_mapper,
          num_of_words,
          output_mode,
          sort_words,
@@ -139,6 +144,7 @@ export function vocabug({
          logger,
          canon_graphemes_resolver.graphemes,
          p.lettercase_mapper,
+         p.chance_mapper,
          transform_resolver.syllable_boundaries,
          transform_resolver.stages,
          transform_resolver.substages,
@@ -194,12 +200,14 @@ export function nesca({
 
       const escape_mapper = new Escape_Mapper();
       const lettercase_mapper = new Lettercase_Mapper();
+      const chance_mapper = new Chance_Mapper();
 
       const p = new Parser(
          logger,
          "nesca" as App,
          escape_mapper,
          lettercase_mapper,
+         chance_mapper,
          1, //numwords
          output_mode,
          sort_words,
@@ -256,6 +264,7 @@ export function nesca({
          logger,
          canon_graphemes_resolver.graphemes,
          p.lettercase_mapper,
+         p.chance_mapper,
          transform_resolver.syllable_boundaries,
          transform_resolver.stages,
          transform_resolver.substages,

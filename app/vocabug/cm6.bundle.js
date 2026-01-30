@@ -20700,13 +20700,19 @@ var cm6 = (function (exports) {
         { token: "link", regex: /=/ },
         { token: "meta", regex: />/ }
     ];
+    var chanceRules = [
+        {
+            token: "attributeName", regex: /[0-9]+%/
+        },
+        { token: "link", regex: /=/ }
+    ];
     var listRules = [
         { token: "escape", regex: escapeRegex },
         { token: "link", regex: /,/ }
     ];
     var decoratorRulesVocabug = [
         { token: "link", regex: /\.|=/ },
-        { token: "meta", regex: /categories|words|units|alphabet|invisible|graphemes|syllable-boundaries|features|feature-field|stage|distribution|optionals-weight|disabled/ },
+        { token: "meta", regex: /categories|words|units|alphabet|invisible|graphemes|syllable-boundaries|features|feature-field|stage|distribution|optionals-weight|disabled|name/ },
         { token: "attributeName", regex: /flat|zipfian|gusein-zade|shallow|\d{1,2}%/ }
     ];
     var decoratorRulesNesca = [
@@ -21110,7 +21116,7 @@ var cm6 = (function (exports) {
                 if (state.directive == 'stage') {
                     stream.match(/\s*/);
                     if (state.we_on_newline) {
-                        if (state.sub_directive === 'routine') {
+                        if (state.sub_directive === 'routine' || state.sub_directive === 'chance') {
                             state.sub_directive = 'none';
                         }
                         // Clusterfield
@@ -21132,6 +21138,17 @@ var cm6 = (function (exports) {
                             state.we_on_newline = false;
                             return "meta";
                         }
+                        // chance
+                        if (stream.match(/<@chance/)) {
+                            state.sub_directive = 'chance';
+                            state.we_on_newline = false;
+                            return "meta";
+                        }
+                        if (stream.match(/>/)) {
+                            if (state.we_on_newline) {
+                                return "meta";
+                            }
+                        }
                     }
                     // ROUTINE
                     if (state.sub_directive == 'routine') {
@@ -21151,10 +21168,19 @@ var cm6 = (function (exports) {
                             }
                         }
                     }
+                    // CHANCE
+                    else if (state.sub_directive == 'chance') {
+                        for (var _0 = 0, chanceRules_1 = chanceRules; _0 < chanceRules_1.length; _0++) {
+                            var rule = chanceRules_1[_0];
+                            if (stream.match(rule.regex)) {
+                                return rule.token;
+                            }
+                        }
+                    }
                     // Inside Feature matrix
                     else if (state.feature_matrix) {
-                        for (var _0 = 0, _1 = state.featureList; _0 < _1.length; _0++) {
-                            var featuro = _1[_0];
+                        for (var _1 = 0, _2 = state.featureList; _1 < _2.length; _1++) {
+                            var featuro = _2[_1];
                             if (stream.match(featuro, false)) {
                                 var start = stream.pos;
                                 var end = start + featuro.length;
@@ -21174,9 +21200,10 @@ var cm6 = (function (exports) {
                         }
                     }
                     else { // Syntax etc.
+                        state.we_on_newline = false;
                         // Generic tokens
-                        for (var _2 = 0, transformRules_1 = transformRules; _2 < transformRules_1.length; _2++) {
-                            var rule = transformRules_1[_2];
+                        for (var _3 = 0, transformRules_1 = transformRules; _3 < transformRules_1.length; _3++) {
+                            var rule = transformRules_1[_3];
                             if (stream.match(rule.regex)) {
                                 return rule.token;
                             }
@@ -21187,8 +21214,8 @@ var cm6 = (function (exports) {
                             return "regexp";
                         }
                         // Categories into transforms
-                        for (var _3 = 0, _4 = state.catList; _3 < _4.length; _3++) {
-                            var cato = _4[_3];
+                        for (var _4 = 0, _5 = state.catList; _4 < _5.length; _4++) {
+                            var cato = _5[_4];
                             if (stream.match(cato)) {
                                 return "tagName";
                             }

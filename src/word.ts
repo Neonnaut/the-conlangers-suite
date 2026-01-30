@@ -59,6 +59,8 @@ class Word {
                if (this.num_of_transformations != 0) {
                   output.push(`⟨${step.form}⟩`);
                }
+            } else if (step.type === "skip") {
+               output.push(`${step.action} @ ln:${step.line_num}`);
             }
          }
          return output.join("\n");
@@ -112,6 +114,14 @@ class Word {
       this.steps.push({
          type: "output",
          form: this.get_last_form(),
+      });
+   }
+
+   record_skip(action: string, line_num: number) {
+      this.steps.push({
+         type: "skip",
+         action: action,
+         line_num: line_num,
       });
    }
 }

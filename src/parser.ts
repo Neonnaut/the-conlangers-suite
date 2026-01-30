@@ -14,10 +14,14 @@ import {
    Transform_Pending,
 } from "./utils/types";
 
+import type Chance_Mapper from "./transforma/chance_mapper";
+
 class Parser {
    private logger: Logger;
    private escape_mapper: Escape_Mapper;
    public lettercase_mapper: lettercase_mapper;
+
+   public chance_mapper: Chance_Mapper;
 
    public num_of_words: number;
    public output_mode: Output_Mode;
@@ -66,12 +70,14 @@ class Parser {
    private file_line_num = 0;
 
    private app: App;
+   private current_stage_name: string;
 
    constructor(
       logger: Logger,
       app: App,
       escape_mapper: Escape_Mapper,
       lettercase_mapper: lettercase_mapper,
+      chance_mapper: Chance_Mapper,
 
       num_of_words_string: number | string, // gen
 
@@ -86,6 +92,7 @@ class Parser {
       this.app = app;
       this.escape_mapper = escape_mapper;
       this.lettercase_mapper = lettercase_mapper;
+      this.chance_mapper = chance_mapper;
 
       if (num_of_words_string === "") {
          num_of_words_string = "100";
@@ -165,6 +172,8 @@ class Parser {
 
       this.disable_directive = false;
       this.directive_name = "";
+
+      this.current_stage_name = "";
    }
 
    private get_line(file_array: string[]) {
@@ -229,7 +238,11 @@ class Parser {
                this.disable_directive = true;
             }
             if (my_directive === "stage") {
-               const stage = { transforms_pending: [], name: "" };
+               const stage = {
+                  transforms_pending: [],
+                  name: this.current_stage_name,
+               };
+               this.current_stage_name = "";
                this.stages_pending.push(stage);
             }
             continue; // It's a directive change
@@ -449,7 +462,7 @@ class Parser {
                   result: "",
                   conditions: [],
                   exceptions: [],
-                  chance: null,
+                  chance: this.chance_mapper.get_last_chance(),
                   line_num: this.file_line_num,
                });
                line = line.substring(2).trim(); // Remove '< ' from start
@@ -479,10 +492,31 @@ class Parser {
                   result: "\\",
                   conditions: [],
                   exceptions: [],
-                  chance: null,
+                  chance: this.chance_mapper.get_last_chance(),
                   line_num: this.file_line_num,
                });
                continue;
+            } else if (line.startsWith("<@chance")) {
+               const match = line.match(/^<@chance\s*=\s*(\d+(?:\.\d+)?)%$/);
+               if (this.chance_mapper.check_parsing) {
+                  this.logger.validation_error(
+                     `Cannot start a new chance while another chance is being parsed`,
+                     this.file_line_num,
+                  );
+               }
+               if (match) {
+                  const percent = match[1];
+                  this.chance_mapper.add_chance(Number(percent));
+                  this.chance_mapper.check_parsing = true;
+               } else {
+                  this.logger.validation_error(
+                     `Invalid chance syntax`,
+                     this.file_line_num,
+                  );
+               }
+               continue;
+            } else if (line.startsWith(">")) {
+               this.chance_mapper.check_parsing = false;
             } else {
                // Else it's a normal transform rule
 
@@ -504,7 +538,7 @@ class Parser {
                   result: result,
                   conditions: conditions,
                   exceptions: exceptions,
-                  chance: null,
+                  chance: this.chance_mapper.get_last_chance(),
                   line_num: this.file_line_num,
                });
                continue;
@@ -658,6 +692,11 @@ class Parser {
             if (my_property === "distribution") {
                this.category_distribution = this.parse_distribution(my_value);
                new_decorator = "categories";
+            }
+         } else if (my_directive === "stage") {
+            if (my_property === "name") {
+               this.current_stage_name = my_value;
+               new_decorator = "stage";
             }
          }
       } else {

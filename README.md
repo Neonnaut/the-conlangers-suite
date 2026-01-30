@@ -3,7 +3,7 @@
 [![version][1]][2] [![license][3]][4] [![Tests]][badge-link]
 [![issue count][5]][6] [![git activity][7]][8]
 
-A suite of applications for conlangers built with typescript and the wonderful Vite tool. Each application has its own web-app, cli, and main fuction in the API. This allows applications to share modules between themselves to accomplish their tasks.
+A suite of applications for conlangers built with typescript and the wonderful Vite tool. Each application has its own web-app, CLI, and main function in the API. This allows applications to share modules between themselves to accomplish their tasks.
 
 ## Vocabug
 

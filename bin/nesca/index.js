@@ -151,6 +151,7 @@ var Parser = class {
   logger;
   escape_mapper;
   lettercase_mapper;
+  chance_mapper;
   num_of_words;
   output_mode;
   remove_duplicates;
@@ -178,11 +179,13 @@ var Parser = class {
   invisible;
   file_line_num = 0;
   app;
-  constructor(logger, app, escape_mapper, lettercase_mapper2, num_of_words_string, output_mode, sort_words, remove_duplicates, force_word_limit, input_divider, output_divider) {
+  current_stage_name;
+  constructor(logger, app, escape_mapper, lettercase_mapper2, chance_mapper, num_of_words_string, output_mode, sort_words, remove_duplicates, force_word_limit, input_divider, output_divider) {
     this.logger = logger;
     this.app = app;
     this.escape_mapper = escape_mapper;
     this.lettercase_mapper = lettercase_mapper2;
+    this.chance_mapper = chance_mapper;
     if (num_of_words_string === "") {
       num_of_words_string = "100";
     }
@@ -250,6 +253,7 @@ var Parser = class {
     this.syllable_boundaries = [];
     this.disable_directive = false;
     this.directive_name = "";
+    this.current_stage_name = "";
   }
   get_line(file_array) {
     let line = file_array[this.file_line_num];
@@ -302,7 +306,11 @@ var Parser = class {
           this.disable_directive = true;
         }
         if (my_directive === "stage") {
-          const stage = { transforms_pending: [], name: "" };
+          const stage = {
+            transforms_pending: [],
+            name: this.current_stage_name
+          };
+          this.current_stage_name = "";
           this.stages_pending.push(stage);
         }
         continue;
@@ -482,7 +490,7 @@ var Parser = class {
             result: "",
             conditions: [],
             exceptions: [],
-            chance: null,
+            chance: this.chance_mapper.get_last_chance(),
             line_num: this.file_line_num
           });
           line = line.substring(2).trim();
@@ -510,10 +518,31 @@ var Parser = class {
             result: "\\",
             conditions: [],
             exceptions: [],
-            chance: null,
+            chance: this.chance_mapper.get_last_chance(),
             line_num: this.file_line_num
           });
           continue;
+        } else if (line.startsWith("<@chance")) {
+          const match = line.match(/^<@chance\s*=\s*(\d+(?:\.\d+)?)%$/);
+          if (this.chance_mapper.check_parsing) {
+            this.logger.validation_error(
+              `Cannot start a new chance while another chance is being parsed`,
+              this.file_line_num
+            );
+          }
+          if (match) {
+            const percent = match[1];
+            this.chance_mapper.add_chance(Number(percent));
+            this.chance_mapper.check_parsing = true;
+          } else {
+            this.logger.validation_error(
+              `Invalid chance syntax`,
+              this.file_line_num
+            );
+          }
+          continue;
+        } else if (line.startsWith(">")) {
+          this.chance_mapper.check_parsing = false;
         } else {
           const continuationRe = /(->|=>|>>|⇒|→|\/|!)$/;
           if (continuationRe.test(line)) {
@@ -529,7 +558,7 @@ var Parser = class {
             result,
             conditions,
             exceptions,
-            chance: null,
+            chance: this.chance_mapper.get_last_chance(),
             line_num: this.file_line_num
           });
           continue;
@@ -651,6 +680,11 @@ var Parser = class {
         if (my_property === "distribution") {
           this.category_distribution = this.parse_distribution(my_value);
           new_decorator = "categories";
+        }
+      } else if (my_directive === "stage") {
+        if (my_property === "name") {
+          this.current_stage_name = my_value;
+          new_decorator = "stage";
         }
       }
     } else {
@@ -1052,6 +1086,8 @@ var Word = class _Word {
           if (this.num_of_transformations != 0) {
             output.push(`\u27E8${step.form}\u27E9`);
           }
+        } else if (step.type === "skip") {
+          output.push(`${step.action} @ ln:${step.line_num}`);
         }
       }
       return output.join("\n");
@@ -1089,6 +1125,13 @@ var Word = class _Word {
     this.steps.push({
       type: "output",
       form: this.get_last_form()
+    });
+  }
+  record_skip(action, line_num) {
+    this.steps.push({
+      type: "skip",
+      action,
+      line_num
     });
   }
 };
@@ -2142,13 +2185,15 @@ var Transformer = class {
   //public transforms: Transform[];
   graphemes;
   lettercase_mapper;
+  chance_mapper;
   syllable_boundaries;
   debug = false;
   associateme_mapper;
-  constructor(logger, graphemes, lettercase_mapper2, syllable_boundaries, stages, substages, output_mode, associateme_mapper) {
+  constructor(logger, graphemes, lettercase_mapper2, chance_mapper, syllable_boundaries, stages, substages, output_mode, associateme_mapper) {
     this.logger = logger;
     this.graphemes = graphemes;
     this.lettercase_mapper = lettercase_mapper2;
+    this.chance_mapper = chance_mapper;
     this.syllable_boundaries = syllable_boundaries;
     this.associateme_mapper = associateme_mapper;
     this.debug = output_mode === "debug";
@@ -2626,18 +2671,7 @@ var Transformer = class {
     return normalized;
   }
   apply_transform(word, word_stream, transform) {
-    const {
-      t_type,
-      target,
-      result,
-      conditions,
-      exceptions,
-      chance,
-      line_num
-    } = transform;
-    if (chance != null && Math.random() * 100 >= chance) {
-      return word_stream;
-    }
+    const { t_type, target, result, conditions, exceptions, line_num } = transform;
     if (t_type != "rule" && t_type != "cluster-field") {
       word_stream = this.run_routine(t_type, word, word_stream, line_num);
       return word_stream;
@@ -2843,6 +2877,10 @@ var Transformer = class {
       if (word.rejected) {
         break;
       }
+      if (t.chance != null && this.chance_mapper.get_is_success(t.chance) === false) {
+        word.record_skip("CHANCE FAILED - SKIPPED transform", t.line_num);
+        continue;
+      }
       if (t.target.length == 0 && (t.t_type === "rule" || t.t_type === "cluster-field")) {
         continue;
       }
@@ -2861,9 +2899,10 @@ var Transformer = class {
     return word;
   }
   do_stages(word) {
+    this.chance_mapper.roll_all();
     for (const stage of this.stages) {
       if (stage.name) {
-        word.record_banner(`STAGE: ${stage.name}`);
+        word.record_banner(`stage = ${stage.name}`);
       }
       word = this.do_transforms(word, stage.transforms);
     }
@@ -4789,6 +4828,55 @@ Mode: ` + this.output_mode;
 };
 var word_bank_default = Word_Bank;
 
+// src/transforma/chance_mapper.ts
+var Chance_Mapper = class {
+  chances = [];
+  check_parsing;
+  constructor() {
+    this.chances = [
+      {
+        id: 1,
+        percent: 50,
+        rolled: null
+      }
+    ];
+    this.check_parsing = false;
+  }
+  add_chance(percent) {
+    const p = Math.max(0, Math.min(100, percent));
+    this.chances.push({
+      id: this.chances.length + 1,
+      percent: p,
+      rolled: null
+    });
+  }
+  get_is_success(id) {
+    const chance = this.chances.find((c) => c.id === id);
+    return chance ? chance.rolled : null;
+  }
+  reset() {
+    for (const c of this.chances) {
+      c.rolled = null;
+    }
+  }
+  roll_all() {
+    const results = {};
+    for (const c of this.chances) {
+      const roll = Math.random() * 100;
+      c.rolled = roll < c.percent;
+    }
+    return results;
+  }
+  get_last_chance() {
+    if (this.check_parsing && this.chances.length > 0) {
+      return this.chances[this.chances.length - 1].id;
+    } else {
+      return null;
+    }
+  }
+};
+var chance_mapper_default = Chance_Mapper;
+
 // src/main.ts
 function nesca({
   file,
@@ -4803,11 +4891,13 @@ function nesca({
     const build_start = Date.now();
     const escape_mapper = new escape_mapper_default();
     const lettercase_mapper2 = new lettercase_mapper_default();
+    const chance_mapper = new chance_mapper_default();
     const p = new parser_default(
       logger,
       "nesca",
       escape_mapper,
       lettercase_mapper2,
+      chance_mapper,
       1,
       //numwords
       output_mode,
@@ -4857,6 +4947,7 @@ function nesca({
       logger,
       canon_graphemes_resolver.graphemes,
       p.lettercase_mapper,
+      p.chance_mapper,
       transform_resolver.syllable_boundaries,
       transform_resolver.stages,
       transform_resolver.substages,

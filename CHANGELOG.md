@@ -46,3 +46,8 @@
 - Finished writing docs
 - Finished renaming the package
 
+## [1.0.5] - 2026-JAN-30
+
+### Added
+- Chance block
+- Naming stages

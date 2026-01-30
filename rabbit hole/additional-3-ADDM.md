@@ -5,6 +5,8 @@ Your dictionary is now saved in a non-human-readable database file?
 
 I want to write a dictionary in the same way I read a dictionary
 
+mass editing
+
 ```
 thing:
    ENTRY
