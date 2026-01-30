@@ -1095,7 +1095,7 @@ var Word = class _Word {
     if (_Word.output_mode == "old-to-new") {
       const first_step = this.steps[0];
       let first_form = "";
-      if (first_form) {
+      if (first_step) {
         if (first_step.type === "nesca-input" || first_step.type === "word-creation") {
           first_form = first_step.form;
         }
@@ -2646,7 +2646,7 @@ var Transformer = class {
       }
     }
     const normalized = result_tokens;
-    if (applied_targets.length > 0 && this.debug) {
+    if (applied_targets.length > 0) {
       let my_exceptions = "";
       for (const e of exceptions) {
         const my_before = e.before.map((t) => t.base).join("");

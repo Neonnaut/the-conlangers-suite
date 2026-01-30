@@ -746,7 +746,7 @@ class Transformer {
       const normalized = result_tokens;
 
       // 🧾 Log transformation summary
-      if (applied_targets.length > 0 && this.debug) {
+      if (applied_targets.length > 0) {
          let my_exceptions = "";
          for (const e of exceptions) {
             const my_before = e.before.map((t) => t.base).join("");

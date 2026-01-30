@@ -68,7 +68,7 @@ class Word {
       if (Word.output_mode == "old-to-new") {
          const first_step = this.steps[0];
          let first_form = "";
-         if (first_form) {
+         if (first_step) {
             if (
                first_step.type === "nesca-input" ||
                first_step.type === "word-creation"
