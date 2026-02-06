@@ -34,7 +34,7 @@ V: -> V / #_# ; Words that are a long vowel become short.
 yi -> 0 ; Remove words with <yi>
 
 ; Click the green 'Generate' button in the taskbar below to generate words!!
-; Read the instructions linked above, or by clicking '?' in the taskbar below`,
+; Read the instructions linked above, or by clicking 'Help' in the taskbar below.`,
   tonal:
 `; A somewhat Yoruba-like tonal language
 categories:

@@ -1,6 +1,53 @@
 import Logger from "./logger";
+import type Word from "./word";
 
-function collator(
+export function collate_words_by_current_form(
+   logger: Logger,
+   word_objects: Word[],
+   alphabet: string[],
+   invisible: string[],
+): Word[] {
+   // 1. build key list and buckets for duplicates
+   const keys: string[] = [];
+   const buckets: Map<string, Word[]> = new Map();
+
+   for (let i = 0; i < word_objects.length; i++) {
+      const w = word_objects[i];
+      const key = w.current_form;
+
+      keys.push(key);
+
+      const existing = buckets.get(key);
+      if (existing) {
+         existing.push(w);
+      } else {
+         buckets.set(key, [w]);
+      }
+   }
+
+   // 2. sort keys using existing collator (string[] → string[])
+   const sorted_keys = collator(logger, keys, alphabet, invisible);
+
+   // 3. rebuild sorted word list by draining buckets
+   const sorted_words: Word[] = [];
+
+   for (let i = 0; i < sorted_keys.length; i++) {
+      const key = sorted_keys[i];
+      const bucket = buckets.get(key);
+
+      if (!bucket || bucket.length === 0) {
+         // should not happen if buckets and keys are in sync
+         continue;
+      }
+
+      const w = bucket.shift() as Word; // take next word with this key
+      sorted_words.push(w);
+   }
+
+   return sorted_words;
+}
+
+export function collator(
    logger: Logger,
    words: string[],
    custom_alphabet: string[],

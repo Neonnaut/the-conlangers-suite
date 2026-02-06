@@ -1,3 +1,5 @@
+## ADDM
+
 Are you a weirdo who types their dictionary out in latex? Or have you mistakeningly typed out your 
 dictionary in a spreadsheet, only to find out the data type of dictionariesis too complex?
 Your meaning does not exist in the websites database?
@@ -7,7 +9,7 @@ I want to write a dictionary in the same way I read a dictionary
 
 mass editing
 
-```
+```txt
 thing:
    ENTRY
    KEY
@@ -80,4 +82,23 @@ foo <pronounce> bar <class> n. <meaning> A placeholder word
 
 ```
  
- 
+## Scripta
+
+grapheme = "a" {
+   path {
+      12, 31
+      straight
+      4, 11
+      curved
+      node = 8, 9
+      serif = "1"
+   }
+}
+
+## Frequenta
+
+## Conjugator
+
+## Phonology table creator
+
+## Documenta

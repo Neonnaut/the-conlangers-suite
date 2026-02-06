@@ -1,6 +1,6 @@
 {
   "name": "the_conlangers_suite",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "description": "Word / vocabulary generator program",
   "author": "Neonnaut",
@@ -19,7 +19,9 @@
     "wordgen",
     "words",
     "vocabulary",
-    "vocabug"
+    "vocabug",
+    "nesca",
+    "sound change applier"
   ],
   "scripts": {
     "build": "node build.js",

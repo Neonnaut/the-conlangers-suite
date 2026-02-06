@@ -114,10 +114,7 @@ class Nesca_Grammar_Stream {
                const consume: string[][] = [];
                const blocked_by: string[][] = [];
 
-               const parts = garde_stream
-                  .split("|")
-                  .map((part) => part.trim())
-                  .filter(Boolean);
+               const parts = garde_stream.split("|").map((part) => part.trim());
 
                if (parts.length > 2) {
                   throw new Error(

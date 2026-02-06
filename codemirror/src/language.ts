@@ -26,7 +26,7 @@ const escapeRegex = /\\[^\s]|&\[(?:Space|Tab|Newline|Acute|DoubleAcute|Grave|Dou
 
 const routineRules = [
   {
-    token: "attributeName", regex: /\s+(compose|decompose|capitalise|decapitalise|capitalize|decapitalize|to-uppercase|to-lowercase|xsampa-to-ipa|ipa-to-xsampa|latin-to-hangul|latin-to-hangeul|hangul-to-latin|hangeul-to-latin|greek-to-latin|latin-to-greek|reverse)/
+    token: "attributeName", regex: /(compose|decompose|capitalise|decapitalise|capitalize|decapitalize|to-uppercase|to-lowercase|xsampa-to-ipa|ipa-to-xsampa|latin-to-hangul|latin-to-hangeul|hangul-to-latin|hangeul-to-latin|greek-to-latin|latin-to-greek|reverse)/
   },
   { token: "link", regex: /=/ },
   { token: "meta", regex: />/}
@@ -46,13 +46,13 @@ const listRules = [
 
 const decoratorRulesVocabug = [
   { token: "link", regex: /\.|=/ },
-  { token: "meta", regex: /categories|words|units|alphabet|invisible|graphemes|syllable-boundaries|features|feature-field|stage|distribution|optionals-weight|disabled|name/ },
+  { token: "meta", regex: /categories|words|units|alphabet|invisible|graphemes|syllable-boundaries|features|feature-field|stage|letter-case-field|distribution|optionals-weight|disabled|name/ },
   { token: "attributeName", regex: /flat|zipfian|gusein-zade|shallow|\d{1,2}%/ }
 ];
 
 const decoratorRulesNesca = [
   { token: "link", regex: /\.|=/ },
-  { token: "meta", regex: /categories|alphabet|invisible|graphemes|syllable-boundaries|features|feature-field|stage|distribution|optionals-weight|disabled/ },
+  { token: "meta", regex: /categories|alphabet|invisible|graphemes|syllable-boundaries|features|feature-field|stage|letter-case-field|schema|distribution|optionals-weight|disabled/ },
   { token: "attributeName", regex: /flat|zipfian|gusein-zade|shallow|\d{1,2}%/ }
 ];
 
@@ -89,6 +89,12 @@ const wordRules = [
   { token: "strong",   regex: /(\*(\d+(\.\d+)?|s))/ } // Weights
 ];
 
+const schemaRules = [
+  { token: "escape",   regex: escapeRegex },
+  { token: "link",     regex: /=/ },
+  { token: "regexp",   regex: /<.+?>/ },
+];
+
 const transformRules = [
   { token: "escape",   regex: escapeRegex },
   { token: "link",     regex: />>|->|=>|⇒|→|\/|!|,|_/ },
@@ -111,7 +117,7 @@ const featureFieldRules = [
 ];
 
 type State = {
-  directive: ('none'|'decorator'|'categories'|'words'|'units'|'list'|'graphemes'|'stage'|'features'|'feature-field'|'letter-case-field'|'feature-field-header'
+  directive: ('none'|'decorator'|'categories'|'words'|'units'|'list'|'graphemes'|'stage'|'features'|'feature-field'|'letter-case-field'|'feature-field-header'|'schema'
   );
   sub_directive: ('none'|'routine'|'cluster-block'|'chance');
   feature_matrix: boolean;
@@ -179,6 +185,14 @@ function parser(app: string): StreamParser<State> {
                     // Units
                     if (stream.match(/(units)(?=:\s*(?:;|$))/)) {
                         state.directive = 'units';
+                        state.doIndent = true;
+                        return "meta";
+                    }
+                }
+                if (app === "nesca") {
+                    // schema
+                    if (stream.match(/(schema)(?=:\s*(?:;|$))/)) {
+                        state.directive = 'schema';
                         state.doIndent = true;
                         return "meta";
                     }
@@ -363,6 +377,27 @@ function parser(app: string): StreamParser<State> {
                 }
             }
 
+            // SCHEMA
+            if (state.directive == 'schema') {
+
+                if (state.we_on_newline) {
+                    stream.match(/\s*/);
+
+                    let match = stream.match(/(input|output)(?=\s*=)/);
+                    if (match) {
+                        state.unitList.push(match[1]);
+                        state.we_on_newline = false;
+                        return "tagName";
+                    }
+                } else {
+                    for (const rule of schemaRules) {
+                        if (stream.match(rule.regex)) {
+                            return rule.token;
+                        }
+                    }
+                }
+            }
+
             // LISTS
             if (state.directive == 'list') {
                 for (const rule of listRules) {
@@ -441,7 +476,6 @@ function parser(app: string): StreamParser<State> {
             if (state.directive == 'feature-field-header') {
 
                 if (state.header_for_feature_field >= 1) {
-                    console.log("f-f");
                     state.directive = "feature-field";
                     // DO NOT return here: let the rest of the tokenizer
                     // see this token with the new directive
@@ -518,7 +552,7 @@ function parser(app: string): StreamParser<State> {
                 }
 
                 // ROUTINE
-                if (state.sub_directive == 'routine') {
+                if (state.sub_directive === 'routine') {
                     for (const rule of routineRules) {
                         if (stream.match(rule.regex)) {
                             return rule.token;
@@ -526,7 +560,7 @@ function parser(app: string): StreamParser<State> {
                     }
                 }
                 // CLUSTER-FIELD
-                else if (state.sub_directive == 'cluster-block') {
+                else if (state.sub_directive === 'cluster-block') {
                     for (const rule of clusterRules) {
                         if (stream.match(rule.regex)) {
                             return rule.token;

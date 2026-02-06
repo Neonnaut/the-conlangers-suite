@@ -23,11 +23,11 @@ Documentation (also called "help", "instructions" or "manual") lives online at [
 
 ### Vocabug API
 
-[Read the API doc here](./docs/vocabug-api.md)
+[Read the API doc here](./docs/vocabug_api.md)
 
 ### Vocabug CLI
 
-[Read the CLI (command-line-interface) doc here](./docs/vocabug-cli.md)
+[Read the CLI (command-line-interface) doc here](./docs/vocabug_cli.md)
 
 ## Nesca
 
@@ -45,11 +45,11 @@ Documentation lives online at [neonnaut.neocities.org/nesca_docs](neonnaut.neoci
 
 ### Nesca API
 
-[Read the API doc here](./docs/api.md)
+[Read the API doc here](./docs/nesca_api.md)
 
 ### Nesca CLI
 
-[Read the CLI (command-line-interface) doc here](./docs/cli.md)
+[Read the CLI (command-line-interface) doc here](./docs/nesca_cli.md)
 
 ## Development
 

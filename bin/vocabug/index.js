@@ -103,7 +103,9 @@ var directive_check = [
   "syllable-boundaries",
   "features",
   "feature-field",
-  "stage"
+  "stage",
+  "letter-case-field",
+  "schema"
 ];
 var SYNTAX_CHARS = [
   "<",
@@ -169,7 +171,8 @@ var Parser = class {
   wordshape_distribution;
   wordshape_pending;
   feature_pending;
-  // public transform_pending: Transform_Pending[];
+  schema_input;
+  schema_output;
   stages_pending = [];
   substages_pending = [];
   graphemes;
@@ -254,6 +257,8 @@ var Parser = class {
     this.disable_directive = false;
     this.directive_name = "";
     this.current_stage_name = "";
+    this.schema_input = { fields: [], delimiters: [] };
+    this.schema_output = { fields: [], delimiters: [] };
   }
   get_line(file_array) {
     let line = file_array[this.file_line_num];
@@ -290,8 +295,6 @@ var Parser = class {
       }
       const temp_directive = this.parse_directive(line, my_decorator);
       if (temp_directive != "none") {
-        if (my_clusterfield_transform.length > 0) {
-        }
         if (my_subdirective != "none") {
           this.logger.validation_error(
             `${my_subdirective} was not closed before directive change`,
@@ -384,6 +387,27 @@ var Parser = class {
           content: `${field}`,
           line_num: this.file_line_num
         });
+      }
+      if (my_directive === "schema") {
+        if (this.app === "vocabug") {
+          this.logger.validation_error(
+            `Schema directive is not valid in Vocabug`,
+            this.file_line_num
+          );
+        }
+        const [type, fields, delimiters] = this.get_schema(line);
+        if (type === "input") {
+          if (!fields.includes("word")) {
+            this.logger.validation_error(
+              `Input schema must include a 'word' field`,
+              this.file_line_num
+            );
+          }
+          this.schema_input = { fields, delimiters };
+        } else if (type === "output") {
+          this.schema_output = { fields, delimiters };
+        }
+        console.log(type, fields, delimiters);
       }
       if (my_directive === "features") {
         const [key, field, valid] = this.get_cat_seg_fea(line, "feature");
@@ -739,6 +763,8 @@ var Parser = class {
       temp_directive = "stage";
     } else if (line === "letter-case-field:") {
       temp_directive = "letter-case-field";
+    } else if (line === "schema:") {
+      temp_directive = "schema";
     }
     if (temp_directive === "none") {
       return "none";
@@ -900,6 +926,65 @@ var Parser = class {
     const { conditions, exceptions } = this.get_environment(environment);
     return [target, result, conditions, exceptions];
   }
+  get_schema(input) {
+    const divider = "=";
+    if (input === "") {
+      this.logger.validation_error(
+        `Schema declaration cannot be empty`,
+        this.file_line_num
+      );
+    }
+    const divided = input.split(divider);
+    if (divided.length !== 2) {
+      this.logger.validation_error(
+        `Schema declaration was invalid`,
+        this.file_line_num
+      );
+    }
+    const key = divided[0].trim();
+    if (key !== "input" && key !== "output") {
+      this.logger.validation_error(
+        `Schema declaration was not for 'input' or 'output'`,
+        this.file_line_num
+      );
+    }
+    const pattern = divided[1].trim();
+    const fields = [];
+    const delimiters = [];
+    let i = 0;
+    const n = pattern.length;
+    if (pattern.startsWith("<")) {
+      delimiters.push("");
+    }
+    while (i < n) {
+      const ch = pattern[i];
+      if (ch === "<") {
+        const start2 = i + 1;
+        let end = start2;
+        while (end < n && pattern[end] !== ">") end++;
+        if (end >= n) {
+          this.logger.validation_error(
+            "unterminated field",
+            this.file_line_num
+          );
+        }
+        const name = pattern.slice(start2, end);
+        fields.push(name);
+        i = end + 1;
+        continue;
+      }
+      const start = i;
+      while (i < n && pattern[i] !== "<") {
+        i++;
+      }
+      const d = pattern.slice(start, i);
+      delimiters.push(d);
+    }
+    if (delimiters.length < fields.length + 1) {
+      delimiters.push("");
+    }
+    return [key, fields, delimiters];
+  }
   get_environment(environment_string) {
     const conditions = [];
     const exceptions = [];
@@ -1046,21 +1131,26 @@ var Word = class _Word {
   rejected;
   num_of_transformations;
   steps;
-  constructor(action, form) {
+  field_values;
+  static fields = [];
+  static field_delimiters = [];
+  constructor(action, fields) {
     this.rejected = false;
-    this.current_form = form;
+    this.current_form = fields["word"];
     this.num_of_transformations = 0;
     this.steps = [];
+    this.field_values = fields;
     if (action === null) {
       this.steps.push({
-        type: "nesca-input",
-        form
+        action: null,
+        form: fields["word"],
+        line_num: null
       });
     } else {
       this.steps.push({
-        type: "word-creation",
         action,
-        form
+        form: fields["word"],
+        line_num: null
       });
     }
   }
@@ -1072,23 +1162,19 @@ var Word = class _Word {
     if (_Word.output_mode == "debug") {
       for (let i = 0; i < this.steps.length; i++) {
         const step = this.steps[i];
-        if (step.type === "nesca-input") {
-          output.push(`\u27E8${step.form}\u27E9`);
-        } else if (step.type === "word-creation") {
-          output.push(`${step.action} \u27A4 \u27E8${step.form}\u27E9`);
-        } else if (step.type === "transformation") {
-          output.push(
-            `${step.action} \u27A4 \u27E8${step.form}\u27E9 @ ln:${step.line_num}`
-          );
-        } else if (step.type === "banner") {
-          output.push(`${step.action}`);
-        } else if (step.type === "output") {
-          if (this.num_of_transformations != 0) {
-            output.push(`\u27E8${step.form}\u27E9`);
-          }
-        } else if (step.type === "skip") {
-          output.push(`${step.action} @ ln:${step.line_num}`);
+        let form = step.form || "";
+        let action = step.action || "";
+        let line_num = step.line_num || "";
+        if (form) {
+          form = `\u27E8${form}\u27E9`;
         }
+        if (form && action) {
+          action = `${action} \u27A4 `;
+        }
+        if (line_num) {
+          line_num = ` @ ln:${line_num}`;
+        }
+        output.push(`${action}${form}${line_num}`);
       }
       return output.join("\n");
     }
@@ -1096,9 +1182,7 @@ var Word = class _Word {
       const first_step = this.steps[0];
       let first_form = "";
       if (first_step) {
-        if (first_step.type === "nesca-input" || first_step.type === "word-creation") {
-          first_form = first_step.form;
-        }
+        first_form = first_step.form || "";
       }
       output.push(`${first_form} => ${this.current_form}`);
       return output.join("");
@@ -1106,31 +1190,51 @@ var Word = class _Word {
     output.push(`${this.current_form}`);
     return output.join("");
   }
+  recombine_word_by_schema(values) {
+    let out = "";
+    let i = 0;
+    out += _Word.field_delimiters[0] || "";
+    while (i < _Word.fields.length) {
+      const field = _Word.fields[i];
+      let val = "";
+      if (field === "word") {
+        val = this.current_form;
+      } else {
+        val = values[field] || "\uFFFD";
+      }
+      out += val;
+      const next_delim = _Word.field_delimiters[i + 1] || "\uFFFD";
+      out += next_delim;
+      i++;
+    }
+    return out;
+  }
   record_transformation(transformation, form, line_num) {
     this.steps.push({
-      type: "transformation",
       action: transformation,
       form,
       line_num: line_num + 1
     });
     this.num_of_transformations++;
   }
-  record_banner(action) {
-    this.steps.push({
-      type: "banner",
-      action
-    });
-  }
   record_output() {
+    let out = "";
+    if (_Word.field_delimiters.length > 0) {
+      out = this.recombine_word_by_schema(this.field_values);
+    } else {
+      out = this.get_last_form();
+    }
     this.steps.push({
-      type: "output",
-      form: this.get_last_form()
+      form: out,
+      action: null,
+      line_num: null
     });
+    this.current_form = out;
   }
-  record_skip(action, line_num) {
+  record_step(action, form, line_num) {
     this.steps.push({
-      type: "skip",
       action,
+      form,
       line_num
     });
   }
@@ -1265,7 +1369,7 @@ var Word_Builder = class {
       stage_one = this.escape_mapper.restore_escaped_chars(stage_one);
       stage_five = this.escape_mapper.restore_escaped_chars(stage_five);
     }
-    return new word_default(stage_one, stage_five);
+    return new word_default(stage_one, { word: stage_five });
   }
   resolve_wordshape_sets(input_list, distribution, optionals_weight) {
     const curly_pattern = /\{[^{}]*\}/g;
@@ -3069,7 +3173,11 @@ var Transformer = class {
         break;
       }
       if (t.chance != null && this.chance_mapper.get_is_success(t.chance) === false) {
-        word.record_skip("CHANCE FAILED - SKIPPED transform", t.line_num);
+        word.record_step(
+          "CHANCE FAILED - SKIPPED transform",
+          null,
+          t.line_num
+        );
         continue;
       }
       if (t.target.length == 0 && (t.t_type === "rule" || t.t_type === "cluster-field")) {
@@ -3080,12 +3188,9 @@ var Transformer = class {
       if (tokens.length === 0) {
         word.rejected = true;
         if (this.debug) {
-          word.record_banner("REJECT-NULL-WORD");
+          word.record_step("REJECT-NULL-WORD", null, null);
         }
       }
-    }
-    if (!word.rejected) {
-      word.record_output();
     }
     return word;
   }
@@ -3093,9 +3198,12 @@ var Transformer = class {
     this.chance_mapper.roll_all();
     for (const stage of this.stages) {
       if (stage.name) {
-        word.record_banner(`stage = ${stage.name}`);
+        word.record_step(`stage = ${stage.name}`, null, null);
       }
       word = this.do_transforms(word, stage.transforms);
+    }
+    if (!word.rejected) {
+      word.record_output();
     }
     return word;
   }
@@ -3115,6 +3223,33 @@ var Transformer = class {
 var transformer_default = Transformer;
 
 // src/collator.ts
+function collate_words_by_current_form(logger, word_objects, alphabet, invisible) {
+  const keys = [];
+  const buckets = /* @__PURE__ */ new Map();
+  for (let i = 0; i < word_objects.length; i++) {
+    const w = word_objects[i];
+    const key = w.current_form;
+    keys.push(key);
+    const existing = buckets.get(key);
+    if (existing) {
+      existing.push(w);
+    } else {
+      buckets.set(key, [w]);
+    }
+  }
+  const sorted_keys = collator(logger, keys, alphabet, invisible);
+  const sorted_words = [];
+  for (let i = 0; i < sorted_keys.length; i++) {
+    const key = sorted_keys[i];
+    const bucket = buckets.get(key);
+    if (!bucket || bucket.length === 0) {
+      continue;
+    }
+    const w = bucket.shift();
+    sorted_words.push(w);
+  }
+  return sorted_words;
+}
 function collator(logger, words, custom_alphabet, invisible = []) {
   if (custom_alphabet.length === 0) {
     if (invisible.length == 0) {
@@ -3204,7 +3339,6 @@ function collator(logger, words, custom_alphabet, invisible = []) {
   }
   return sorted;
 }
-var collator_default = collator;
 
 // src/text_builder.ts
 var Text_Builder = class {
@@ -3256,7 +3390,15 @@ var Text_Builder = class {
       this.num_of_rejects++;
       this.num_of_duds++;
     } else if (this.remove_duplicates) {
-      if (this.words.includes(word.get_last_form())) {
+      let found_duplicate = false;
+      const current_word_form = word.get_last_form();
+      for (let i = 0; i < this.words.length; i++) {
+        if (this.words[i].get_last_form() === current_word_form) {
+          found_duplicate = true;
+          break;
+        }
+      }
+      if (found_duplicate) {
         this.num_of_duplicates++;
         this.num_of_duds++;
       } else {
@@ -3266,7 +3408,7 @@ var Text_Builder = class {
       do_it = true;
     }
     if (do_it) {
-      this.words.push(word.get_word());
+      this.words.push(word);
     }
     if (this.words.length >= this.num_of_words) {
       this.terminated = true;
@@ -3320,19 +3462,23 @@ var Text_Builder = class {
     this.logger.info(`${final_sentence(records)} -- in ${display}`);
   }
   make_text() {
+    this.create_record();
     if (this.sort_words) {
-      this.words = collator_default(
+      this.words = collate_words_by_current_form(
         this.logger,
         this.words,
         this.alphabet,
         this.invisible
       );
     }
-    this.create_record();
-    if (this.output_mode === "paragraph") {
-      return this.paragraphify(this.words);
+    const word_list = [];
+    for (let i = 0; i < this.words.length; i++) {
+      word_list.push(this.words[i].get_word());
     }
-    return this.words.join(this.output_divider);
+    if (this.output_mode === "paragraph") {
+      return this.paragraphify(word_list);
+    }
+    return word_list.join(this.output_divider);
   }
   paragraphify(words) {
     if (words.length === 0) return "";
@@ -3723,10 +3869,10 @@ var Supra_Builder = class {
       return id === target_ID ? `${this.letters[id]}` : "";
     });
   }
-  getWeights() {
+  get_weights() {
     return this.weights;
   }
-  getLetters() {
+  get_letters() {
     return this.letters;
   }
 };
@@ -3738,13 +3884,10 @@ var Transform_Resolver = class {
   output_mode;
   nesca_grammar_stream;
   categories;
-  //public transform_pending: Transform_Pending[];
-  //public transforms: Transform[] = [];
   stages_pending;
   stages;
   substages_pending;
   substages;
-  ////////////////////////////////////
   syllable_boundaries;
   features = /* @__PURE__ */ new Map();
   line_num;
@@ -4522,7 +4665,7 @@ var Nesca_Grammar_Stream = class {
           }
           const consume = [];
           const blocked_by = [];
-          const parts = garde_stream.split("|").map((part) => part.trim()).filter(Boolean);
+          const parts = garde_stream.split("|").map((part) => part.trim());
           if (parts.length > 2) {
             throw new Error(
               "Invalid garde_stream: more than one '|' found"
@@ -5481,13 +5624,13 @@ var Canon_Graphemes_Resolver = class {
           `A base associateme was empty in the graphemes directive`
         );
       }
-      const expectedLen = bases.length;
+      const expected_len = bases.length;
       for (let i = 0; i < groups.length; i++) {
         const g = groups[i];
-        if (g.length !== expectedLen) {
+        if (g.length !== expected_len) {
           const label = i === 0 ? "bases" : `variant ${i}`;
           this.logger.validation_error(
-            `Mismatched associateme entry variant group length in "${segment}": ${label} had a length of ${g.length} -- expected length of ${expectedLen}`
+            `Mismatched associateme entry variant group length in "${segment}": ${label} had a length of ${g.length} -- expected length of ${expected_len}`
           );
         }
       }
@@ -5673,7 +5816,7 @@ function vocabug({
 }
 
 // src/utils/version.ts
-var VERSION = "1.0.5";
+var VERSION = "1.0.6";
 
 // bin/vocabug/index.ts
 var encodings = [

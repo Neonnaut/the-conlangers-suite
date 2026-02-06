@@ -277,6 +277,9 @@ export function nesca({
          p.lettercase_mapper,
          build_start,
 
+         p.schema_input,
+         p.schema_output,
+
          input_words,
          p.input_divider,
 

@@ -2,30 +2,39 @@ import type { Output_Mode, Word_Step } from "./utils/types";
 
 class Word {
    static output_mode: Output_Mode = "word-list";
+
    current_form: string;
    rejected: boolean;
    num_of_transformations: number;
 
    steps: Word_Step[];
 
-   constructor(action: string | null, form: string) {
+   field_values: Record<string, string>;
+
+   static fields: string[] = [];
+   static field_delimiters: string[] = [];
+
+   constructor(action: string | null, fields: Record<string, string>) {
       this.rejected = false; // This may be changed in transforms or when the word is ""
-      this.current_form = form;
+      this.current_form = fields["word"];
       this.num_of_transformations = 0;
 
       this.steps = [];
 
+      this.field_values = fields;
+
       if (action === null) {
-         // The only action can be creating a word from a word-shape
          this.steps.push({
-            type: "nesca-input",
-            form: form,
+            action: null,
+            form: fields["word"],
+            line_num: null,
          });
       } else {
+         // The only action can be creating a word from a word-shape
          this.steps.push({
-            type: "word-creation",
             action: action,
-            form: form,
+            form: fields["word"],
+            line_num: null,
          });
       }
    }
@@ -43,25 +52,21 @@ class Word {
          for (let i = 0; i < this.steps.length; i++) {
             const step = this.steps[i];
 
-            if (step.type === "nesca-input") {
-               // This is the nesca input line
-               output.push(`⟨${step.form}⟩`);
-            } else if (step.type === "word-creation") {
-               // This is the generation line
-               output.push(`${step.action} ➤ ⟨${step.form}⟩`);
-            } else if (step.type === "transformation") {
-               output.push(
-                  `${step.action} ➤ ⟨${step.form}⟩ @ ln:${step.line_num}`,
-               );
-            } else if (step.type === "banner") {
-               output.push(`${step.action}`);
-            } else if (step.type === "output") {
-               if (this.num_of_transformations != 0) {
-                  output.push(`⟨${step.form}⟩`);
-               }
-            } else if (step.type === "skip") {
-               output.push(`${step.action} @ ln:${step.line_num}`);
+            let form = step.form || "";
+            let action = step.action || "";
+            let line_num = step.line_num || "";
+
+            if (form) {
+               form = `⟨${form}⟩`;
             }
+            if (form && action) {
+               action = `${action} ➤ `;
+            }
+            if (line_num) {
+               line_num = ` @ ln:${line_num}`;
+            }
+
+            output.push(`${action}${form}${line_num}`);
          }
          return output.join("\n");
       }
@@ -69,18 +74,41 @@ class Word {
          const first_step = this.steps[0];
          let first_form = "";
          if (first_step) {
-            if (
-               first_step.type === "nesca-input" ||
-               first_step.type === "word-creation"
-            ) {
-               first_form = first_step.form;
-            }
+            first_form = first_step.form || "";
          }
          output.push(`${first_form} => ${this.current_form}`);
          return output.join("");
       }
       output.push(`${this.current_form}`);
       return output.join("");
+   }
+
+   private recombine_word_by_schema(values: Record<string, string>): string {
+      let out = "";
+      let i = 0;
+
+      // first delimiter always comes first
+      out += Word.field_delimiters[0] || "";
+
+      while (i < Word.fields.length) {
+         const field = Word.fields[i];
+         let val = "";
+         if (field === "word") {
+            val = this.current_form;
+         } else {
+            val = values[field] || "�";
+         }
+
+         out += val;
+
+         // delimiter after this field is at index i+1
+         const next_delim = Word.field_delimiters[i + 1] || "�";
+         out += next_delim;
+
+         i++;
+      }
+
+      return out;
    }
 
    record_transformation(
@@ -95,7 +123,6 @@ class Word {
       // transformation, form, line_num []
 
       this.steps.push({
-         type: "transformation",
          action: transformation,
          form: form,
          line_num: line_num + 1,
@@ -103,24 +130,29 @@ class Word {
       this.num_of_transformations++;
    }
 
-   record_banner(action: string) {
-      this.steps.push({
-         type: "banner",
-         action: action,
-      });
-   }
-
    record_output() {
+      let out: string = "";
+      if (Word.field_delimiters.length > 0) {
+         out = this.recombine_word_by_schema(this.field_values);
+      } else {
+         out = this.get_last_form();
+      }
       this.steps.push({
-         type: "output",
-         form: this.get_last_form(),
+         form: out,
+         action: null,
+         line_num: null,
       });
+      this.current_form = out;
    }
 
-   record_skip(action: string, line_num: number) {
+   record_step(
+      action: string | null,
+      form: string | null,
+      line_num: number | null,
+   ) {
       this.steps.push({
-         type: "skip",
          action: action,
+         form: form,
          line_num: line_num,
       });
    }

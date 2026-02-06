@@ -51,3 +51,12 @@
 ### Added
 - Chance block
 - Naming stages
+
+## [1.0.6] - 2026-FEB-06
+
+### Modified
+- The anythings mark blocked by was not parsing properly
+- Readme had the wrong URLs to the CLI and API docs
+
+### Added
+- Schema directive for Nesca

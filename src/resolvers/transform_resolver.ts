@@ -15,9 +15,6 @@ class Transform_Resolver {
    public nesca_grammar_stream: Nesca_Grammar_Stream;
    public categories: Map<string, string[]>;
 
-   //public transform_pending: Transform_Pending[];
-   //public transforms: Transform[] = [];
-
    public stages_pending: {
       transforms_pending: Transform_Pending[];
       name: string;
@@ -35,8 +32,6 @@ class Transform_Resolver {
       transforms: Transform[];
       name: string;
    }[];
-
-   ////////////////////////////////////
 
    public syllable_boundaries: string[];
 
@@ -68,7 +63,6 @@ class Transform_Resolver {
       this.nesca_grammar_stream = nesca_grmmar_stream;
       this.categories = categories;
 
-      // this.transform_pending = transform_pending;
       this.stages_pending = stages_pending;
       this.substages_pending = substages_pending;
 

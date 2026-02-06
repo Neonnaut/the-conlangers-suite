@@ -85,13 +85,13 @@ class Canon_Graphemes_Resolver {
             );
          }
 
-         const expectedLen = bases.length;
+         const expected_len = bases.length;
          for (let i = 0; i < groups.length; i++) {
             const g = groups[i];
-            if (g.length !== expectedLen) {
+            if (g.length !== expected_len) {
                const label = i === 0 ? "bases" : `variant ${i}`;
                this.logger.validation_error(
-                  `Mismatched associateme entry variant group length in "${segment}": ${label} had a length of ${g.length} -- expected length of ${expectedLen}`,
+                  `Mismatched associateme entry variant group length in "${segment}": ${label} had a length of ${g.length} -- expected length of ${expected_len}`,
                );
             }
          }

@@ -95,7 +95,7 @@ class Word_Builder {
          stage_five = this.escape_mapper.restore_escaped_chars(stage_five);
       }
 
-      return new Word(stage_one, stage_five);
+      return new Word(stage_one, { word: stage_five });
    }
 
    resolve_wordshape_sets(

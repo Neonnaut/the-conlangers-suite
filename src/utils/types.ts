@@ -15,35 +15,16 @@ export type Association = {
    is_target: boolean;
 };
 
-export type Word_Step =
-   | {
-        type: "transformation";
-        action: string;
-        form: string;
-        line_num: number;
-     }
-   | {
-        type: "skip";
-        action: string;
-        line_num: number;
-     }
-   | {
-        type: "banner";
-        action: string;
-     }
-   | {
-        type: "word-creation";
-        action: string;
-        form: string;
-     }
-   | {
-        type: "nesca-input";
-        form: string;
-     }
-   | {
-        type: "output";
-        form: string;
-     };
+export type Schema = {
+   fields: string[];
+   delimiters: string[];
+};
+
+export type Word_Step = {
+   action: string | null;
+   form: string | null;
+   line_num: number | null;
+};
 
 export type Token =
    | {
@@ -199,6 +180,7 @@ export type Directive =
    | "feature-field"
    | "stage"
    | "letter-case-field"
+   | "schema"
    | "none";
 
 export const directive_check = [
@@ -212,6 +194,8 @@ export const directive_check = [
    "features",
    "feature-field",
    "stage",
+   "letter-case-field",
+   "schema",
 ];
 
 export type Routine =

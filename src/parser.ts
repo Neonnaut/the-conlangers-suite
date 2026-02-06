@@ -2,7 +2,7 @@ import type Escape_Mapper from "./escape_mapper";
 import type lettercase_mapper from "./transforma/lettercase_mapper";
 import Logger from "./logger";
 
-import type { App } from "./utils/types";
+import type { App, Schema } from "./utils/types";
 
 import { make_percentage, cappa, get_last } from "./utils/utilities";
 import {
@@ -47,7 +47,8 @@ class Parser {
 
    public feature_pending: Map<string, { content: string; line_num: number }>;
 
-   // public transform_pending: Transform_Pending[];
+   public schema_input: Schema;
+   public schema_output: Schema;
 
    public stages_pending: {
       transforms_pending: Transform_Pending[];
@@ -174,6 +175,9 @@ class Parser {
       this.directive_name = "";
 
       this.current_stage_name = "";
+
+      this.schema_input = { fields: [], delimiters: [] };
+      this.schema_output = { fields: [], delimiters: [] };
    }
 
    private get_line(file_array: string[]) {
@@ -220,10 +224,6 @@ class Parser {
          // check for directive change
          const temp_directive = this.parse_directive(line, my_decorator);
          if (temp_directive != "none") {
-            if (my_clusterfield_transform.length > 0) {
-               //////
-            }
-
             if (my_subdirective != "none") {
                this.logger.validation_error(
                   `${my_subdirective} was not closed before directive change`,
@@ -325,6 +325,30 @@ class Parser {
                content: `${field}`,
                line_num: this.file_line_num,
             });
+         }
+
+         // SCHEMA
+         if (my_directive === "schema") {
+            if (this.app === "vocabug") {
+               this.logger.validation_error(
+                  `Schema directive is not valid in Vocabug`,
+                  this.file_line_num,
+               );
+            }
+
+            const [type, fields, delimiters] = this.get_schema(line);
+            if (type === "input") {
+               if (!fields.includes("word")) {
+                  this.logger.validation_error(
+                     `Input schema must include a 'word' field`,
+                     this.file_line_num,
+                  );
+               }
+               this.schema_input = { fields, delimiters };
+            } else if (type === "output") {
+               this.schema_output = { fields, delimiters };
+            }
+            console.log(type, fields, delimiters);
          }
 
          // FEATURES
@@ -756,6 +780,8 @@ class Parser {
          temp_directive = "stage";
       } else if (line === "letter-case-field:") {
          temp_directive = "letter-case-field";
+      } else if (line === "schema:") {
+         temp_directive = "schema";
       }
       if (temp_directive === "none") {
          return "none"; // Not a directive change
@@ -962,6 +988,84 @@ class Parser {
       const { conditions, exceptions } = this.get_environment(environment);
 
       return [target, result, conditions, exceptions];
+   }
+
+   private get_schema(input: string): ["input" | "output", string[], string[]] {
+      const divider = "=";
+
+      if (input === "") {
+         this.logger.validation_error(
+            `Schema declaration cannot be empty`,
+            this.file_line_num,
+         );
+      }
+
+      const divided = input.split(divider);
+      if (divided.length !== 2) {
+         this.logger.validation_error(
+            `Schema declaration was invalid`,
+            this.file_line_num,
+         );
+      }
+
+      const key = divided[0].trim();
+      if (key !== "input" && key !== "output") {
+         this.logger.validation_error(
+            `Schema declaration was not for 'input' or 'output'`,
+            this.file_line_num,
+         );
+      }
+
+      const pattern = divided[1].trim();
+
+      const fields: string[] = [];
+      const delimiters: string[] = [];
+
+      let i = 0;
+      const n = pattern.length;
+
+      // if pattern starts with <field>, first delimiter is ""
+      if (pattern.startsWith("<")) {
+         delimiters.push("");
+      }
+
+      while (i < n) {
+         const ch = pattern[i];
+
+         if (ch === "<") {
+            const start = i + 1;
+            let end = start;
+
+            while (end < n && pattern[end] !== ">") end++;
+            if (end >= n) {
+               this.logger.validation_error(
+                  "unterminated field",
+                  this.file_line_num,
+               );
+            }
+
+            const name = pattern.slice(start, end);
+            fields.push(name);
+
+            i = end + 1;
+            continue;
+         }
+
+         const start = i;
+         while (i < n && pattern[i] !== "<") {
+            i++;
+         }
+
+         const d = pattern.slice(start, i);
+         delimiters.push(d);
+      }
+
+      // FINAL FIX: ensure trailing empty delimiter exists
+      if (delimiters.length < fields.length + 1) {
+         delimiters.push("");
+      }
+
+      return [key as "input" | "output", fields, delimiters];
    }
 
    private get_environment(environment_string: string): {

@@ -1,6 +1,6 @@
 import Word from "./word";
 import Logger from "./logger";
-import collator from "./collator";
+import { collate_words_by_current_form } from "./collator";
 import { final_sentence } from "./utils/utilities";
 import type { Output_Mode } from "./utils/types";
 import Lettercase_Mapper from "./transforma/lettercase_mapper";
@@ -20,7 +20,7 @@ class Text_Builder {
    private invisible: string[];
 
    public terminated: boolean;
-   private words: string[];
+   private words: Word[];
 
    private num_of_duplicates: number;
    private num_of_rejects: number;
@@ -82,8 +82,18 @@ class Text_Builder {
          this.num_of_rejects++;
          this.num_of_duds++; // Record num of reject
       } else if (this.remove_duplicates) {
-         if (this.words.includes(word.get_last_form())) {
-            this.num_of_duplicates++; // A dulicate word
+         let found_duplicate: boolean = false;
+         const current_word_form = word.get_last_form();
+
+         for (let i = 0; i < this.words.length; i++) {
+            if (this.words[i].get_last_form() === current_word_form) {
+               found_duplicate = true;
+               break; // early exit. very important for speed.
+            }
+         }
+
+         if (found_duplicate) {
+            this.num_of_duplicates++; // A duplicate word
             this.num_of_duds++;
          } else {
             do_it = true; // A unique word
@@ -93,7 +103,7 @@ class Text_Builder {
       }
 
       if (do_it) {
-         this.words.push(word.get_word());
+         this.words.push(word);
       }
 
       // Work out if we need to terminate -- stop more words being made.
@@ -160,20 +170,27 @@ class Text_Builder {
    }
 
    make_text() {
+      this.create_record();
+
       if (this.sort_words) {
-         this.words = collator(
+         this.words = collate_words_by_current_form(
             this.logger,
             this.words,
             this.alphabet,
             this.invisible,
          );
       }
-      this.create_record();
-      if (this.output_mode === "paragraph") {
-         return this.paragraphify(this.words);
+
+      const word_list: string[] = [];
+      for (let i = 0; i < this.words.length; i++) {
+         word_list.push(this.words[i].get_word());
       }
 
-      return this.words.join(this.output_divider);
+      if (this.output_mode === "paragraph") {
+         return this.paragraphify(word_list);
+      }
+
+      return word_list.join(this.output_divider);
    }
 
    paragraphify(words: string[]): string {

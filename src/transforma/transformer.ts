@@ -1041,7 +1041,11 @@ class Transformer {
             this.chance_mapper.get_is_success(t.chance) === false
          ) {
             // Failed chance roll on the matching chance
-            word.record_skip("CHANCE FAILED - SKIPPED transform", t.line_num);
+            word.record_step(
+               "CHANCE FAILED - SKIPPED transform",
+               null,
+               t.line_num,
+            );
             continue;
          }
 
@@ -1060,14 +1064,11 @@ class Transformer {
          if (tokens.length === 0) {
             word.rejected = true;
             if (this.debug) {
-               word.record_banner("REJECT-NULL-WORD");
+               word.record_step("REJECT-NULL-WORD", null, null);
             }
          }
       }
 
-      if (!word.rejected) {
-         word.record_output();
-      }
       return word;
    }
 
@@ -1076,9 +1077,12 @@ class Transformer {
 
       for (const stage of this.stages) {
          if (stage.name) {
-            word.record_banner(`stage = ${stage.name}`);
+            word.record_step(`stage = ${stage.name}`, null, null);
          }
          word = this.do_transforms(word, stage.transforms);
+      }
+      if (!word.rejected) {
+         word.record_output();
       }
       return word;
    }

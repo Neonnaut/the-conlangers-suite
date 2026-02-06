@@ -81,11 +81,11 @@ export class Supra_Builder {
       });
    }
 
-   getWeights(): Record<number, number | "s"> {
+   get_weights(): Record<number, number | "s"> {
       return this.weights;
    }
 
-   getLetters(): Record<number, string> {
+   get_letters(): Record<number, string> {
       return this.letters;
    }
 }
