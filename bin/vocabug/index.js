@@ -407,7 +407,6 @@ var Parser = class {
         } else if (type === "output") {
           this.schema_output = { fields, delimiters };
         }
-        console.log(type, fields, delimiters);
       }
       if (my_directive === "features") {
         const [key, field, valid] = this.get_cat_seg_fea(line, "feature");
@@ -501,6 +500,11 @@ var Parser = class {
             my_clusterfield_transform
           );
           continue;
+        } else if (line === "<") {
+          this.logger.validation_error(
+            `Feature-field header was empty`,
+            this.file_line_num
+          );
         } else if (line.startsWith("< ")) {
           if (my_wrapped_rule.length != 0) {
             this.logger.validation_error(
@@ -1315,7 +1319,6 @@ function get_distribution(n, default_distribution) {
 
 // src/generata/word_builder.ts
 var Word_Builder = class {
-  //private logger: Logger;
   escape_mapper;
   supra_builder;
   categories;
@@ -1780,6 +1783,9 @@ var xsampa_to_ipa_code_map = {
   _z: 842
   // denasalisation [◌͊]
 };
+var sorted_xsampa_to_ipa_code_map = Object.keys(xsampa_to_ipa_code_map).sort(
+  (a, b) => b.length - a.length
+);
 var ipa_code_map_to_xsampa = {
   595: "b_<",
   // voiced bilabial implosive [ɓ]
@@ -2071,14 +2077,11 @@ var ipa_code_map_to_xsampa = {
   // denasalisation [◌͊]
 };
 function xsampa_to_ipa(input) {
-  const tokens = Object.keys(xsampa_to_ipa_code_map).sort(
-    (a, b) => b.length - a.length
-  );
   let result = "";
   let i = 0;
   while (i < input.length) {
     let matched = false;
-    for (const token of tokens) {
+    for (const token of sorted_xsampa_to_ipa_code_map) {
       if (input.startsWith(token, i)) {
         const code = xsampa_to_ipa_code_map[token];
         result += String.fromCharCode(code);
@@ -2477,7 +2480,6 @@ var Transformer = class {
   logger;
   stages = [];
   substages = [];
-  //public transforms: Transform[];
   graphemes;
   lettercase_mapper;
   chance_mapper;
@@ -3291,19 +3293,19 @@ function collator(logger, words, custom_alphabet, invisible = []) {
     return tokens;
   }
   function custom_compare(a, b) {
-    const aTokens = tokenize(a).filter((t) => !invisible_set.has(t));
-    const bTokens = tokenize(b).filter((t) => !invisible_set.has(t));
-    for (let i = 0; i < Math.max(aTokens.length, bTokens.length); i++) {
-      const aTok = aTokens[i];
-      const bTok = bTokens[i];
-      if (aTok === void 0) return -1;
-      if (bTok === void 0) return 1;
-      const aIndex = order_map.get(aTok);
-      const bIndex = order_map.get(bTok);
-      if (aIndex === void 0) unknown_set.add(aTok);
-      if (bIndex === void 0) unknown_set.add(bTok);
-      if ((aIndex ?? Infinity) !== (bIndex ?? Infinity)) {
-        return (aIndex ?? Infinity) - (bIndex ?? Infinity);
+    const a_tokens = tokenize(a).filter((t) => !invisible_set.has(t));
+    const b_tokens = tokenize(b).filter((t) => !invisible_set.has(t));
+    for (let i = 0; i < Math.max(a_tokens.length, b_tokens.length); i++) {
+      const a_tok = a_tokens[i];
+      const b_tok = b_tokens[i];
+      if (a_tok === void 0) return -1;
+      if (b_tok === void 0) return 1;
+      const a_index = order_map.get(a_tok);
+      const b_index = order_map.get(b_tok);
+      if (a_index === void 0) unknown_set.add(a_tok);
+      if (b_index === void 0) unknown_set.add(b_tok);
+      if ((a_index ?? Infinity) !== (b_index ?? Infinity)) {
+        return (a_index ?? Infinity) - (b_index ?? Infinity);
       }
     }
     return 0;
@@ -3560,6 +3562,20 @@ var Logger = class {
     const log_message = `${err.name}: ${err.message}${location ? " @ " + location : ""}`;
     this.errors.push(log_message);
   }
+  extract_location(stack) {
+    if (!stack) return null;
+    const lines = stack.split("\n");
+    for (const line of lines) {
+      const match = line.match(/(?:\(|\bat\s+)?(.*?):(\d+):(\d+)\)?/);
+      if (match) {
+        let file_path = match[1].replace(/\?.*$/, "");
+        file_path = file_path.replace(/^.*\/src\//, "modules/");
+        file_path = file_path.replace(/(\bmodules\b\/)\1/, "$1");
+        return `${file_path}:${match[2]}`;
+      }
+    }
+    return null;
+  }
   Validation_Error = class Validation_Error extends Error {
     constructor(message) {
       super(message);
@@ -3575,20 +3591,6 @@ var Logger = class {
       this.errors.push(`Error: ${message}.`);
     }
     throw err;
-  }
-  extract_location(stack) {
-    if (!stack) return null;
-    const lines = stack.split("\n");
-    for (const line of lines) {
-      const match = line.match(/(?:\(|\bat\s+)?(.*?):(\d+):(\d+)\)?/);
-      if (match) {
-        let file_path = match[1].replace(/\?.*$/, "");
-        file_path = file_path.replace(/^.*\/src\//, "modules/");
-        file_path = file_path.replace(/(\bmodules\b\/)\1/, "$1");
-        return `${file_path}:${match[2]}`;
-      }
-    }
-    return null;
   }
   warn(warn, line_num = null) {
     if (line_num || line_num === 0) {
@@ -3719,7 +3721,7 @@ var Escape_Mapper = class {
         if (reverse.has(char)) {
           return reverse.get(char);
         }
-        const placeholder = String.fromCharCode(57344 + this.counter);
+        const placeholder = `&[${this.counter}]`;
         reverse.set(char, placeholder);
         this.map.set(placeholder, char);
         this.counter++;
@@ -4078,7 +4080,7 @@ var Transform_Resolver = class {
     const [left = "", right = ""] = input.split("_", 2);
     return [left.trim(), right.trim()];
   }
-  // 🧱 Internal: Split input into top-level chunks
+  // Internal: Split input into top-level chunks
   split_top_level(str) {
     const chunks = [];
     let depth = 0;

@@ -108,23 +108,23 @@ export function collator(
    }
 
    function custom_compare(a: string, b: string): number {
-      const aTokens = tokenize(a).filter((t) => !invisible_set.has(t));
-      const bTokens = tokenize(b).filter((t) => !invisible_set.has(t));
+      const a_tokens = tokenize(a).filter((t) => !invisible_set.has(t));
+      const b_tokens = tokenize(b).filter((t) => !invisible_set.has(t));
 
-      for (let i = 0; i < Math.max(aTokens.length, bTokens.length); i++) {
-         const aTok = aTokens[i];
-         const bTok = bTokens[i];
-         if (aTok === undefined) return -1;
-         if (bTok === undefined) return 1;
+      for (let i = 0; i < Math.max(a_tokens.length, b_tokens.length); i++) {
+         const a_tok = a_tokens[i];
+         const b_tok = b_tokens[i];
+         if (a_tok === undefined) return -1;
+         if (b_tok === undefined) return 1;
 
-         const aIndex = order_map.get(aTok);
-         const bIndex = order_map.get(bTok);
+         const a_index = order_map.get(a_tok);
+         const b_index = order_map.get(b_tok);
 
-         if (aIndex === undefined) unknown_set.add(aTok);
-         if (bIndex === undefined) unknown_set.add(bTok);
+         if (a_index === undefined) unknown_set.add(a_tok);
+         if (b_index === undefined) unknown_set.add(b_tok);
 
-         if ((aIndex ?? Infinity) !== (bIndex ?? Infinity)) {
-            return (aIndex ?? Infinity) - (bIndex ?? Infinity);
+         if ((a_index ?? Infinity) !== (b_index ?? Infinity)) {
+            return (a_index ?? Infinity) - (b_index ?? Infinity);
          }
       }
 

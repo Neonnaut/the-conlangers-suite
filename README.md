@@ -55,9 +55,9 @@ Documentation lives online at [neonnaut.neocities.org/nesca_docs](neonnaut.neoci
 
 To build use `npm run build`. For live testing use `npm run dev-vocabug` or `npm run dev-nesca`.
 
-[1]: https://img.shields.io/npm/v/the_conlangers_suite
-[2]: https://www.npmjs.com/package/the_conlangers_suite "npm package"
-[3]: https://img.shields.io/npm/l/the_conlangers_suite
+[1]: https://img.shields.io/npm/v/the-conlangers-suite
+[2]: https://www.npmjs.com/package/the-conlangers-suite "npm package"
+[3]: https://img.shields.io/npm/l/the-conlangers-suite
 [4]: https://github.com/Neonnaut/the-conlangers-suite/blob/master/LICENSE "license text"
 [5]: https://img.shields.io/github/issues-raw/Neonnaut/the-conlangers-suite
 [6]: https://github.com/Neonnaut/the-conlangers-suite/issues "issues page"

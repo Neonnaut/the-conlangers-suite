@@ -348,7 +348,6 @@ class Parser {
             } else if (type === "output") {
                this.schema_output = { fields, delimiters };
             }
-            console.log(type, fields, delimiters);
          }
 
          // FEATURES
@@ -472,6 +471,11 @@ class Parser {
                   my_clusterfield_transform,
                );
                continue;
+            } else if (line === "<") {
+               this.logger.validation_error(
+                  `Feature-field header was empty`,
+                  this.file_line_num,
+               );
             } else if (line.startsWith("< ")) {
                if (my_wrapped_rule.length != 0) {
                   this.logger.validation_error(

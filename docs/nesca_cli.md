@@ -5,9 +5,9 @@
 Install globally via npm or yarn:
 
 ```bash
-npm install -g the_conlangers_suite
+npm install -g the-conlangers-suite
 # or
-yarn global add the_conlangers_suite
+yarn global add the-conlangers-suite
 ```
 
 Then envoke Nesca CLI with:

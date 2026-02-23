@@ -151,6 +151,10 @@ const xsampa_to_ipa_code_map: Record<string, number> = {
    _z: 842, // denasalisation [◌͊]
 };
 
+const sorted_xsampa_to_ipa_code_map = Object.keys(xsampa_to_ipa_code_map).sort(
+   (a, b) => b.length - a.length,
+);
+
 const ipa_code_map_to_xsampa: Record<number, string> = {
    595: "b_<", // voiced bilabial implosive [ɓ]
    599: "d_<", // voiced alveolar implosive [ɗ]
@@ -299,15 +303,12 @@ const ipa_code_map_to_xsampa: Record<number, string> = {
 };
 
 function xsampa_to_ipa(input: string) {
-   const tokens = Object.keys(xsampa_to_ipa_code_map).sort(
-      (a, b) => b.length - a.length,
-   );
    let result = "";
    let i = 0;
 
    while (i < input.length) {
       let matched = false;
-      for (const token of tokens) {
+      for (const token of sorted_xsampa_to_ipa_code_map) {
          if (input.startsWith(token, i)) {
             const code = xsampa_to_ipa_code_map[token];
             result += String.fromCharCode(code);
@@ -321,7 +322,6 @@ function xsampa_to_ipa(input: string) {
          i++;
       }
    }
-
    return result;
 }
 
@@ -333,7 +333,6 @@ function ipa_to_xsampa(ipa_in: string) {
       const xsampa = ipa_code_map_to_xsampa[code];
       result += xsampa !== undefined ? xsampa : ipa_in[i]; // fallback to original char
    }
-
    return result;
 }
 

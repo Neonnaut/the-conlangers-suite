@@ -148,12 +148,12 @@ class Category_Resolver {
          const tokens: (string | { group: string; weight: number })[] = [];
          let i = 0;
          let buffer = "";
-         // console.log(`🔍 Tokenizing expression: "${expr}"`);
+         // console.log(`Tokenizing expression: "${expr}"`);
 
          while (i < expr.length) {
             if (expr[i] === "{") {
                if (buffer.trim()) {
-                  // console.log(`🔹 Found literal token: "${buffer.trim()}"`);
+                  // console.log(`Found literal token: "${buffer.trim()}"`);
                   tokens.push(buffer.trim());
                   buffer = "";
                }
@@ -177,11 +177,11 @@ class Category_Resolver {
                   weight = parseFloat(w || "1");
                }
 
-               // console.log(`🔸 Found nested group: [${content}] with weight ${weight}`);
+               // console.log(`Found nested group: [${content}] with weight ${weight}`);
                tokens.push({ group: content, weight });
             } else if (/[,\s]/.test(expr[i])) {
                if (buffer.trim()) {
-                  // console.log(`🔹 Found literal token: "${buffer.trim()}"`);
+                  // console.log(`Found literal token: "${buffer.trim()}"`);
                   tokens.push(buffer.trim());
                   buffer = "";
                }
@@ -192,7 +192,7 @@ class Category_Resolver {
          }
 
          if (buffer.trim()) {
-            // console.log(`🔹 Found literal token at end: "${buffer.trim()}"`);
+            // console.log(`Found literal token at end: "${buffer.trim()}"`);
             tokens.push(buffer.trim());
          }
          return tokens;
@@ -200,7 +200,7 @@ class Category_Resolver {
 
       // Evaluate expression tree and assign weights recursively
       function evaluate(expr: string, multiplier = 1): Entry[] {
-         // console.log(`🔁 Evaluating expression: "${expr}" (multiplier=${multiplier})`);
+         // console.log(`Evaluating expression: "${expr}" (multiplier=${multiplier})`);
          const tokens = tokenize(expr);
 
          const uses_explicit_weights = tokens.some(
@@ -212,9 +212,9 @@ class Category_Resolver {
             : get_distribution(tokens.length, default_distribution);
 
          //if (uses_explicit_weights) {
-         // console.log(`📊 Explicit weights detected; using flat distribution`);
+         // console.log(`Explicit weights detected; using flat distribution`);
          //} else {
-         // console.log(`📊 No explicit weights; using distribution "${default_distribution}"`);
+         // console.log(`No explicit weights; using distribution "${default_distribution}"`);
          //}
 
          const entries: Entry[] = [];
@@ -234,10 +234,10 @@ class Category_Resolver {
                   ? literal_weight * multiplier
                   : token_weight;
 
-               // console.log(`🔹 Literal "${key.trim()}" → weight: ${final_weight}`);
+               // console.log(`Literal "${key.trim()}" → weight: ${final_weight}`);
                entries.push({ key: key.trim(), weight: final_weight });
             } else {
-               // console.log(`🔂 Recursing into nested group: "${token.group}" with weight ${token.weight}`);
+               // console.log(`Recursing into nested group: "${token.group}" with weight ${token.weight}`);
                const inner_entries = evaluate(token.group, 1);
                const total = inner_entries.reduce(
                   (sum, e) => sum + e.weight,
@@ -246,7 +246,7 @@ class Category_Resolver {
 
                for (const { key, weight } of inner_entries) {
                   const scaled = (weight / total) * token.weight * token_weight;
-                  // console.log(`  ↪ "${key}" scaled to ${scaled.toFixed(4)}`);
+                  // console.log(`"${key}" scaled to ${scaled.toFixed(4)}`);
                   entries.push({ key, weight: scaled });
                }
             }
@@ -256,7 +256,7 @@ class Category_Resolver {
       const evaluated = evaluate(input);
       const keys = evaluated.map((e) => e.key);
       const weights = evaluated.map((e) => e.weight);
-      // console.log(`🏁 Final result → Graphemes: ${keys.join(", ")} | Weights: ${weights.map(w => w.toFixed(4)).join(", ")}`);
+      // console.log(`Final result → Graphemes: ${keys.join(", ")} | Weights: ${weights.map(w => w.toFixed(4)).join(", ")}`);
       return { graphemes: keys, weights: weights };
    }
 

@@ -10,7 +10,6 @@ import {
 import type { Output_Mode } from "../utils/types";
 
 class Word_Builder {
-   //private logger: Logger;
    private escape_mapper: Escape_Mapper;
    private supra_builder: Supra_Builder;
    private categories: Map<string, { graphemes: string[]; weights: number[] }>;
@@ -19,7 +18,6 @@ class Word_Builder {
    private optionals_weight: number;
 
    constructor(
-      //logger: Logger,
       escape_mapper: Escape_Mapper,
       supra_builder: Supra_Builder,
       categories: Map<string, { graphemes: string[]; weights: number[] }>,
@@ -28,8 +26,6 @@ class Word_Builder {
       optionals_weight: number,
       output_mode: Output_Mode,
    ) {
-      //this.logger = logger;
-
       this.escape_mapper = escape_mapper;
       this.supra_builder = supra_builder;
       this.categories = categories;
@@ -110,7 +106,7 @@ class Word_Builder {
       let items: string[] = [];
       let outputs: [string[], number[]];
 
-      // console.log(`🔍 Starting with input: "${input_list}"`);
+      // console.log(`Starting with input: "${input_list}"`);
 
       // Resolve optional sets in round brackets based on weight
       while ((matches = input_list.match(round_pattern)) !== null) {
@@ -120,7 +116,7 @@ class Word_Builder {
             .split(/[,\s]+/)
             .filter(Boolean);
 
-         // console.log(`🌀 Found optional group: (${candidates.join(", ")})`);
+         // console.log(`Found optional group: (${candidates.join(", ")})`);
 
          const include = Math.random() * 100 < optionals_weight;
          // console.log(`🔸 Include group? ${include ? "Yes ✅" : "No ❌"} (weight=${optionals_weight}%)`);
@@ -130,18 +126,18 @@ class Word_Builder {
                c.includes("*"),
             );
             const dist_type = uses_explicit_weights ? "flat" : distribution;
-            // console.log(`📊 Resolving with distribution: ${dist_type}`);
+            // console.log(`Resolving with distribution: ${dist_type}`);
 
             outputs = this.extract_value_and_weight(candidates, dist_type);
             const selected = weighted_random_pick(outputs[0], outputs[1]);
-            // console.log(`🎯 Selected from optional: ${selected}`);
+            // console.log(`Selected from optional: ${selected}`);
             input_list = input_list.replace(group, selected);
          } else {
             input_list = input_list.replace(group, "");
-            // console.log(`🚫 Group excluded`);
+            // console.log(`Group excluded`);
          }
 
-         // console.log(`🔄 Updated input: "${input_list}"`);
+         // console.log(`Updated input: "${input_list}"`);
       }
 
       // Resolve nested sets in square brackets
@@ -152,29 +148,29 @@ class Word_Builder {
             .split(/[,\s]+/)
             .filter(Boolean);
 
-         // console.log(`🔧 Resolving nested set: [${items.join(", ")}]`);
+         // console.log(`Resolving nested set: [${items.join(", ")}]`);
 
          if (items.length === 0) {
             items = ["^"];
-            // console.log(`⚠️ Empty set, defaulting to '^'`);
+            // console.log(`Empty set, defaulting to '^'`);
          } else {
             const uses_explicit_weights = items.some((c) => c.includes("*"));
             const dist_type = uses_explicit_weights ? "flat" : distribution;
-            // console.log(`📊 Resolving with distribution: ${dist_type}`);
+            // console.log(`Resolving with distribution: ${dist_type}`);
 
             outputs = this.extract_value_and_weight(items, dist_type);
             const picked = weighted_random_pick(outputs[0], outputs[1]);
-            // console.log(`🎯 Selected from nested: ${picked}`);
+            // console.log(`Selected from nested: ${picked}`);
             items = [picked];
          }
 
          input_list = input_list.replace(most_nested, items[0]);
-         // console.log(`🔄 Updated input: "${input_list}"`);
+         // console.log(`Updated input: "${input_list}"`);
       }
 
       // Final resolution
       const final_pick = input_list;
-      // console.log(`🧮 Final token: ${final_pick}`);
+      // console.log(`Final token: ${final_pick}`);
 
       return final_pick;
    }
@@ -193,9 +189,7 @@ class Word_Builder {
 
       if (all_default_weights) {
          my_values = input_list;
-
          my_weights = get_distribution(input_list.length, default_distribution);
-
          return [my_values, my_weights];
       }
 

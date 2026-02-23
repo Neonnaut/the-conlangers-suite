@@ -89,7 +89,9 @@ class Escape_Mapper {
                if (reverse.has(char)) {
                   return reverse.get(char)!;
                }
-               const placeholder = String.fromCharCode(0xe000 + this.counter);
+               //const placeholder = String.fromCharCode(0xe000 + this.counter);
+               const placeholder = `&[${this.counter}]`;
+
                reverse.set(char, placeholder);
                this.map.set(placeholder, char); // Store the placeholder → original
                this.counter++;

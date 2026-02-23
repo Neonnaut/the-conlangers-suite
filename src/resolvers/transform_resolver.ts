@@ -289,7 +289,7 @@ class Transform_Resolver {
       return [left.trim(), right.trim()];
    }
 
-   // 🧱 Internal: Split input into top-level chunks
+   // Internal: Split input into top-level chunks
    split_top_level(str: string): string[] {
       const chunks: string[] = [];
       let depth = 0;
@@ -414,20 +414,20 @@ class Transform_Resolver {
    }
 
    resolve_alt_opt(input: string): string[][] {
-      // ⚙️ Internal: Check for bracket rules
+      // Internal: Check for bracket rules
 
-      // 🎯 Final: Resolve full input
+      // Final: Resolve full input
       const chunks = this.split_top_level(input);
       return chunks.map((chunk) => this.expand_chunk(chunk));
    }
 
    getTransformLengths<T>(target: T[][], result: T[][]): T[][] {
-      // 🔁 Surface level: Broadcast result if only one entry
+      // Surface level: Broadcast result if only one entry
       if (result.length === 1 && target.length > 1) {
          result = Array(target.length).fill(result[0]);
       }
 
-      // ❌ Surface length mismatch
+      // Surface length mismatch
       if (result.length !== target.length) {
          this.logger.validation_error(
             `Concurrent change length mismatch: target has ${target.length}, result has ${result.length}`,
@@ -438,12 +438,12 @@ class Transform_Resolver {
       return result.map((resItem, i) => {
          const target_item = target[i];
 
-         // 🔁 Nested level: Broadcast if only one element
+         // Nested level: Broadcast if only one element
          if (resItem.length === 1 && target_item.length > 1) {
             resItem = Array(target_item.length).fill(resItem[0]);
          }
 
-         // ❌ Nested length mismatch
+         // Nested length mismatch
          if (resItem.length !== target_item.length) {
             this.logger.validation_error(
                `Alternator / optionalator length mismatch at index ${i}: target has ${target_item.length}, result has ${resItem.length}`,
@@ -475,7 +475,6 @@ class Transform_Resolver {
 
             const expanded = entry.filter((g) => !g.includes("^")).join(", ");
 
-            // ----------------
             const isParenWrapped = this.check_bracket_context(
                input,
                i,
@@ -490,7 +489,6 @@ class Transform_Resolver {
             // top-level -> allowed
             output += `{${expanded}}`;
             continue;
-            // ---------------------------
          }
 
          // Default passthrough
@@ -518,7 +516,6 @@ class Transform_Resolver {
                   const resolved =
                      this.get_graphemes_from_matrix(feature_matrix);
 
-                  // ---------------------------
                   const isParenWrapped = this.check_bracket_context(
                      stream,
                      sq_start_index,
@@ -532,9 +529,7 @@ class Transform_Resolver {
                   }
                   output.push(`{${resolved}}`);
                   continue;
-                  // -----------------------------
                }
-
                feature_matrix = "";
                continue;
             }
@@ -544,7 +539,7 @@ class Transform_Resolver {
          }
 
          if (char === "[") {
-            sq_start_index = i; // ← RECORD START INDEX HERE
+            sq_start_index = i; // RECORD START INDEX HERE
 
             const next = stream[i + 1];
 
@@ -672,12 +667,12 @@ class Transform_Resolver {
       target: string[][],
       result: string[][],
    ): { target_array: string[][]; result_array: string[][] } {
-      // 🔁 Surface level: Broadcast result if only one entry
+      // Surface level: Broadcast result if only one entry
       if (result.length === 1 && target.length > 1) {
          result = Array(target.length).fill(result[0]);
       }
 
-      // ❌ Surface length mismatch
+      // Surface length mismatch
       if (result.length !== target.length) {
          this.logger.validation_error(
             `Concurrent change length mismatch: target has ${target.length}, result has ${result.length}`,
@@ -688,12 +683,12 @@ class Transform_Resolver {
       result = result.map((resItem, i) => {
          const target_item = target[i];
 
-         // 🔁 Nested level: Broadcast if only one element
+         // Nested level: Broadcast if only one element
          if (resItem.length === 1 && target_item.length > 1) {
             resItem = Array(target_item.length).fill(resItem[0]);
          }
 
-         // ❌ Nested length mismatch
+         // Nested length mismatch
          if (resItem.length !== target_item.length) {
             this.logger.validation_error(
                `An alternator / optionalator length mismatch occured: target has ${target_item.length}, result has ${resItem.length}`,

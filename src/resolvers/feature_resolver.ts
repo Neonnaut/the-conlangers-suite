@@ -125,7 +125,6 @@ class Feature_Resolver {
       for (const [key, value] of this.features) {
          features.push(`  ${key} = ${value.graphemes.join(", ")}`);
       }
-
       const info: string = `Features {\n` + features.join("\n") + `\n}`;
 
       this.logger.diagnostic(info);

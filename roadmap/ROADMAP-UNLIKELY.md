@@ -27,11 +27,11 @@ What would the purpose be. To print out the name and author in a preamble?
 
 This represents an almost idealist view on word generation.
 
-For example. In Japanese. You can generalise the syllable type as (C(y))V(F). But the forms you would get would be incorrect as the only vowels allowed after <y> is {u, o, a}.
+For example. In Japanese. You can generalise the syllable type as `(C(y))V(F)`. But the forms you would get would be incorrect as the only vowels allowed after `y` is `u, o, a`.
 
-Instead you could ensure that the only vowels allowed in the V pool are {u, o, a} WHEN <y> is before it.
+Instead you could ensure that the only vowels allowed in the V pool are `u, o, a` WHEN `y` is before it.
 
-This would ensure that if a the optional `y` appears, The only graphemes that would be in the pool for `V` would be `a,o,a`, avoiding a `yi` syllable inside word creation.
+This would ensure that if a the optional `y` appears, The only graphemes that would be in the pool for `V` would be `a,o,a`, avoiding a `yi` syllable inside word creation:
 
 `words: C(j->{u,o,a})V`
 
@@ -39,7 +39,7 @@ So the base of the arrow would be the hook, and the end of the arrow would be th
 
 This would also work backwards:
 
-For example in spanish, the only consonant + <r> clusters allowed are plosive + <r>
+For example in spanish, the only consonant + `r` clusters allowed are plosive + `r`
 
 `words: C({p,b,t,d,k,g}<-r)V`
 
@@ -50,10 +50,6 @@ Can tell a stage to reverse itself. So you could use words from a modern languag
 `@stage.reverse-sound-change`
 
 This would probably require special syntax such as 'undelete'
-
-## Escapes
-
-Right now, escape chars could interfere with PUA
 
 ## Rewrite program in Rust, Haskell, Python, Kotlin, Typescript
 

@@ -1,17 +1,17 @@
 {
-  "name": "the_conlangers_suite",
+  "name": "the-conlangers-suite",
   "version": "1.0.6",
   "type": "module",
-  "description": "Word / vocabulary generator program",
+  "description": "Vocabulary generator and sound change applier",
   "author": "Neonnaut",
   "license": "MIT",
   "homepage": "https://neonnaut.neocities.org/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Neonnaut/vocabug-ts.git"
+    "url": "git+https://github.com/Neonnaut/the-conlangers-suite.git"
   },
   "bugs": {
-    "url": "https://github.com/Neonnaut/vocabug-ts/issues"
+    "url": "https://github.com/Neonnaut/the-conlangers-suite/issues"
   },
   "keywords": [
     "conlang",

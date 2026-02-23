@@ -42,8 +42,6 @@ class Transformer {
    public stages: { transforms: Transform[]; name: string }[] = [];
    public substages: { transforms: Transform[]; name: string }[] = [];
 
-   //public transforms: Transform[];
-
    public graphemes: string[];
 
    public lettercase_mapper: Lettercase_Mapper;
@@ -63,7 +61,7 @@ class Transformer {
       lettercase_mapper: Lettercase_Mapper,
       chance_mapper: Chance_Mapper,
       syllable_boundaries: string[],
-      //transforms: Transform[],
+
       stages: { transforms: Transform[]; name: string }[],
       substages: { transforms: Transform[]; name: string }[],
 
@@ -78,7 +76,6 @@ class Transformer {
       this.associateme_mapper = associateme_mapper;
       this.debug = output_mode === "debug";
 
-      //this.transforms = transforms;
       this.stages = stages;
       this.substages = substages;
    }
@@ -745,7 +742,7 @@ class Transformer {
 
       const normalized = result_tokens;
 
-      // 🧾 Log transformation summary
+      // Log transformation summary
       if (applied_targets.length > 0) {
          let my_exceptions = "";
          for (const e of exceptions) {

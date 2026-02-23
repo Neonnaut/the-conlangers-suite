@@ -116,12 +116,6 @@ class Word {
       form: string,
       line_num: number,
    ): void {
-      // WORD:
-      // rejected, current_form, output_mode
-
-      // STEPS:
-      // transformation, form, line_num []
-
       this.steps.push({
          action: transformation,
          form: form,

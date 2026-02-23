@@ -1,16 +1,16 @@
 # Nesca API
 
-Install with `npm install the_conlangers_suite`, or `yarn add the_conlangers_suite` and import it with either:
+Install with `npm install the-conlangers-suite`, or `yarn add the-conlangers-suite` and import it with either:
 
 ```ts
-const the_conlangers_suite = require('the_conlangers_suite'); // CommonJS (Node.js)
+const the_conlangers_suite = require('the-conlangers-suite'); // CommonJS (Node.js)
 
-import the_conlangers_suite from 'the_conlangers_suite'; // ES modules
+import the_conlangers_suite from 'the-conlangers-suite'; // ES modules
 ```
 
 Below is a minimal use of the program:
 ```ts
-import the_conlangers_suite from 'the_conlangers_suite';
+import the_conlangers_suite from 'the-conlangers-suite';
 const text = "example"
 const def = the_conlangers_suite.nesca({
     file: text

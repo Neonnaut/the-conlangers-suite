@@ -1,3 +1,19 @@
+## Feature bundle
+
+```txt
+features:
+  +labial = m, b
+  
+  PLACE = velar, labial
+
+stage:
+  [+nasal] -> [+nasal, 2] / _[+plosive, 2=PLACE]
+  banpadamka ==> bampadaŋka
+
+```
+So that we are moving the feature-nodes of the consonant before the nasal to the nasal.
+
+
 ## Flags
 These are all a type of 'block'
 
@@ -5,7 +21,7 @@ These are all a type of 'block'
 <@right-to-left
 ```
 
-Word is changed from left to right
+Word is changed from right to left
 
 ```txt
 <@replace-once
@@ -85,21 +101,38 @@ auto-syllables:
   Coda = (F)
 
 paNapatta ==> paN.a.pat.ta
+
+kyokoko -> kyo.ko.ko
+kyokko -> kyok.ko
+kokyo -> kok.yo
+
+(C) (y) ::     V (V) :: (C)
+
+(C)     :: (y) V (V) :: (C)
+
+akyo
+
+nucleus prefered over onset
+
+
+1 =        V  (C)
+ 
+2 =        V
+
+3 =  C  y  V  (C)
+
+4 =  C  y  V  
+
+5 =  C     V  (C)
+ 
+6 =  C     V
+
+7 =        C
+
+paNapatta ==> paN.a.pat.ta
 ```
 notice that we did not get "pa.Na.pat.ta"
 
-## Feature bundle
-
-```txt
-features:
-  PLACE = velar, labial
-
-stage:
-  [+nasal] -> [+nasal, 2] / _[+consonant 2=PLACE]
-  banpadamka ==> bampadaŋka
-
-```
-So that we are moving the feature-nodes of the consonant before the nasal to the nasal.
 
 ## sub-stage
 
@@ -171,3 +204,9 @@ This would "skip" graphemes in the TARGET, CONDITION and EXCEPTION, like so:
   bat.ta ==> ba.da
 ; 'tt' becomes 'd'. Ignore any '.' between 't's
 ```
+
+## Underspecification
+
+Features in RESULT should be able to be underspecified, inherit features from TARGET.
+
+Associatemes, unmarked could be bases.

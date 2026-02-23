@@ -200,7 +200,7 @@
       <h2 id="chapAbout"><a class="head-num">1</a>About Vocabug</h2>
       <p>This is the complete documentation for <a href="./vocabug.html">Vocabug</a>, version <a class="VERSION">1.0.6</a>. Vocabug randomly generates vocabulary from a given definition of graphemes and word patterns. It can be used to generate words for a fictional language, original nicknames or passwords, or just for fun.</p>
 
-      <p>This word generator is designed to be a successor to the Williams' <a href="https://github.com/bbrk24/lexifer-ts">Lexifer</a> and to the legendary <a href="https://github.com/nai888/awkwords">Awkwords</a>. You can find Vocabug inside the repository <a href="https://github.com/Neonnaut/the-conlangers-suite">here</a>. You can also install Vocabug to be used in your own projects or as a command-line-interface <a href="https://www.npmjs.com/package/the_conlangers_suite">here</a>. If you would prefer a more typical user interface with simple syntax, please check out Vocabug-lite <a href="https://neonnaut.neocities.org/vocabug-lite">here</a>.</p>
+      <p>This word generator is designed to be a successor to the Williams' <a href="https://github.com/bbrk24/lexifer-ts">Lexifer</a> and to the legendary <a href="https://github.com/nai888/awkwords">Awkwords</a>. Vocabug is one of the applications belonging to <a href="https://github.com/Neonnaut/the-conlangers-suite">The Conlangers Suite</a>. You can also install Vocabug to be used in your own projects or as a command-line-interface <a href="https://www.npmjs.com/package/the-conlangers-suite">here</a>. If you would prefer a more typical user interface with simple syntax, please check out <a href="https://neonnaut.neocities.org/vocabug-lite">Vocabug-lite</a>.</p>
 
       <h2 id="chapInterface"><a class="head-num">2</a>Interface</h2>
       <ul class="paragraphian">
@@ -782,7 +782,6 @@
 <span class="directive">words</span><code class="link">:</code>
   <span class="regexp">([</span><span class="catkey">X</span><span class="regexp">]</span><span class="catkey">C</span><span class="catkey">V</span><span class="regexp">)[</span><span class="catkey">X</span><span class="regexp">]</span><span class="catkey">CV</span></div>
       <p>This produces any of the following words: <code class="example">'ta</code>, <code class="example">ta'ta</code>, <code class="example">'tata</code>, never any words with more than one <code class="example">'</code>. Notice here that <code class="example">ta</code> is not possible -- A supra-set item is only chosen after dealing with any sets that the supra-set items are nested in.</p>
-      <p>See the "Romance-like" example for a language that uses supra-set for its stress system.</p>
       
       <h4 id="chapSupraSetWeight"><a class="head-num">5.5.1</a>Supra-set weight</h4> 
       <p>You can set the weights of supra-set items like so:</p>
@@ -971,7 +970,7 @@
 <p>This is to say <code class="example">{Bz}v -> ^</code> is invalid.</p>
 
       <h2 id="chapFeatures"><a class="head-num">16</a>Features</h2>
-      <p>Let's say you had the grapheme, or rather, phoneme /i/ and wanted to capture it by its distinctive vowel features, <code class="example">+high</code>, <code class="example">-round</code> and <code class="example">+front</code>, and turn it into a phoneme marked with <code class="example">+high</code>, <code class="example">-round</code> and <code class="example">+back</code> features, perhaps /ɯ/. The features directive and feature matrices let you do this. The features can be described as binary and 'non-carryover'.</p>
+      <p>Let's say you had the grapheme, or rather, phoneme /i/ and wanted to capture it by its distinctive vowel features, <code class="example">+high</code>, <code class="example">-round</code> and <code class="example">+front</code>, and turn it into a phoneme marked with <code class="example">+high</code>, <code class="example">-round</code> and <code class="example">+back</code> features, perhaps /ɯ/. The features directive and feature matrices let you do this. The features can be described as binary and 'fully-specified'.</p>
       <p>The key of all features must consist of lowercase letters a to z, uppercase letters a to z, <code class="example">.</code>, <code class="example">-</code> or <code class="example">+</code></p>
 
       <h3 id="chapProFeature"><a class="head-num">16.1</a>Pro-feature</h3>
@@ -1100,7 +1099,7 @@ round  <code class='regexp'>-</code> <code class='regexp'>-</code> <code class='
       <p>Geminate-mark using colon <code class="example">:</code>, will duplicate the grapheme, or grapheme from a set or category, to the left of it. In other words, you can capture an item only when it is geminated using the geminate-mark:</p>
       <div class="prog-pre">  a<span class="regexp">:</span> <span class="link">-></span> o<br><code class="comment">; aaata => oata</code></div>
 
-      <p>Unlike quantifier, a geminate mark can be used in <code class="example">REPLACEMENT</code>:</p>
+      <p>A geminate mark can be used in <code class="example">REPLACEMENT</code>:</p>
 
       <div class="prog-pre">  a <span class="link">-></span> a<span class="regexp">:</span><br><code class="comment">; tat => taat</code></div>
 
@@ -1143,7 +1142,7 @@ round  <code class='regexp'>-</code> <code class='regexp'>-</code> <code class='
 
       <p><b>Negative lookahead, AKA 'cowardliness'</b>:</p>
 
-      <p>Sometimes it is necessary for graphemes to block the spread <i>without</i> having them be consumed, which I have dubbed 'cowardliness'. To do this put a pipe <code class="example">|</code> between the lazy and cowardly items. For example we might want the graphemes <code class="example">k</code> or <code class="example">g</code> to prevent the rightward spread of nasal vowels to non nasal vowels:</p>
+      <p>Sometimes it is necessary for graphemes to block the spread <i>without</i> having them be consumed, which I have dubbed 'cowardliness'. To do this put a pipe <code class="example">|</code> after the lazy items and list the cowardly items. For example we might want the graphemes <code class="example">k</code> or <code class="example">g</code> to prevent the rightward spread of nasal vowels to non nasal vowels:</p>
       
       <div class="prog-pre">  a<span class="link">,</span> i<span class="link">,</span> u <span class="link">-></span> ã<span class="link">,</span> ĩ<span class="link">,</span> ũ <span class="link">/</span> <span class="regexp">{</span>ã<span class="link">,</span> ĩ<span class="link">,</span> ũ<span class="regexp">}</span><span class="regexp">%[</span><span class="link">|</span> k<span class="link">,</span> g<span class="regexp">]</span><span class="link">_</span><br><span class="comment">; pabãdruliga ==> pabãdrũlĩga</span></div>
 
