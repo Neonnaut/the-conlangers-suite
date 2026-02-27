@@ -16,7 +16,7 @@ const def = the_conlangers_suite.vocabug({
     file: text
 });
 
-console.log(def.text);
+console.log(def.payload);
 console.log(def.warnings.join(", "));
 console.log(def.errors.join(", "));
 console.log(def.infos.join(", "));
@@ -38,7 +38,7 @@ type vocabug_options = {
 The properties of the return of `the_conlangers_suite.vocabug()` are:
 ```ts
 type vocabug_output = {
-    text: string; // The generated corpus of words.
+    payload: string; // The generated corpus of words.
     errors: string[]; // A list of errors that occurred, that terminated generation.
     warnings: string[]; // A list of warnings that occurred.
     infos: string[]; // Useful information about the generation run.

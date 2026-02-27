@@ -16,7 +16,7 @@ const def = the_conlangers_suite.nesca({
     file: text
 });
 
-console.log(def.text);
+console.log(def.payload);
 console.log(def.warnings.join(", "));
 console.log(def.errors.join(", "));
 console.log(def.infos.join(", "));
@@ -37,7 +37,7 @@ type Nesca_Options = {
 The properties of the return of `the_conlangers_suite.nesca()` are:
 ```ts
 type nesca_output = {
-    text: string; // The generated corpus of words.
+    payload: string; // The generated corpus of words.
     errors: string[]; // A list of errors that occurred, that terminated generation.
     warnings: string[]; // A list of warnings that occurred.
     infos: string[]; // Useful information about the generation run.

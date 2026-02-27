@@ -1,92 +1,94 @@
 {
-  "name": "the-conlangers-suite",
-  "version": "1.0.6",
-  "type": "module",
-  "description": "Vocabulary generator and sound change applier",
-  "author": "Neonnaut",
-  "license": "MIT",
-  "homepage": "https://neonnaut.neocities.org/",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Neonnaut/the-conlangers-suite.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Neonnaut/the-conlangers-suite/issues"
-  },
-  "keywords": [
-    "conlang",
-    "word generator",
-    "wordgen",
-    "words",
-    "vocabulary",
-    "vocabug",
-    "nesca",
-    "sound change applier"
-  ],
-  "scripts": {
-    "build": "node build.js",
+   "name": "the-conlangers-suite",
+   "version": "1.0.7",
+   "type": "module",
+   "description": "Vocabulary generator and sound change applier",
+   "author": "Neonnaut",
+   "license": "MIT",
+   "homepage": "https://neonnaut.neocities.org/",
+   "repository": {
+      "type": "git",
+      "url": "git+https://github.com/Neonnaut/the-conlangers-suite.git"
+   },
+   "bugs": {
+      "url": "https://github.com/Neonnaut/the-conlangers-suite/issues"
+   },
+   "keywords": [
+      "conlang",
+      "word generator",
+      "wordgen",
+      "words",
+      "vocabulary",
+      "vocabug",
+      "nesca",
+      "sound change applier"
+   ],
+   "scripts": {
+      "build": "node build.js",
 
-    "lint": "eslint ./ --fix",
-    "format": "prettier --write 'src/**/*.{ts,js,json,md}'",
-    "test": "vitest run",
-    "build:ts": "tsc && vite build",
-    "build:win": "tsc.cmd",
-    
-    "dev-vocabug": "vite --config app/vocabug/vite.config.ts",
-    "dev-nesca": "vite --config app/nesca/vite.config.ts",
+      "lint": "eslint ./ --fix",
+      "format": "prettier --write 'src/**/*.{ts,js,json,md}'",
+      "test": "vitest run",
+      "build:ts": "tsc && vite build",
+      "build:win": "tsc.cmd",
+      
+      "dev-vocabug": "vite --config app/vocabug/vite.config.ts",
+      "dev-nesca": "vite --config app/nesca/vite.config.ts",
 
-    "build:app-vocabug": "vite build --config app/vocabug/vite.config.js",
-    "build:app-nesca": "vite build --config app/nesca/vite.config.js",
+      "build:app-vocabug": "vite build --config app/vocabug/vite.config.js",
+      "build:app-nesca": "vite build --config app/nesca/vite.config.js",
 
-    "build:cli-vocabug": "tsup bin/vocabug/index.ts --format esm --no-dts minify --target node18 --out-dir bin/vocabug",
-    "build:cli-nesca": "tsup bin/nesca/index.ts --format esm --no-dts minify --target node18 --out-dir bin/nesca",
-    
-    "build:cm6-vocabug": "cd codemirror && npx rollup src/editor.ts -f iife -o ../app/vocabug/cm6.bundle.js -p @rollup/plugin-node-resolve -p @rollup/plugin-typescript --output.name cm6",
-    "build:cm6-nesca": "cd codemirror && npx rollup src/editor.ts -f iife -o ../app/nesca/cm6.bundle.js -p @rollup/plugin-node-resolve -p @rollup/plugin-typescript --output.name cm6"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.37.0",
-    "@types/node": "^24.0.12",
-    "@types/yargs": "^17.0.33",
-    "eslint": "^9.37.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
-    "eslint-plugin-unicorn": "^61.0.2",
-    "globals": "^16.4.0",
-    "jiti": "^2.6.1",
-    "prettier": "3.6.2",
-    "rollup": "^4.53.5",
-    "terser": "^5.44.0",
-    "tsup": "^8.5.1",
-    "typescript": "~5.8.3",
-    "typescript-eslint": "^8.46.0",
-    "vite": "^6.3.5",
-    "vite-plugin-banner": "^0.8.1",
-    "vite-plugin-dts": "^4.5.4",
-    "vitest": "^3.2.4"
-  },
-  "main": "./dist/vocabug.cjs.js",
-  "module": "./dist/vocabug.es.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/vocabug.es.js",
-      "require": "./dist/vocabug.cjs.js"
-    }
-  },
-  "files": [
-    "dist",
-    "LICENSE",
-    "README"
-  ],
-  "bin": {
-    "vocabug": "bin/index.js",
-    "nesca": "bin/index.js"
-  },
-  "dependencies": {
-    "@rollup/plugin-node-resolve": "^16.0.1",
-    "@typescript-eslint/eslint-plugin": "^8.46.0",
-    "yargs": "^18.0.0"
-  }
+      "build:cli-vocabug": "tsup bin/vocabug/index.ts --format esm --no-dts minify --target node18 --out-dir bin/vocabug",
+      "build:cli-nesca": "tsup bin/nesca/index.ts --format esm --no-dts minify --target node18 --out-dir bin/nesca",
+      
+      "build:cm6-vocabug": "cd codemirror && npx rollup src/editor.ts -f iife -o ../app/vocabug/cm6.bundle.js -p @rollup/plugin-node-resolve -p @rollup/plugin-typescript --output.name cm6",
+      "build:cm6-nesca": "cd codemirror && npx rollup src/editor.ts -f iife -o ../app/nesca/cm6.bundle.js -p @rollup/plugin-node-resolve -p @rollup/plugin-typescript --output.name cm6"
+   },
+   "devDependencies": {
+      "@eslint/eslintrc": "^3.3.1",
+      "@eslint/js": "^9.37.0",
+      "@types/node": "^24.0.12",
+      "@types/yargs": "^17.0.33",
+      "eslint": "^9.37.0",
+      "eslint-config-prettier": "^10.1.8",
+      "eslint-plugin-prettier": "^5.5.4",
+      "eslint-plugin-unicorn": "^61.0.2",
+      "globals": "^16.4.0",
+      "jiti": "^2.6.1",
+      "prettier": "3.6.2",
+      "rollup": "^4.53.5",
+      "terser": "^5.44.0",
+      "tsup": "^8.5.1",
+      "typescript": "~5.8.3",
+      "typescript-eslint": "^8.46.0",
+      "vite": "^6.3.5",
+      "vite-plugin-banner": "^0.8.1",
+      "vite-plugin-dts": "^4.5.4",
+      "vitest": "^3.2.4"
+   },
+   "main": "./dist/the-conlangers-suite.cjs.js",
+   "module": "./dist/the-conlangers-suite.es.js",
+   "types": "./dist/index.d.ts",
+   "exports": {
+      ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/the-conlangers-suite.es.js",
+      "require": "./dist/the-conlangers-suite.cjs.js"
+      }
+   },
+   "files": [
+      "dist",
+      "bin",
+      "LICENSE",
+      "README"
+   ],
+   "bin": {
+      "vocabug": "./bin/vocabug/index.js",
+      "nesca": "./bin/nesca/index.js"
+   },
+   "dependencies": {
+      "@rollup/plugin-node-resolve": "^16.0.1",
+      "@typescript-eslint/eslint-plugin": "^8.46.0",
+      "yargs": "^18.0.0"
+   }
 }

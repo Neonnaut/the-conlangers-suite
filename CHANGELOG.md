@@ -61,10 +61,14 @@
 ### Added
 - Schema directive for Nesca
 
-## [1.0.7] - 2026-FEB-23
+## [1.0.7] - 2026-FEB-25
 
 ### Modified
 
 - Better error message when clusterfield header is empty
 - Character escape no longer uses PUA, private use area.
-- In the docs, I described the feature system as "non-carryover", I have since learnt that the correct term is "fully-specified"
+- In the docs, I described the feature system as "non-carryover", I have since learnt that the correct term is "fully-specified" -- "non-inheriting"
+- The API was not set up right. Now it is.
+- The Vocabug CLI was not printing out the generated words. Now it does.
+- Renamed 'geminate-mark' back to 'ditto-mark' in the docs
+- Removed section about "kleene-stars" in the docs

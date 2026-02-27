@@ -9,53 +9,50 @@ import pkg from './package.json' with { type: 'json' };
 import dts from 'vite-plugin-dts';
 
 export default defineConfig({
-  plugins: [
-dts({
-  outDir: 'dist',
-
-  rollupTypes: true,           // 👈 flattens all types into index.d.ts
-  insertTypesEntry: true,      // adds `types` field to package.json
-  cleanVueFileName: true,      // optional: strips .vue suffixes if present
-  staticImport: false          // 👈 disables `import` statements in .d.ts
-}),
-
-    banner(`Program: ${pkg.name} -- version: ${pkg.version} -- license: ${pkg.license} -- author: ${pkg.author}\nRepository: ${pkg.repository.url}`)
-  ],
-  test: {
-    globals: true,
-    environment: 'node'
-  },
+   plugins: [
+      dts({
+         outDir: 'dist',
+         rollupTypes: true,           // flattens all types into index.d.ts
+         insertTypesEntry: true,      // adds `types` field to package.json
+         cleanVueFileName: true,      // strips .vue suffixes if present
+         staticImport: false          // disables `import` statements in .d.ts
+      }),
+      banner(`Program: ${pkg.name} -- version: ${pkg.version} -- license: ${pkg.license} -- author: ${pkg.author}\nRepository: ${pkg.repository.url}`)
+   ],
+   test: {
+      globals: true,
+      environment: 'node'
+   },
   
-  build: {
-  minify: 'terser',
-  outDir: 'dist',
-  lib: {
-    entry: resolve(__dirname, 'src/index.ts'),
-    name: 'vocabug',
-    formats: ['es', 'cjs'],
-    fileName: format => `vocabug.${format}.js`
-  },
-  rollupOptions: {
-    external: []
-  },
-  terserOptions: {
-    ecma: 2020,
-    compress: {
-      unsafe: true,
-      unsafe_symbols: true,
-      toplevel: true,
-      top_retain: ['generate-words', 'vocabug']
-    },
-    mangle: {
-      toplevel: true,
-      reserved: ['generate-words', 'vocabug']
-    },
-    format: {
-      wrap_func_args: false,
-      semicolons: false,
-      preamble: `/*! ${pkg.name} v${pkg.version} | ${pkg.license} */`
-    }
-  }
-}
-
+   build: {
+      minify: 'terser',
+      outDir: 'dist',
+      lib: {
+         entry: resolve(__dirname, 'src/index.ts'),
+         name: 'the-conlangers-suite',
+         formats: ['es', 'cjs'],
+         fileName: format => `the-conlangers-suite.${format}.js`
+      },
+      rollupOptions: {
+         external: []
+      },
+      terserOptions: {
+         ecma: 2020,
+         compress: {
+            unsafe: true,
+            unsafe_symbols: true,
+            toplevel: true,
+            top_retain: ['nesca', 'vocabug']
+         },
+         mangle: {
+            toplevel: true,
+            reserved: ['nesca', 'vocabug']
+         },
+         format: {
+            wrap_func_args: false,
+            semicolons: false,
+            preamble: `/*! ${pkg.name} v${pkg.version} | ${pkg.license} */`
+         }
+      }
+   }
 });

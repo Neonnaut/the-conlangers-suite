@@ -1,3 +1,5 @@
+# Features of the program unlikely to be worked on
+
 ## Positioner
 
 This feature exists in Geoff's Sound Changer. I do not think it is necessary, and I am already running out of special characters.
@@ -50,6 +52,10 @@ Can tell a stage to reverse itself. So you could use words from a modern languag
 `@stage.reverse-sound-change`
 
 This would probably require special syntax such as 'undelete'
+
+## Dollar sign units propagation
+
+With some kind of decorator on units, you would say that `$` is repeated a minimum and maximum amount of times.
 
 ## Rewrite program in Rust, Haskell, Python, Kotlin, Typescript
 

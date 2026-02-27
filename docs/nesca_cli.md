@@ -27,9 +27,9 @@ Show version number
 Output mode. `<mode>` must be `word-list`, `debug`, `old-to-new` or `paragraph` -- default is `word-list`
 - `--sort_words` or `-s`
 Sort generated words alphabetically. Default is true
-- `input_words` or `-iw`
+- `--input_words` or `-iw`
 Input words to transform
-- `input_divider` or `-id`
+- `--input_divider` or `-id`
 Input divider between words
 - `--output_divider` or `-od` and `<string>` 
 Divider or "delimeter" between words. Default of `<string>` in a space

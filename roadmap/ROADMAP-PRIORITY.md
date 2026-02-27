@@ -1,4 +1,6 @@
-## Feature bundle
+# Features of the program priority to be worked on
+
+## Alpha notation and Feature bundle
 
 ```txt
 features:
@@ -14,7 +16,7 @@ stage:
 So that we are moving the feature-nodes of the consonant before the nasal to the nasal.
 
 
-## Flags
+## Flags, propagation
 These are all a type of 'block'
 
 ```txt
@@ -185,7 +187,7 @@ words:
 
 For example:
 ```
-  ^ -> n / a_#a 
+  ^ -> n / a_##a 
 ; a elephant ==> an elephant
 ```
 

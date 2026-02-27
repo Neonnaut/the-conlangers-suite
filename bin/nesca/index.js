@@ -5167,7 +5167,7 @@ function nesca({
 }
 
 // src/utils/version.ts
-var VERSION = "1.0.6";
+var VERSION = "1.0.7";
 
 // bin/nesca/index.ts
 var encodings = [
@@ -5257,7 +5257,7 @@ try {
   for (const info of run.infos) {
     console.info(info);
   }
-  if (run.payload.length === 0) {
+  if (run.payload) {
     console.log(
       run.payload
     );

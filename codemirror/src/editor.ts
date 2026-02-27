@@ -4,7 +4,7 @@ import { indentWithTab, defaultKeymap, history, historyKeymap } from '@codemirro
 import { indentUnit, bracketMatching, LanguageSupport} from '@codemirror/language';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { EditorView, keymap, lineNumbers,
-    highlightActiveLineGutter, drawSelection, highlightActiveLine } from '@codemirror/view';
+   highlightActiveLineGutter, drawSelection, highlightActiveLine } from '@codemirror/view';
 
 // Themes
 import { xcodeLight, xcodeDark, xcodeWarm } from './dark-light';
@@ -18,60 +18,60 @@ import { stream } from './language';
 import { toolbar } from './toolbar';
 
 function createEditorState(initialContents:string, myTheme:string, app:string) {
-    const extensions = [
-        lineNumbers(),
-        highlightActiveLineGutter(),
-        history(),
-        drawSelection(),
-        indentUnit.of("  "),
-        EditorState.allowMultipleSelections.of(true),
-        bracketMatching(),
-        closeBrackets(),
-        highlightActiveLine(),
-        highlightSelectionMatches(),
-        keymap.of([
-            indentWithTab,
-            ...closeBracketsKeymap,
-            ...defaultKeymap,
-            ...historyKeymap,
-        ]),
-        new LanguageSupport(stream(app)),
-        themeConfig.of(themeIdentifier(myTheme)),
-        lineWrapConfig.of([]),
-        toolbar(app),
-    ];
+   const extensions = [
+      lineNumbers(),
+      highlightActiveLineGutter(),
+      history(),
+      drawSelection(),
+      indentUnit.of("  "),
+      EditorState.allowMultipleSelections.of(true),
+      bracketMatching(),
+      closeBrackets(),
+      highlightActiveLine(),
+      highlightSelectionMatches(),
+      keymap.of([
+         indentWithTab,
+         ...closeBracketsKeymap,
+         ...defaultKeymap,
+         ...historyKeymap,
+      ]),
+      new LanguageSupport(stream(app)),
+      themeConfig.of(themeIdentifier(myTheme)),
+      lineWrapConfig.of([]),
+      toolbar(app),
+   ];
 
-    return EditorState.create({
-        doc: initialContents,
-        extensions
-    });
+   return EditorState.create({
+      doc: initialContents,
+      extensions
+   });
 }
 
 function createEditorView(state:EditorState, parent:HTMLElement) {
-    return new EditorView({ state, parent });
+   return new EditorView({ state, parent });
 }
 
 function themeIdentifier(myTheme:string) {
-    switch (myTheme) {
-        case 'light': return xcodeLight;
-        case 'dark': return xcodeDark;
-        case 'warm': return xcodeWarm;
-        default: return xcodeLight;
-    }
+   switch (myTheme) {
+      case 'light': return xcodeLight;
+      case 'dark': return xcodeDark;
+      case 'warm': return xcodeWarm;
+      default: return xcodeLight;
+   }
 }
 
 function changeEditorTheme(myEditor:EditorView, myTheme:string) {
-    myEditor.dispatch({
-        effects: themeConfig.reconfigure(themeIdentifier(myTheme))
-    })
+   myEditor.dispatch({
+      effects: themeConfig.reconfigure(themeIdentifier(myTheme))
+   })
 }
 
 function changeEditorLineWrap(myEditor:EditorView, wrapping:boolean) {
-    myEditor.dispatch({
-        effects: [lineWrapConfig.reconfigure(
-            wrapping ? EditorView.lineWrapping : []
-        )]
-    })
+   myEditor.dispatch({
+      effects: [lineWrapConfig.reconfigure(
+         wrapping ? EditorView.lineWrapping : []
+      )]
+   })
 }
 
 export { createEditorState, createEditorView, changeEditorTheme, changeEditorLineWrap };

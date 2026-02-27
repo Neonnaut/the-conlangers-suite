@@ -1,4 +1,3 @@
-
 /**
  * @name Xcode
  */
@@ -8,296 +7,296 @@ import { createTheme, type CreateThemeOptions } from "@uiw/codemirror-themes";
 import { EditorView } from "codemirror";
 
 export const defaultSettingsXcodeDark: CreateThemeOptions["settings"] = {
-  background: "#23272e",
-  foreground: "#23272e",
-  gutterBackground: "#1e2227",
-  caret: "#ffffff",
-  selection: "#b4afff35",
-  selectionMatch: "#265906b8",
-  lineHighlight: "transparent",
+   background: "#23272e",
+   foreground: "#23272e",
+   gutterBackground: "#1e2227",
+   caret: "#ffffff",
+   selection: "#b4afff35",
+   selectionMatch: "#265906b8",
+   lineHighlight: "transparent"
 };
 
 const Darky = EditorView.theme({
-  "&": {
-    fontSize: "11pt",
-    color: "#eeeeeeff"
-  },
-  ".cm-gutters": {
-    color: "#777777",
-    minWidth: "25.6px",
-    userSelect: "none"
-  },
-  ".cm-gutter": {
-    minWidth: "100%"
-  },
-  ".cm-activeLineGutter": {
-    backgroundColor: "#ffffff14",
-    color: "#dddddd"
-  },
-  "&.cm-editor": {
-    colorScheme: "dark;",
-    border: "1px solid #555555;",
-    height: "100%;",
-    width: "100%;"
-  },
-  "&.cm-editor.cm-focused": {
-    outline: "none",
-    border: "1px dotted #3295a8;"
-  },
-  ".cm-matchingBracket, &.cm-editor.cm-focused .cm-matchingBracket": {
-    backgroundColor: "#00be6845", // Optional highlight background
-  },
-  "@media only screen and (max-width: 320px)": {
-    ".cm-gutters": {
-      display: "none!important"
-    }
-  }
+   "&": {
+      fontSize: "11pt",
+      color: "#eeeeeeff"
+   },
+   ".cm-gutters": {
+      color: "#777777",
+      minWidth: "25.6px",
+      userSelect: "none"
+   },
+   ".cm-gutter": {
+      minWidth: "100%"
+   },
+   ".cm-activeLineGutter": {
+      backgroundColor: "#ffffff14",
+      color: "#dddddd"
+   },
+   "&.cm-editor": {
+      colorScheme: "dark;",
+      border: "1px solid #555555;",
+      height: "100%;",
+      width: "100%;"
+   },
+   "&.cm-editor.cm-focused": {
+      outline: "none",
+      border: "1px dotted #3295a8;"
+   },
+   ".cm-matchingBracket, &.cm-editor.cm-focused .cm-matchingBracket": {
+      backgroundColor: "#00be6845", // Optional highlight background
+   },
+   "@media only screen and (max-width: 320px)": {
+      ".cm-gutters": {
+         display: "none!important"
+      }
+   }
 
 }, { dark: true });
 
 export const xcodeDarkStyle: CreateThemeOptions["styles"] = [
-  { tag: t.variableName, color: "#eeeeff" },
+   { tag: t.variableName, color: "#eeeeff" },
 
-  // Comment / GREEN / #
-  { tag: t.comment, color: "#b6ababff" },
+   // Comment / GREEN / #
+   { tag: t.comment, color: "#b6ababff" },
 
-  // Escape char / CREAM ON BLACK
-  { tag: t.escape, color: "#eeeeff", fontStyle: "italic" }, 
+   // Escape char / CREAM ON BLACK
+   { tag: t.escape, color: "#eeeeff", fontStyle: "italic" }, 
 
-  // Directive / RED / words: alphabet: etc.
-  { tag: [t.meta, t.name], color: "#ff7a7a" },
+   // Directive / RED / words: alphabet: etc.
+   { tag: [t.meta, t.name], color: "#ff7a7a" },
 
-  // LIGHT BLUE / commas, equals sign, colon
-  { tag: t.link, color: "#a6d3f7" , fontWeight: "bold" },
-  
-  // CYAN / 0, ->, +, -
-  { tag: t.operator, color: "#44ebd0ff" , fontWeight: "bold" },
+   // LIGHT BLUE / commas, equals sign, colon
+   { tag: t.link, color: "#a6d3f7" , fontWeight: "bold" },
+   
+   // CYAN / 0, ->, +, -
+   { tag: t.operator, color: "#44ebd0ff" , fontWeight: "bold" },
 
-  // PINK / #, +, *, (, {, [
-  { tag: t.regexp, color: "#eb8af0ff" },
+   // PINK / #, +, *, (, {, [
+   { tag: t.regexp, color: "#eb8af0ff" },
 
-  // ORANGE / Categories
-  { tag: t.tagName, color: "#f6be85ff" },
+   // ORANGE / Categories
+   { tag: t.tagName, color: "#f6be85ff" },
 
-  // Weights
-  { tag: t.strong, color: "#bee79d", fontStyle: "italic" },
+   // Weights
+   { tag: t.strong, color: "#bee79d", fontStyle: "italic" },
 
-  // distribution etc
-  { tag: t.attributeName, color: "#bee79d" },
+   // distribution etc
+   { tag: t.attributeName, color: "#bee79d" },
 
-  // + sign
-  { tag: t.bitwiseOperator, color: "#8eea7eff", fontstyle: "bold" },
+   // + sign
+   { tag: t.bitwiseOperator, color: "#8eea7eff", fontstyle: "bold" },
 
-  // - sign
-  { tag: t.processingInstruction, color: "#ea7eb9ff", fontstyle: "bold" }
+   // - sign
+   { tag: t.processingInstruction, color: "#ea7eb9ff", fontstyle: "bold" }
 ];
 
 export const xcodeDarkInit = (options?: Partial<CreateThemeOptions>) => {
-  const { theme = "dark", settings = {}, styles = [] } = options || {};
-  return createTheme({
-    theme: theme,
-    settings: {
-      ...defaultSettingsXcodeDark,
-      ...settings,
-    },
-    styles: [...xcodeDarkStyle, ...styles],
-  });
+   const { theme = "dark", settings = {}, styles = [] } = options || {};
+   return createTheme({
+      theme: theme,
+      settings: {
+         ...defaultSettingsXcodeDark,
+         ...settings,
+      },
+      styles: [...xcodeDarkStyle, ...styles],
+   });
 };
 
 export const defaultSettingsXcodeLight: CreateThemeOptions["settings"] = {
-  background: "#ffffff",
-  foreground: "#3d3d3d",
-  selection: "#d6ecffff",
-  selectionMatch: "#fae098",
-  gutterBackground: "#eee",
-  gutterForeground: "#afafaf",
-  lineHighlight: "transparent",
+   background: "#ffffff",
+   foreground: "#3d3d3d",
+   selection: "#d6ecffff",
+   selectionMatch: "#fae098",
+   gutterBackground: "#eee",
+   gutterForeground: "#afafaf",
+   lineHighlight: "transparent",
 };
 
 const Lighty = EditorView.theme({
-  "&": {
-    fontSize: "11pt",
-    color: "#000000"
-  },
-  ".cm-gutters": {
-    color: "#999999",
-    minWidth: "25.6px",
-    userSelect: "none"
-  },
-  ".cm-gutter": {
-    minWidth: "100%"
-  },
-  ".cm-activeLineGutter": {
-    backgroundColor: "#ffffff",
-    color: "#666666"
-  },
-  "&.cm-editor": {
-    border: "1px solid #aaaaaa;",
-    height: "100%;",
-    width: "100%;"
-  },
-  "&.cm-editor.cm-focused": {
-    outline: "none",
-    border: "1px dotted #001299;"
-  },
-  ".cm-matchingBracket, &.cm-editor.cm-focused .cm-matchingBracket": {
-    backgroundColor: "#00be681e", // Optional highlight background
-  },
-  "@media only screen and (max-width: 200px)": {
-    ".cm-gutters": {
-      display: "none!important"
-    }
-  }
+   "&": {
+      fontSize: "11pt",
+      color: "#000000"
+   },
+   ".cm-gutters": {
+      color: "#999999",
+      minWidth: "25.6px",
+      userSelect: "none"
+   },
+   ".cm-gutter": {
+      minWidth: "100%"
+   },
+   ".cm-activeLineGutter": {
+      backgroundColor: "#ffffff",
+      color: "#666666"
+   },
+   "&.cm-editor": {
+      border: "1px solid #aaaaaa;",
+      height: "100%;",
+      width: "100%;"
+   },
+   "&.cm-editor.cm-focused": {
+      outline: "none",
+      border: "1px dotted #001299;"
+   },
+   ".cm-matchingBracket, &.cm-editor.cm-focused .cm-matchingBracket": {
+      backgroundColor: "#00be681e", // Optional highlight background
+   },
+   "@media only screen and (max-width: 200px)": {
+      ".cm-gutters": {
+         display: "none!important"
+      }
+   }
 });
 
 export const xcodeLightStyle: CreateThemeOptions["styles"] = [
-  { tag: t.variableName, color: "#000000" },
+   { tag: t.variableName, color: "#000000" },
 
-  // Comment / GREEN / #
-  { tag: t.comment, color: "#7e7474ff"},
+   // Comment / GREEN / #
+   { tag: t.comment, color: "#7e7474ff"},
 
-  // Escape char / CREAM ON BLACK
-  { tag: t.escape, color: "#000000", backgroundColor:"#e8d9cc"}, 
+   // Escape char / CREAM ON BLACK
+   { tag: t.escape, color: "#000000", backgroundColor:"#e8d9cc"}, 
 
-  // Directive / RED / words: alphabet: etc.
-  { tag: [t.meta, t.name], color: "#a11c08ff" },
+   // Directive / RED / words: alphabet: etc.
+   { tag: [t.meta, t.name], color: "#a11c08ff" },
 
-  // LIGHT BLUE / commas, equals sign, colon
-  { tag: t.link, color: "#0066b9ff" , fontWeight: "bold" }, 
+   // LIGHT BLUE / commas, equals sign, colon
+   { tag: t.link, color: "#0066b9ff" , fontWeight: "bold" }, 
 
-  // CYAN / 0, ^
-  { tag: t.operator, color: "#16657fff", fontWeight: "bold"}, 
+   // CYAN / 0, ^
+   { tag: t.operator, color: "#16657fff", fontWeight: "bold"}, 
 
-  // PINK / #, +, *, (, {, [
-  { tag: t.regexp, color: "#8400b8ff" },
+   // PINK / #, +, *, (, {, [
+   { tag: t.regexp, color: "#8400b8ff" },
 
-  // ORANGE / Categories
-  { tag: t.tagName, color: "#7f5700ff" },
+   // ORANGE / Categories
+   { tag: t.tagName, color: "#7f5700ff" },
 
-  // Weights
-  { tag: t.strong, color: "#12770aff", fontStyle: "italic" },
+   // Weights
+   { tag: t.strong, color: "#12770aff", fontStyle: "italic" },
 
-  // distribution etc
-  { tag: t.attributeName, color: "#12770aff" },
+   // distribution etc
+   { tag: t.attributeName, color: "#12770aff" },
 
-  // + sign
-  { tag: t.bitwiseOperator, color: "#12770aff", fontstyle: "bold" },
+   // + sign
+   { tag: t.bitwiseOperator, color: "#12770aff", fontstyle: "bold" },
 
-  // - sign
-  { tag: t.processingInstruction, color: "#bb0067ff", fontstyle: "bold" }
+   // - sign
+   { tag: t.processingInstruction, color: "#bb0067ff", fontstyle: "bold" }
 
 ];
 
 export function xcodeLightInit(options?: Partial<CreateThemeOptions>) {
-  const { theme = "light", settings = {}, styles = [] } = options || {};
-  return createTheme({
-    theme: theme,
-    settings: {
-      ...defaultSettingsXcodeLight,
-      ...settings,
-    },
-    styles: [...xcodeLightStyle, ...styles],
-  });
+   const { theme = "light", settings = {}, styles = [] } = options || {};
+   return createTheme({
+      theme: theme,
+      settings: {
+         ...defaultSettingsXcodeLight,
+         ...settings,
+      },
+      styles: [...xcodeLightStyle, ...styles],
+   });
 }
 
 export const defaultSettingsXcodeWarm: CreateThemeOptions["settings"] = {
-  background: "#f5f5f5ff",
-  foreground: "#3d3d3d",
-  selection: "#d6ecffff",
-  selectionMatch: "#fae098",
-  gutterBackground: "#eae8e4ff",
-  gutterForeground: "#afafaf",
-  lineHighlight: "transparent",
+   background: "#f5f5f5ff",
+   foreground: "#3d3d3d",
+   selection: "#d6ecffff",
+   selectionMatch: "#fae098",
+   gutterBackground: "#eae8e4ff",
+   gutterForeground: "#afafaf",
+   lineHighlight: "transparent",
 };
 
 const Warmy = EditorView.theme({
-  "&": {
-    fontSize: "11pt",
-    color: "#181e20ff;"
-  },
-  ".cm-gutters": {
-    color: "#8f8f8fff",
-    minWidth: "25.6px",
-    userSelect: "none"
-  },
-  ".cm-gutter": {
-    minWidth: "100%"
-  },
-  ".cm-activeLineGutter": {
-    backgroundColor: "#ffffff",
-    color: "#666666"
-  },
-  "&.cm-editor": {
-    border: "1px solid #aaaaaa;",
-    height: "100%;",
-    width: "100%;"
-  },
-  "&.cm-editor.cm-focused": {
-    outline: "none",
-    border: "1px dotted #001299;"
-  },
-  ".cm-matchingBracket, &.cm-editor.cm-focused .cm-matchingBracket": {
-    backgroundColor: "#00be681e", // Optional highlight background
-  },
-  "@media only screen and (max-width: 320px)": {
-    ".cm-gutters": {
-      display: "none!important"
-    }
-  },
+   "&": {
+      fontSize: "11pt",
+      color: "#181e20ff;"
+   },
+   ".cm-gutters": {
+      color: "#8f8f8fff",
+      minWidth: "25.6px",
+      userSelect: "none"
+   },
+   ".cm-gutter": {
+      minWidth: "100%"
+   },
+   ".cm-activeLineGutter": {
+      backgroundColor: "#ffffff",
+      color: "#666666"
+   },
+   "&.cm-editor": {
+      border: "1px solid #aaaaaa;",
+      height: "100%;",
+      width: "100%;"
+   },
+   "&.cm-editor.cm-focused": {
+      outline: "none",
+      border: "1px dotted #001299;"
+   },
+   ".cm-matchingBracket, &.cm-editor.cm-focused .cm-matchingBracket": {
+      backgroundColor: "#00be681e", // Optional highlight background
+   },
+   "@media only screen and (max-width: 320px)": {
+      ".cm-gutters": {
+         display: "none!important"
+      }
+   },
 
-  ".cm-panel": {
-      backgroundColor: "#faf7f4ff"
-  }
+   ".cm-panel": {
+         backgroundColor: "#faf7f4ff"
+   }
 
 });
 
 export const xcodeWarmStyle: CreateThemeOptions["styles"] = [
-  { tag: t.variableName, color: "#000000" },
+   { tag: t.variableName, color: "#000000" },
 
-  // Comment / GREEN / #
-  { tag: t.comment, color: "#7e7474ff"},
+   // Comment / GREEN / #
+   { tag: t.comment, color: "#7e7474ff"},
 
-  // Escape char / CREAM ON BLACK
-  { tag: t.escape, color: "#000000", fontStyle: "italic" }, 
+   // Escape char / CREAM ON BLACK
+   { tag: t.escape, color: "#000000", fontStyle: "italic" }, 
 
-  // Directive / RED / words: alphabet: etc.
-  { tag: [t.meta, t.name], color: "#a11c08ff" },
+   // Directive / RED / words: alphabet: etc.
+   { tag: [t.meta, t.name], color: "#a11c08ff" },
 
-  // LIGHT BLUE / commas, equals sign, colon
-  { tag: t.link, color: "#0066b9ff" , fontWeight: "bold" }, 
+   // LIGHT BLUE / commas, equals sign, colon
+   { tag: t.link, color: "#0066b9ff" , fontWeight: "bold" }, 
 
-  // CYAN / 0, ->, +, -
-  { tag: t.operator, color: "#16657fff", fontWeight: "bold"}, 
+   // CYAN / 0, ->, +, -
+   { tag: t.operator, color: "#16657fff", fontWeight: "bold"}, 
 
-  // PINK / #, +, *, (, {, [
-  { tag: t.regexp, color: "#8400b8ff" },
+   // PINK / #, +, *, (, {, [
+   { tag: t.regexp, color: "#8400b8ff" },
 
-  // ORANGE / Categories
-  { tag: t.tagName, color: "#b07c0bff" },
+   // ORANGE / Categories
+   { tag: t.tagName, color: "#b07c0bff" },
 
-  // Weights
-  { tag: t.strong, color: "#338f2cff", fontStyle: "italic" },
+   // Weights
+   { tag: t.strong, color: "#338f2cff", fontStyle: "italic" },
 
-  // distribution etc
-  { tag: t.attributeName, color: "#338f2cff" },
+   // distribution etc
+   { tag: t.attributeName, color: "#338f2cff" },
 
-  // + sign
-  { tag: t.bitwiseOperator, color: "#338f2cff", fontstyle: "bold" },
+   // + sign
+   { tag: t.bitwiseOperator, color: "#338f2cff", fontstyle: "bold" },
 
-  // - sign
-  { tag: t.processingInstruction, color: "#bb0067ff", fontstyle: "bold" }
+   // - sign
+   { tag: t.processingInstruction, color: "#bb0067ff", fontstyle: "bold" }
 ];
 
 export function xcodeWarmInit(options?: Partial<CreateThemeOptions>) {
-  const { theme = "light", settings = {}, styles = [] } = options || {};
-  return createTheme({
-    theme: theme,
-    settings: {
-      ...defaultSettingsXcodeWarm,
-      ...settings,
-    },
-    styles: [...xcodeWarmStyle, ...styles],
-  });
+   const { theme = "light", settings = {}, styles = [] } = options || {};
+   return createTheme({
+      theme: theme,
+      settings: {
+         ...defaultSettingsXcodeWarm,
+         ...settings,
+      },
+      styles: [...xcodeWarmStyle, ...styles],
+   });
 }
 
 export const xcodeLight = [Lighty, xcodeLightInit()];

@@ -6,15 +6,14 @@ const my_xsampa = "b b_< c d d_< d` e f g g_< h h\\ i j j\\ k l l\\ l` m n n` o 
 const my_ipa = "b ɓ c d ɗ ɖ e f g ɠ h ɦ i j ʝ k l ɺ ɭ m n ɳ o p ɸ q r ɹ ɻ ɽ s ɕ ʂ t ʈ u v ʋ w x ɧ y z ʑ ʐ ɑ β ʙ ç ð ɛ ɱ ɣ ɢ ʛ ɥ ʜ ɪ ɲ ɟ ʄ ɬ ɮ ʎ ʟ ɯ ɰ ŋ ɴ ɔ ʘ ʋ ɒ ʁ ʀ ʃ θ ʊ ʌ ʍ χ ħ ʏ ʒ . ˈ◌ ˌ◌ ◌ʲ ◌ː ◌ˑ ə ɘ ɚ æ ʉ ɨ ø ɜ ɞ ɾ ɫ ɐ ɤ ɵ œ ɶ ʔ ʕ ʢ ʡ ꜛ ꜜ ǃ | ǀ ‖ ǁ ǂ ‿ ◌̈ ◌̟ ◌̠ ◌̥ ◌̩ ◌ʼ ◌ˤ ◌̯ ◌̚ ◌˞ ◌̃ ◌̩ ◌̃ ◌̘ ◌̺ ◌̏ ◌᷆ ◌̜ ◌̪ ◌̴ ↘ ◌̂ ◌ˠ ◌́ ◌᷄ ◌ʰ ◌ʲ ◌̰ ◌̀ ◌ˡ ◌̄ ◌̻ ◌̼ ◌ⁿ ◌̹ ◌̞ ◌̙ ↗ ◌̌ ◌᷈ ◌̝ ◌̋ ◌̤ ◌̬ ◌ʷ ◌̆ ◌̽ ◌̂ ◌̌"
 
 /*test('ipa_to_xsampa', () => {
-  expect(
-    ipa_to_xsampa(my_ipa)).toBe(
-        my_xsampa
-    );
+   expect(
+      ipa_to_xsampa(my_ipa)).toBe(
+         my_xsampa
+      );
 });*/
 
-test('xsampa_to_ipa', () => {
-  expect(
-    xsampa_to_ipa(my_xsampa)).toBe(
-        my_ipa
-    );
+test('xsampa_to_ipa', () => { expect(
+   xsampa_to_ipa(my_xsampa)).toBe(
+      my_ipa
+   );
 });

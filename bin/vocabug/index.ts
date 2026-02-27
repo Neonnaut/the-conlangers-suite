@@ -146,7 +146,7 @@ try {
    for (const info of run.infos) {
       console.info(info);
    }
-   if (run.payload.length === 0) {
+   if (run.payload) {
       console.log(
          run.payload
       );
