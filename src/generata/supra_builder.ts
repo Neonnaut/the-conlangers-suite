@@ -24,7 +24,7 @@ export class Supra_Builder {
          const match = valid_content_regex.exec(content);
          if (!match) {
             this.logger.validation_error(
-               `Invalid supra-set item '${fullMatch}' -- expected all supra-set items to look like '[A]', '[^]' or '[A*2]'`,
+               `Invalid supra-set item "${fullMatch}" -- expected all supra-set items to look like "[A]", "[^]" or "[A*2]"`,
                wordshape_line_num,
             );
          }
@@ -52,7 +52,7 @@ export class Supra_Builder {
          const id = Number(match[1]);
 
          if (!(id in this.letters) || !(id in this.weights)) {
-            this.logger.validation_error(`Missing data for ID '${id}'`, null);
+            this.logger.validation_error(`Missing data for ID "${id}"`, null);
          }
 
          ids.push(id.toString());
@@ -71,7 +71,7 @@ export class Supra_Builder {
          // Safety check
          if (!(id in this.letters)) {
             this.logger.validation_error(
-               `Unknown ID '${id}' found in input.`,
+               `Unknown ID "${id}" found in input`,
                null,
             );
          }

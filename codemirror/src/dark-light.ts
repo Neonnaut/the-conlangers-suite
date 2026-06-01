@@ -19,7 +19,8 @@ export const defaultSettingsXcodeDark: CreateThemeOptions["settings"] = {
 const Darky = EditorView.theme({
    "&": {
       fontSize: "11pt",
-      color: "#eeeeeeff"
+      color: "#eeeeeeff",
+      font:"'JetBrains Mono', monospace"
    },
    ".cm-gutters": {
       color: "#777777",

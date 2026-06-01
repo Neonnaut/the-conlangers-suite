@@ -10,12 +10,14 @@ npm install -g the-conlangers-suite
 yarn global add the-conlangers-suite
 ```
 
-Then envoke Nesca CLI with:
+## Usage
+
+The general syntax of the CLI is:
 ```
-nesca <path> [options]
+nesca <path> [options...]
 ```
 
-`<path>` is the required path to the input text file
+`<path>` is the required path to the definition file, typically a text file.
 
 Options:
 

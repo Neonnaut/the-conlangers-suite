@@ -257,6 +257,8 @@ window.addEventListener("load", () => {
    // Copy results button
    document.getElementById("nesca-copy")?.addEventListener("click", () => {
       const outputWordsField = document.getElementById("nesca-word-output") as HTMLTextAreaElement;
+      const copied_message = document.getElementById("copied-message") as HTMLDivElement;
+      let hideTimer = null;
       
       if (outputWordsField && outputWordsField.value !== "") {
          // Select text for deprecated way and aesthetics
@@ -269,24 +271,36 @@ window.addEventListener("load", () => {
          } else {
             navigator.clipboard.writeText(outputWordsField.value);
          }
+
+         copied_message.style.display = "block";
+         // Clear any previous timer
+         if (hideTimer) {
+            clearTimeout(hideTimer);
+         }
+
+         // Hide after 3 seconds
+         hideTimer = setTimeout(() => {
+            copied_message.style.display = "none";
+         }, 3000);
       }
    });
 
    // Clear button
-   const clearButton = document.getElementById("clear-editor") as HTMLButtonElement | null;
-   clearButton?.addEventListener("click", () => {
-      const confirmed = window.confirm("Clear ALL FIELDS?");
-      if (confirmed) {
-         editor.dispatch({
-            changes: {
-               from: 0,
-               to: editor.state.doc.length,
-               insert: ''
-            }
-         });
-         set_filename('');
-         clear_results();
-      }
+   document.querySelectorAll(".clear-editor")?.forEach(btn => {
+      btn.addEventListener("click", function () {
+         const confirmed = window.confirm("Clear EDITOR TEXT and INPUT WORDS?");
+         if (confirmed) {
+            editor.dispatch({
+               changes: {
+                  from: 0,
+                  to: editor.state.doc.length,
+                  insert: ''
+               }
+            });
+            set_filename('');
+            clear_results();
+         }
+      });
    });
 
    // Help button
@@ -471,6 +485,8 @@ window.addEventListener("load", () => {
       });
    });
 
+   // Output and input pane resiizing
+
    const divider = document.getElementById("nesca-divider") as HTMLDivElement;
    const container = document.getElementById("nesca-container") as HTMLDivElement;
    const leftPane = container.children[0] as HTMLDivElement;
@@ -479,12 +495,10 @@ window.addEventListener("load", () => {
    divider.addEventListener("mousedown", () => {
       if (window.innerWidth < 600) return;
       isDragging = true;
-      document.body.style.cursor = "col-resize";
    });
    document.addEventListener("mouseup", () => {
       if (window.innerWidth < 600) return;
       isDragging = false;
-      document.body.style.cursor = "default";
    });
    document.addEventListener("mousemove", (e) => {
       if (window.innerWidth < 600) return;
@@ -494,7 +508,7 @@ window.addEventListener("load", () => {
       const newLeftWidth = e.clientX - rect.left;
 
       // Prevent collapsing
-      if (newLeftWidth < 190 || newLeftWidth > rect.width - 110) return;
+      if (newLeftWidth < 300 || newLeftWidth > rect.width - 120) return;
 
       leftPane.style.flex = "none";
       leftPane.style.width = newLeftWidth + "px";
@@ -511,20 +525,21 @@ window.addEventListener("load", () => {
       const leftWidth = leftPane.getBoundingClientRect().width;
 
       // Maximum allowed left width so right pane never collapses
-      const maxLeft = containerWidth - 110;
+      const maxLeft = containerWidth - 280;
 
       // If left pane is too wide for the new container size, shrink it
       if (leftWidth > maxLeft) {
-         leftPane.style.width = `190px`;
+         leftPane.style.width = `300px`;
          leftPane.style.flex = "none";
       }
 
       // If left pane is too small, enforce its minimum
-      if (leftWidth < 110) {
-         leftPane.style.width = `110px`;
+      if (leftWidth < 300) {
+         leftPane.style.width = `300px`;
          leftPane.style.flex = "none";
       }
    });
+   
 });
 
 function clear_results(): void {

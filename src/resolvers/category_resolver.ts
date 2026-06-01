@@ -51,13 +51,13 @@ class Category_Resolver {
       for (const [key, value] of this.category_pending) {
          if (!this.valid_category_brackets(value.content)) {
             this.logger.validation_error(
-               `Category '${key}' had missmatched brackets`,
+               `Category "${key}" had missmatched brackets`,
                value.line_num,
             );
          }
          if (!this.valid_category_weights(value.content)) {
             this.logger.validation_error(
-               `Category '${key}' had invalid weights -- expected weights to follow an item and look like '*NUMBER' followed by either ',', a bracket, or ' '`,
+               `Category "${key}" had invalid weights -- expected weights to follow an item and look like "*NUMBER" followed by either ",", a bracket, or " "`,
                value.line_num,
             );
          }

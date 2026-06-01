@@ -181,6 +181,7 @@ export type Directive =
    | "stage"
    | "letter-case-field"
    | "schema"
+   | "note"
    | "none";
 
 export const directive_check = [
@@ -211,6 +212,8 @@ export type Routine =
    | "hangul-to-latin"
    | "greek-to-latin"
    | "latin-to-greek"
+   | "cyrillic-to-latin"
+   | "latin-to-cyrillic"
    | "reverse";
 
 export const SYNTAX_CHARS = [

@@ -47,14 +47,14 @@ class Nesca_Grammar_Stream {
             return [{ type: "insertion", base: "^" }];
          } else {
             this.logger.validation_error(
-               `Unexpected character '${stream}' in mode '${mode}'`,
+               `Unexpected character "${stream}" in mode ${mode}`,
                line_num,
             );
          }
       } else if (stream === "0") {
          if (mode !== "RESULT") {
             this.logger.validation_error(
-               `Reject not allowed in '${mode}'`,
+               `Reject not allowed in ${mode}`,
                line_num,
             );
          }
@@ -74,7 +74,7 @@ class Nesca_Grammar_Stream {
          if (char === "%") {
             if (mode === "RESULT") {
                this.logger.validation_error(
-                  `Anythings-mark not allowed in '${mode}'`,
+                  `Anythings-mark not allowed in ${mode}`,
                   line_num,
                );
             }
@@ -90,7 +90,7 @@ class Nesca_Grammar_Stream {
 
             if (stream[look_ahead] !== "[") {
                this.logger.validation_error(
-                  `Expected '[' after '%' for anythings-mark`,
+                  `Expected "[" after "%" for anythings-mark`,
                   line_num,
                );
             } else {
@@ -173,7 +173,7 @@ class Nesca_Grammar_Stream {
          } else if (char === "*") {
             if (mode == "RESULT") {
                this.logger.validation_error(
-                  `Wildcard not allowed in '${mode}'`,
+                  `Wildcard not allowed in ${mode}`,
                   line_num,
                );
             }
@@ -182,13 +182,13 @@ class Nesca_Grammar_Stream {
          } else if (char == "#") {
             if (mode !== "BEFORE" && mode !== "AFTER") {
                this.logger.validation_error(
-                  `Word-boundary not allowed in '${mode}'`,
+                  `Word-boundary not allowed in ${mode}`,
                   line_num,
                );
             }
             if (i !== 0 && i + 1 !== stream.length) {
                this.logger.validation_error(
-                  `Hash must be at the start or end of '${mode}'`,
+                  `Hash must be at the start or end of ${mode}`,
                   line_num,
                );
             }
@@ -199,7 +199,7 @@ class Nesca_Grammar_Stream {
          } else if (char == "$") {
             if (mode !== "BEFORE" && mode !== "AFTER") {
                this.logger.validation_error(
-                  `Syllable-boundary not allowed in '${mode}'`,
+                  `Syllable-boundary not allowed in ${mode}`,
                   line_num,
                );
             }
@@ -217,7 +217,7 @@ class Nesca_Grammar_Stream {
             if (stream[look_ahead] === "T") {
                if (mode === "TARGET") {
                   this.logger.validation_error(
-                     `Target-mark not allowed in '${mode}'`,
+                     `Target-mark not allowed in ${mode}`,
                      line_num,
                   );
                }
@@ -226,7 +226,7 @@ class Nesca_Grammar_Stream {
             } else if (stream[look_ahead] === "M") {
                if (mode === "TARGET") {
                   this.logger.validation_error(
-                     `Metathesis-mark not allowed in '${mode}'`,
+                     `Metathesis-mark not allowed in "${mode}"`,
                      line_num,
                   );
                }
@@ -240,7 +240,7 @@ class Nesca_Grammar_Stream {
             } else if (stream[look_ahead] === "E") {
                if (mode !== "TARGET") {
                   this.logger.validation_error(
-                     `Empty-mark only allowed in 'TARGET'`,
+                     `Empty-mark only allowed in TARGET`,
                      line_num,
                   );
                }
@@ -259,7 +259,7 @@ class Nesca_Grammar_Stream {
                continue; // No modifiers allowed
             } else {
                this.logger.validation_error(
-                  `A 'T', 'M' or '=' did not follow '&' in '${mode}'`,
+                  `A "T", "M" or "=" did not follow "&" in ${mode}`,
                   line_num,
                );
             }
@@ -282,7 +282,7 @@ class Nesca_Grammar_Stream {
                continue; // No modifiers allowed
             } else {
                this.logger.validation_error(
-                  `Invalid reference capture syntax in '${mode}'`,
+                  `Invalid reference capture syntax in ${mode}`,
                   line_num,
                );
             }
@@ -290,7 +290,7 @@ class Nesca_Grammar_Stream {
             // It's a reference-mark
             if (mode === "TARGET") {
                this.logger.validation_error(
-                  "Reference-mark not allowed in 'TARGET'",
+                  "Reference-mark not allowed in TARGET",
                   line_num,
                );
             }
@@ -311,7 +311,7 @@ class Nesca_Grammar_Stream {
             SYNTAX_CHARS_AND_CARET.includes(char)
          ) {
             this.logger.validation_error(
-               `Unexpected syntax character '${char}' in ${mode}`,
+               `Unexpected syntax character "${char}" in ${mode}`,
                line_num,
             );
 
@@ -357,7 +357,7 @@ class Nesca_Grammar_Stream {
          } else if (stream[i] === "+") {
             if (mode === "RESULT") {
                this.logger.validation_error(
-                  `Quantifier not allowed in '${mode}'`,
+                  `Quantifier not allowed in ${mode}`,
                   line_num,
                );
             }
@@ -368,7 +368,7 @@ class Nesca_Grammar_Stream {
             let look_ahead = i + 1;
             if (stream[look_ahead] !== "[") {
                this.logger.validation_error(
-                  `Expected '[' after '?' for quantifier`,
+                  `Expected "[" after "?" for quantifier`,
                   line_num,
                );
             } else {
@@ -414,7 +414,7 @@ class Nesca_Grammar_Stream {
                   }
                   if (max === Infinity && mode === "RESULT") {
                      this.logger.validation_error(
-                        `In '${mode}', '${new_token.base}' cannot be reproduced an infinite amount of times`,
+                        `In ${mode}, "${new_token.base}" cannot be reproduced an infinite amount of times`,
                         line_num,
                      );
                   }
@@ -432,7 +432,7 @@ class Nesca_Grammar_Stream {
             if (new_token.max != Infinity) {
                if (new_token.min > new_token.max) {
                   this.logger.validation_error(
-                     `Invalid quantifier: min '${new_token.min}' cannot be greater than max '${new_token.max}'`,
+                     `Invalid quantifier: min "${new_token.min}" cannot be greater than max "${new_token.max}"`,
                      line_num,
                   );
                }
@@ -486,14 +486,14 @@ class Nesca_Grammar_Stream {
             return [{ type: "deletion", base: "^" }];
          } else {
             this.logger.validation_error(
-               `Unexpected character '${stream}' in mode '${mode}'`,
+               `Unexpected character "${stream}" in ${mode}`,
                line_num,
             );
          }
       } else if (stream === "0") {
          if (mode !== "RESULT") {
             this.logger.validation_error(
-               `Reject not allowed in '${mode}'`,
+               `Reject not allowed in ${mode}`,
                line_num,
             );
          }
@@ -511,7 +511,7 @@ class Nesca_Grammar_Stream {
 
          if (char === "^" || char === "0") {
             this.logger.validation_error(
-               `Unexpected character '${char}' in cluster-field`,
+               `Unexpected character "${char}" in cluster-field`,
                line_num,
             );
          }

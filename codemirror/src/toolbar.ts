@@ -1,28 +1,24 @@
 import { showPanel } from '@codemirror/view';
 
-function toolbar_func(app) {
+function toolbar_func(app:string) {
    const dom = document.createElement("div");
    dom.className = "cm-toolbar";
 
    const generate_btn = document.createElement("button");
-   generate_btn.textContent = app === "vocabug" ? "Generate" : "Apply";
+   generate_btn.innerHTML = app === "vocabug" ?
+      "<i class='fa fa-play'></i> Generate" : "<i class='fa fa-play'></i> Apply";
    generate_btn.classList.add("action-btn", "green-btn");
    dom.appendChild(generate_btn);
 
-   const clear_btn = document.createElement("button");
-   clear_btn.innerHTML = "<i class='fa fa-trash-can'></i>";
-   clear_btn.id = "clear-editor";
-   dom.appendChild(clear_btn);
-
    const config_btn = document.createElement("button");
-   config_btn.innerHTML = "<i class='fa fa-gear'></i>";
+   config_btn.innerHTML = "<i class='fa fa-gear'></i> Config";
    config_btn.onclick = () => window.location.href = '#config';
    dom.appendChild(config_btn);
 
-   const open_btn = document.createElement("button");
-   open_btn.innerHTML = "<i class='fa fa-folder'></i>";
-   open_btn.onclick = () => window.location.href = '#file-save-load';
-   dom.appendChild(open_btn);
+   const clear_btn = document.createElement("button");
+   clear_btn.innerHTML = "<i class='fa fa-trash-can'></i> Clear editor";
+   clear_btn.classList.add("clear-editor");
+   dom.appendChild(clear_btn);
 
    return { dom, top: false };
 }

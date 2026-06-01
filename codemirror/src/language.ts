@@ -26,7 +26,7 @@ const escapeRegex = /\\[^\s]|&\[(?:Space|Tab|Newline|Acute|DoubleAcute|Grave|Dou
 
 const routineRules = [
    {
-      token: "attributeName", regex: /(compose|decompose|capitalise|decapitalise|capitalize|decapitalize|to-uppercase|to-lowercase|xsampa-to-ipa|ipa-to-xsampa|latin-to-hangul|latin-to-hangeul|hangul-to-latin|hangeul-to-latin|greek-to-latin|latin-to-greek|reverse)/
+      token: "attributeName", regex: /(compose|decompose|capitalise|decapitalise|capitalize|decapitalize|to-uppercase|to-lowercase|xsampa-to-ipa|ipa-to-xsampa|latin-to-hangul|latin-to-hangeul|hangul-to-latin|hangeul-to-latin|greek-to-latin|latin-to-greek|cyrillic-to-latin|latin-to-cyrillic|reverse)/
    },
    { token: "link", regex: /=/ },
    { token: "meta", regex: />/}
@@ -117,7 +117,7 @@ const featureFieldRules = [
 ];
 
 type State = {
-   directive: ('none'|'decorator'|'categories'|'words'|'units'|'list'|'graphemes'|'stage'|'features'|'feature-field'|'letter-case-field'|'feature-field-header'|'schema'
+   directive: ('none'|'decorator'|'categories'|'words'|'units'|'list'|'graphemes'|'stage'|'features'|'feature-field'|'letter-case-field'|'feature-field-header'|'schema'|'note'
    );
    sub_directive: ('none'|'routine'|'cluster-block'|'chance');
    feature_matrix: boolean;
@@ -232,6 +232,12 @@ function parser(app: string): StreamParser<State> {
             // Stage
             if (stream.match(/(stage)(?=:\s*(?:;|$))/)) {
                state.directive = 'stage';
+               state.doIndent = true;
+               return "meta";
+            }
+            // Note
+            if (stream.match(/(note)(?=:\s*(?:;|$))/)) {
+               state.directive = 'note';
                state.doIndent = true;
                return "meta";
             }
@@ -609,6 +615,14 @@ function parser(app: string): StreamParser<State> {
                      return "tagName";
                   }
                }
+            }
+         }
+
+         // NOTE
+         if (state.directive == 'note') {
+            // match until the end of the line
+            if (stream.match(/.*/)) {
+               return "comment";
             }
          }
 

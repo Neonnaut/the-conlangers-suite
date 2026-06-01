@@ -3,8 +3,8 @@ const examples: { [key: string]: string } = {
 `; Anything after a semicolon is a comment until the end of the line.
 
 ; A Category is a group of graphemes assigned to a key.
-; By default, graphemes in a category furthest to the right
-; are picked more often than graphemes to the left.
+; By default, graphemes in a category furthest to the left
+; are picked more often than graphemes to the right.
 categories:
   C = {t*9, tr} n {k*13, kr} m r s {p*12, pr} ch h w y
   L = ee oo aa ii uu
@@ -29,9 +29,9 @@ graphemes:
 ; Vocabug uses 'transforms' to change words, or outright reject them.
 ; Transforms are all placed inside the 'stage' directive.
 stage:
-nn, nm, np, sh, ss -> ny, m, mp, s, s
-V: -> V / #_# ; Words that are a long vowel become short.
-yi -> 0 ; Remove words with <yi>
+  nn, nm, np, sh, ss -> ny, m, mp, s, s
+  V: -> V / #_# ; Words that are a long vowel become short.
+  yi -> 0 ; Remove words with <yi>
 
 ; Click the green 'Generate' button in the taskbar below to generate words!!
 ; Read the instructions linked above, or by clicking 'Help' in the taskbar below.`,
@@ -135,51 +135,58 @@ y -> ^ / sh_ / j_ / ch_
 
 ʀ -> ^ / #*_# ; Collapse long vowel words into short vowel words.
 
-Vʀ -> V: ; Get long vowels.`,
+Vʀ -> V: ; Get long vowels.
+
+note:
+  This gives a very Japanese-like words, however:
+  * The pitch accent is not represented here.
+  * /ɢn/ and /ɴV/ sequences are overrepresented.
+  * Where light syllable is (C)V, and heavy is (C){VF,Vʀ(F)}
+  the final two syllables should be least likely to be light + heavy
+  * And of course there is the nature of morphology and loanwords
+  that may complicate things
+  `,
   australian: 
-`; This does not represent a single Australian language, it does something
-; Australian looking. The glottal stop and lack of retroflex stops make it
-; not an 'average' Australian language word list, but not unusual.
+`note:
+  This does not represent a single Australian language, it does something
+  Australian looking. The glottal stop and lack of retroflex stops make it
+  not an 'average' Australian language word list, but not unusual.
 
-; CONSONANTS:
-; p t̪ t   č k ꞌ
-; m n̪ n   ň ŋ
-;     r ṛ y w
-;     l   ʎ
+  CONSONANTS:
+  p  t  ṭ  č  k
+  m  n  ṇ  ň  ŋ
+     l  ḷ  y  w
+     r  ṛ  
 
-; VOWELS:
-; i ii    u uu
-;   ee      oo
-; a aa ai
+  VOWELS:
+  i ii    u uu
+  e
+  a aa ai
 
-; <ʀ> is vowel length and <\`> is for coda-matching.
-; Words begin with <a> or a consonant that is not <l, r, ṛ, n̪>
-; No monosyllabic words. Disylabic words DON'T begin with <a>
-; Medial Singleton consonants are unrestricted.
-; There are intervocalic clusters.
-; Words end with <a, i, u> or <n, ň, l, r, ṛ>
+  Words begin with <a> or <k, p, m, w, ŋ>
+  No monosyllabic words. Disylabic words DON'T begin with <a>
+  Medial Singleton consonants are unrestricted.
+  There are intervocalic clusters.
+  Words end with <a, i, u> or <n, l, r, ṛ>
 
 categories:
 ; Initials:
-  I = k p m w č ŋ y t ň n ʎ t̪
-; Medials
-  C = k m ṛ l r n č p ŋ t ň t̪ w y {n̪*5 ʎ*5 ꞌ}
+  I = k p m w ŋ
 ; Clusters
-  X = lk rk ṛk ŋk ṛm lm rm ṛn lč rč ṛč ňč kp mp lp rp ṛp tp
-  Y = lŋ rŋ ṛŋ nt ṛt n̪t̪ lt̪ ln̪ n̪ꞌ t̪ꞌ
-  Z = ṛŋk ṛmp ṛnt ṛňč lŋk lmp lňč ln̪t̪ ṛŋk ṛmp ṛnt ṛňč rŋk rmp rňč
+  X = {mp nt ṇṭ nč ňč ŋk nk} {rp rč rk rm lk lp} {rm rň} {ḷp ḷṭ ḷk} {nm nň nŋ np}
+; Medials
+  C = k m ṛ l r w y n t č p ŋ ḷ ṭ ň X {g b d ṇ}
 ; Finals
   F = n l r ṛ 
 ; Vowels
-  V = a i u {oʀ eʀ aʀ iʀ uʀ ai}
-  W = a i u
+  V = a i u {aa*1 ii {uu e}} 
+  W = a i u e
 
 units:
   First = {IW*12, a}
   Di-first = IW
-  Clusters = {\`X*2,\`Y,\`Z}
-  Medial = {C*19, <Clusters>}V
-  Last = {C*22,<Clusters>}{W*11,VF}
+  Medial = CV
+  Last = C{W*11,VF}
 
 words:
   <First><Medial><Last>, <First><Medial><Medial><Last>,
@@ -187,20 +194,80 @@ words:
   <First><Medial><Medial><Medial><Medial><Last>
 
 graphemes:
-  t̪ č n̪ ň ṛ
+  t̪ č n̪ ň ṛ aa uu ii
 
 stage:
-i -> ^ / a_{\`,ꞌ,č,ŋ,ň,y,w,ʎ,ṛ} ; ʀestrict the occurance of <ai>
+  wu, yi -> u, i / #_
 
-ʀ -> ^ / _{\`,ꞌ} ; Long vowels are short before a cluster or <ꞌ>
+  {a,u}w{a,u,e}, {i,e}y{i,e} → u:, i: / C_C
 
-{y,ʎ}i(ʀ) wu(ʀ) -> 0 ; <yi>, <ʎi> and <wu> are rejected.
+  <  a  e  i  u
+  iy aa ii ii uu  
+  ey aa aa ai uu
+  >
 
-\` -> ^ ; Remove coda separator
+  e -> a / _# / #_
+  <@chance = 70%
+    e → i / _(C)i
+    e → u / _(C)u
+  >
+  <@chance = 70%
+    e -> u / j_
+    e -> a / w_
+  >
 
-*=1ʀ -> 11 ; Yield long vowels
+  d -> ṛ / u_ / _u
+  b d g -> w t y
 
-r ṛ n̪ t̪ ň ʎ č ŋ -> rr r nh th ny ly j ng ; ʀomaniser`,
+  V?[3,] -> V:`,
+romance:
+`; This gives somewhat Spanish looking words 
+; Let's name this language "Espamogus"
+
+categories:
+  C = {t*9,tr} s ^ {k*12,kr*2,kl} {d*12,dr} n {p*12,pr*2,pl} l m r {b*9,br*2,bl} g h {č*12 f z}
+  V = a i o u e
+  F = n r l s m
+  X = n r l s
+  T = &[Acute]
+
+units:
+  $ = CV(F)
+  X = CV{[T*1]*9,[T*3]F} ; 3rd last syllable
+  Y = CV{[^*80]*9,[^*95]F} ; 2nd last syllable
+  Z = CV{[T*3]*10,[T*9]X} ; last syllable
+
+words:
+  <Y><Z> <X><Y><Z> <$><X><Y><Z> <$><$><X><Y><Z>
+
+stage:
+<routine = compose> ; Get stressed vowels
+{a,e,i,o,u}?[3,] -> {a,e,i,o,u} ; Vowels of 2+ length become 1
+áa,ée,íi,óo,úu -> á,é,í,ó,ú
+{a,e,o,u,á,é,í,ó,ú}V -> 0 / #_#
+
+; Enlace y Hiato
+<  a  e  i  o  u
+a  a  aj aj o  aw
+e  +  e  ej +  ew
+i  ja je i  jo ju
+o  +  e  oj o  ju
+u  wa we wi wo u
+>
+
+nj gj gn gl -> ň ň ň ʎ
+jg jn jj jl ww -> ň ň j ʎ w
+
+<  b  k  g  č  d  f  h  l  m  n  p  r  s  t  z  
+m  +  nk ng nč nd nf h  nl m  ň  +  r  +  nt nz 
+n  mb +  +  +  +  +  h  l  ň  ň  mp r  +  +  +  
+r  +  +  +  +  +  +  h  l  +  +  +  +  +  +  z  
+l  +  +  +  +  +  +  h  ʎ  +  ʎ  +  r  +  +  z
+s  +  +  +  +  +  f  h  +  +  +  +  +  s  +  z 
+>
+
+; Taco-taco, burrito-burrito
+č ň ʎ j w -> ch ñ ll i u`
 };
 
 export { examples };

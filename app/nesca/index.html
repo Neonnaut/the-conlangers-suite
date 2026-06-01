@@ -10,9 +10,14 @@
    <meta name="author" content="Neonnaut">
    <!-- Scripts and stylings -->
    <link href="style.css" rel="stylesheet" type="text/css" media="all">
+   <style>
+      #myNav, #content, footer {
+         max-width: 1000px;
+      }
+   </style>
    <script src="./cm6.bundle.js"></script>
    <!-- Fonts -->
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+   <script src="./font_awesome.js"></script>
    <!-- Icons -->
 </head>
 <body>
@@ -30,45 +35,42 @@
       <section id="top">
          <div>
             <img src="img/nesca.svg" alt="Logo of a spaceman" style="float: left;">
-            <h1 style="margin: 15px 0 10px 0; padding-top: 10px;">Nesca</h1>
+            <h1 style="margin: 15px 0 10px 0; padding-top: 10px;">Nesca SC</h1>
             <div style="padding-left: 5px;">
-               <b>Version <a class="VERSION">1.0.7</a></b><br>
+               <b>Version <a class="VERSION">1.0.8</a></b><br>
                <a href="./nesca_docs.html">Read the documentation here</a>
             </div>
          </div>
-
-         <br>
-         <p>Nesca, a "sound change applier", applies transformation rules to words to change them. It can be used for historical or fictional sound changes, to spell words differently, or to convert words to other alphabets.</p>
 
          <!-- Da-na-na-naaah! -->
          <div id="editor"></div>
             <script src="./index.ts" type="module"></script>
 
             <div id="nesca-container">
-            <div class="nesca-pane">
-               <h5 style="user-select: none;">Input</h5>
-               <textarea id="nesca-word-input" spellcheck="false" autocomplete="off" placeholder="Enter input words here" style="min-width: 180px;" rows="10"></textarea>
-               <div style="user-select: none;">
-                  <input class="styled-button action-btn" type="submit" value="Apply">
+               <div class="nesca-pane">
+                  <h5 style="user-select: none;">Input</h5>
+                  <textarea id="nesca-word-input" spellcheck="false" autocomplete="off" placeholder="Enter input words here" style="min-width: 180px;" rows="10"></textarea>
+                  <div style="user-select: none;">
+                     <button type="submit" class="styled-button action-btn"><i class="fa fa-play" style="padding-right: 2px;"></i>Apply</button>            
+                     <button type="submit" class="styled-button" id="nesca-help"><i class="fa fa-question"></i>Help</button>
+                     <button class="styled-button" type="submit" id='nesca-import-input'><i class="fa fa-file-import"></i> Import</button>
+                  </div>
                   
-                  <input class="styled-button" type="submit" id='nesca-help' value="Help">
-                  <button class="styled-button" type="submit" id='nesca-import-input'><i class="fa fa-file-import"></i></button>
+               </div>
+
+               <div id="nesca-divider"></div>
+
+               <div class="nesca-pane">
+                  <h5 style="user-select: none;">Output</h5>
+                  <textarea id="nesca-word-output" spellcheck="false" autocomplete="off" placeholder="Changed words will appear here" style="min-width: 100px;" rows="10"></textarea>
+                  <div style="user-select: none;">
+                     <button class="styled-button" type="submit" id='nesca-copy'><i class="fa fa-copy"></i></button>
+                     <button class="styled-button" type="submit" id='nesca-output-words-download'><i class="fa fa-download"></i></button>
+                  </div>
                </div>
             </div>
-
-            <div id="nesca-divider"></div>
-
-            <div class="nesca-pane">
-               <h5 style="user-select: none;">Output</h5>
-               <textarea id="nesca-word-output" spellcheck="false" autocomplete="off" placeholder="Changed words will appear here" style="min-width: 100px;" rows="10"></textarea>
-            
-               <div style="user-select: none;">
-                  <button class="styled-button" type="submit" id='nesca-copy'><i class="fa fa-copy"></i></button>
-                  <button class="styled-button" type="submit" id='nesca-output-words-download'><i class="fa fa-download"></i></button>
-               </div>
-            </div>
-         </div>
-         <div id='prog-output-message' style="border: 2px solid #000;"><p class="grey-message">Information may be shown here...</p></div>
+            <div id='copied-message' style="padding-left: 5px; display: none;"><p>Words copied to the clipboard!</p></div>   
+            <div id='prog-output-message' style="border: 2px solid #000;"><p class="grey-message">Waiting for transforms to be applied to words...</p></div>
    
          <fieldset id="config" style="display: inline-block;">
             <legend>Config</legend>
@@ -91,6 +93,24 @@
             <label for="sort-words">Sort words</label><br>
          </fieldset><br>
 
+         <fieldset id="file-save-load" style="display: inline-block;">
+            <legend>File save / load</legend>
+
+            <label for="file-name">File name:</label>
+            <input type="text" autocomplete="off" id="file-name" placeholder="nesca" style="width: 130px"><br>
+            <button type="submit" class="styled-button" id="save-file"><i class="fa fa-save"></i>Save file</button>
+            <button type="submit" class="styled-button" id="load-file"><i class="fa fa-file-import"></i>Load file</button>
+            <button type="submit" class="styled-button clear-editor"><i class="fa fa-trash-can"></i>Clear editor</button>
+            <br>
+
+            <details class="dropdown-group">
+            <summary class="dropdown-btn"><i class="fa fa-caret-down"></i>Examples</summary>
+            <button class="dropdown-itm-btn nesca-example" value="default">Basic</button>
+            <button class="dropdown-itm-btn nesca-example" value="latin_to_portuguese">Latin to portuguese</button>
+            </details>
+
+         </fieldset><br>
+
          <fieldset style="display: inline-block;">
             <legend>Editor options</legend>
             <div style="float: left; display: inline; margin: 4px 10px 2px 0;">
@@ -105,30 +125,15 @@
             <br style="clear: left;">
 
             <details class="dropdown-group" id="colour-switch-field">
-               <summary class="dropdown-btn">Themes</summary>
+               <summary class="dropdown-btn"><i class="fa fa-caret-down"></i>Themes</summary>
+               <button class="dropdown-itm-btn" id="system-mode" value="System*" name="changeThemeButton">System</button>
                <button class="dropdown-itm-btn" id="light-mode" value="Light" name="changeThemeButton">Light</button>
                <button class="dropdown-itm-btn" id="warm-mode" value="Warm" name="changeThemeButton">Warm</button>
                <button class="dropdown-itm-btn" id="dark-mode" value="Dark" name="changeThemeButton">Dark</button>
-               <br>
-               <button class="dropdown-itm-btn" id="system-mode" value="System*" name="changeThemeButton">System</button>
             </details>
-         </fieldset><br>
-   
-         <fieldset id="file-save-load" style="display: inline-block;">
-            <legend>File save / load</legend>
-
-            <label for="file-name">File name:</label>
-            <input type="text" autocomplete="off" id="file-name" placeholder="nesca" style="width:102px"><br>
-            <input type="submit" class="styled-button" id="load-file" value="Load file">
-            <input type="submit" class="styled-button" id="save-file" value="Save file">
-            <br>
-
-            <details class="dropdown-group">
-            <summary class="dropdown-btn">Examples</summary>
-            <button class="dropdown-itm-btn nesca-example" value="default">Basic</button>
-            </details>
-
          </fieldset>
+   
+         
       </section>
 
       <section id="select-keyboard-section" style="display: none;">

@@ -81,7 +81,7 @@ class Feature_Resolver {
             }
             if (item.includes("^")) {
                this.logger.validation_error(
-                  `Invalid grapheme '${item}' has a misplaced caret`,
+                  `Invalid grapheme "${item}" has a misplaced caret`,
                   value.line_num,
                );
             }
@@ -91,7 +91,7 @@ class Feature_Resolver {
                item.startsWith(">")
             ) {
                this.logger.validation_error(
-                  `Referenced feature '${item}' not found`,
+                  `Referenced feature "${item}" not found`,
                   value.line_num,
                );
             }
@@ -104,7 +104,7 @@ class Feature_Resolver {
 
          if (x_filtered.length === 0) {
             this.logger.validation_error(
-               `Feature '${key}' had zero graphemes`,
+               `Feature "${key}" had zero graphemes`,
                value.line_num,
             );
          }

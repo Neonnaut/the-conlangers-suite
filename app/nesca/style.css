@@ -90,9 +90,9 @@ html {
    --li-marker: #616161;
    --drag-lines: #bbbbbb;
 
-   --active-bg: #1f1980;
+   --active-bg: #b51931;
    --active-text: #fff;
-   --select-bg: #3d36c4;
+   --select-bg: #a3154e;
    --select-text: #fff;
 
    --error-text: #8b0000;
@@ -187,7 +187,7 @@ html {
    /* CODE & BUTTON & TEXTBOX */
    --code-bg: #eedfdf;
    --code-text: #000;
-   --button-bg: #f7f3f5;
+   --button-bg: #eaeeff;
    --button-text: #073642;
    --select-border: #4c4c80;
 
@@ -349,7 +349,9 @@ li::marker { color: var(--li-marker) }
 li, blockquote, dl, dl dt, dl dd, figcaption,
 summary, address, legend, label { color: var(--text)}
 
-
+.fa {
+   color: var(--bold);
+}
 
 /*TABLES*/
 table {
@@ -551,7 +553,6 @@ fieldset {
 fieldset legend {
    font-weight: bold;
    padding: 0 2px;
-   user-select: none;
 }
 input[type='checkbox'], input[type='radio'], input[type='range'], progress {
    accent-color: var(--active-bg);
@@ -626,9 +627,7 @@ textarea {
 .fake-textbox:hover {
    cursor: auto;
 }
-.fa {
-   color: var(--bold);
-}
+
 .dropdown {
    display: inline-block;
    position: relative;
@@ -696,10 +695,8 @@ input:disabled {
 }
 
 .styled-button:active:not(:disabled), 
-.dropdown-btn:active:not(:disabled),
-.styled-button:active:not(:disabled) .fa, 
-.dropdown-btn:active:not(:disabled) .fa {
-   color: var(--select-text)!important;
+.dropdown-btn:active:not(:disabled) {
+   color: var(--select-text);
    background: var(--select-bg);
 }
 
@@ -712,7 +709,7 @@ textarea:disabled {
    color: var(--disabled-button-text);
 }
 .dropdown-btn {
-   width: 100px;
+   display: inline-block;
 }
 
 /* /// */
@@ -1192,6 +1189,8 @@ font-family: "Charis SIL", "Doulos SIL", Gentium, Arial, Serif;
       padding: 3px 8px 2px 8px;
       background: none;
       border: none;
+      color: var(--button-text);
+      user-select: none;
 }
 
 @media only screen and (min-width: 360px) {
@@ -1241,58 +1240,79 @@ font-family: "Charis SIL", "Doulos SIL", Gentium, Arial, Serif;
    flex-grow: 1;
    display: block;
 }
-.cm-content {
-   cursor: text !important;
+
+#clear-editor:hover {
+   background: #ba0038;
+   color: #fff;
+
+}
+
+details>summary::-webkit-details-marker {
+  display: none;
+}
+
+details>summary::marker {
+  display: none;
+  content: "";
 }
 
 
+@media only screen and (min-width: 570px) {
+
+}
 
 #nesca-divider {
-   display: none;
-   width: 6px;
-   cursor: col-resize;
-   background: repeating-linear-gradient(
-      to bottom,
-      var(--drag-lines),
-      var(--drag-lines) 4px,
-      transparent 4px,
-      transparent 8px
-   );
-   margin: 58px 2px 32px 2px;
+  display: none;
+  width: 6px;
+  cursor: col-resize;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--drag-lines),
+    var(--drag-lines) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  margin: 58px 2px 32px 2px;
 }
 
 .nesca-pane textarea {
-   width: 100%;
+  width: 100%;
 }
 
-@media only screen and (min-width: 550px) {
-   .cm-toolbar button {
-         padding: 2px 11px 2px 11px;
-   }
+@media only screen and (min-width: 600px) {
+       #nesca-container {
+        display: flex;
+        width: 100%;
+        height: 425px;
+    }
+    
+  .cm-toolbar button {
+      padding: 2px 11px 2px 11px;
+  }
 
-   #nesca-container {
-      display: flex;
-      width: 100%;
-      height: 425px;
+  #nesca-container {
+    display: flex;
+    width: 100%;
+    height: 425px;
 
-   }
+  }
 
-   .nesca-pane h5 {
-      text-align: center;
-   }
-   .nesca-pane textarea {
-      flex: 1;
-      resize: none;
-   }
+  .nesca-pane h5 {
+    text-align: center;
+  }
+  .nesca-pane textarea {
+    flex: 1;
+    resize: none;
+  }
 
-   #nesca-divider {
-      display:block;
-   }
+  #nesca-divider {
+    display:block;
+  }
 
-   .nesca-pane {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      box-sizing: border-box;
-   }
+  .nesca-pane {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    box-sizing: border-box;
+  }
 }

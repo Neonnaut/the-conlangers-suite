@@ -13,7 +13,7 @@
    <link href="../style.css" rel="stylesheet" type="text/css" media="all">
    <script src="./cm6.bundle.js"></script>
    <!-- Fonts -->
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+   <script src="./font_awesome.js"></script>
    <!-- Icons -->
 </head>
 <body>
@@ -37,7 +37,7 @@
             <h1 style="margin: 15px 0 10px 0; padding-top: 10px;">Vocabug</h1>
 
             <div style="padding-left: 5px;">
-               <b>Version <a class="VERSION">1.0.7</a></b><br>
+               <b>Version <a class="VERSION">1.0.8</a></b><br>
                <a href="./vocabug_docs.html">Read the documentation here</a>
             </div>
          </div>
@@ -54,14 +54,16 @@
    
             <textarea data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" rows="6" id='voc-output-words-field' spellcheck='false' placeholder="Generated words will be shown here..."></textarea><br>
             
-            <input type="submit" class="styled-button action-btn" value="Generate">            
-            <input type="submit" class="styled-button" id="help-button" value="Help">
+            <button type="submit" class="styled-button action-btn"><i class="fa fa-play" style="padding-right: 2px;"></i>Generate</button>            
+            <button type="submit" class="styled-button" id="help-button"><i class="fa fa-question"></i>Help</button>
 
             <button class="styled-button" id="output-words-copy"><i class="fa fa-copy"></i></button>
 
             <button class="styled-button" id="output-words-download"><i class="fa fa-download"></i></button>
+
+            <div id='copied-message' style="padding-left: 5px; display: none;"><p>Words copied to the clipboard!</p></div>
             
-            <div id='prog-output-message' style="border: 2px solid #000;"><p class="grey-message">Information may be shown here...</p></div>
+            <div id='prog-output-message' style="border: 2px solid #000;"><p class="grey-message">Waiting for words to be generated...</p></div>
       
             <fieldset style="float: left;" id="config">
                <legend>Config</legend>
@@ -101,6 +103,26 @@
             </fieldset>
             <div style="clear: left;"></div>
 
+            <fieldset id="file-save-load" style="float: left;">
+               <legend>File save / load</legend>
+   
+               <label for="file-name">File name:</label>
+               <input type="text" autocomplete="off" id="file-name" placeholder="vocabug" style="width:132px"><br>
+               <button type="submit" class="styled-button" id="save-file"><i class="fa fa-save"></i>Save file</button>
+               <button type="submit" class="styled-button" id="load-file"><i class="fa fa-file-import"></i>Load file</button>
+               <button type="submit" class="styled-button clear-editor"><i class="fa fa-trash-can"></i>Clear editor</button>
+               <br>
+
+               <details class="dropdown-group">
+                  <summary class="dropdown-btn"><i class="fa fa-caret-down"></i>Examples</summary>
+                  <button class="dropdown-itm-btn voc-example" value="default">Default</button>
+                  <button class="dropdown-itm-btn voc-example" value="japanese">Japanese-like</button>
+                  <button class="dropdown-itm-btn voc-example" value="tonal">Tonal</button>
+                  <button class="dropdown-itm-btn voc-example" value="australian">Australian-like</button>
+                  <button class="dropdown-itm-btn voc-example" value="romance">Romance-like</button>
+               </details>
+            </fieldset>
+            <br style="clear: left;">
 
             <fieldset style="float: left;">
                   <legend>Editor options</legend>
@@ -116,37 +138,16 @@
                   <br style="clear: left;">
 
                   <details class="dropdown-group" id="colour-switch-field">
-                     <summary class="dropdown-btn">Themes</summary>
+                     <summary class="dropdown-btn"><i class="fa fa-caret-down"></i>Themes</summary>
+                     <button class="dropdown-itm-btn" id="system-mode" value="System*" name="changeThemeButton">System</button>
                      <button class="dropdown-itm-btn" id="light-mode" value="Light" name="changeThemeButton">Light</button>
                      <button class="dropdown-itm-btn" id="warm-mode" value="Warm" name="changeThemeButton">Warm</button>
                      <button class="dropdown-itm-btn" id="dark-mode" value="Dark" name="changeThemeButton">Dark</button>
-                     <br>
-                     <button class="dropdown-itm-btn" id="system-mode" value="System*" name="changeThemeButton">System</button>
                   </details>
 
             </fieldset>
             <br style="clear: left;">
    
-            <fieldset id="file-save-load" style="float: left;">
-               <legend>File save / load</legend>
-   
-               <label for="file-name">File name:</label>
-               <input type="text" autocomplete="off" id="file-name" placeholder="vocabug" style="width:102px"><br>
-               <input type="submit" class="styled-button" id="load-file" value="Load file">
-               <input type="submit" class="styled-button" id="save-file" value="Save file">
-               <br>
-
-               <details class="dropdown-group">
-                  <summary class="dropdown-btn">Examples</summary>
-                  <button class="dropdown-itm-btn voc-example" value="default">Default</button>
-                  <button class="dropdown-itm-btn voc-example" value="japanese">Japanese-like</button><br>
-                  <button class="dropdown-itm-btn voc-example" value="tonal">Tonal</button>
-                  <button class="dropdown-itm-btn voc-example" value="australian">Australian-like</button>
-               </details>
-
-            </fieldset>
-            <br style="clear: left;">
-
          </section>
          
 

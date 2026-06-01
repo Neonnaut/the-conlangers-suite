@@ -224,20 +224,38 @@ class Word_Bank {
    }
 
    show_debug(): void {
-      const info: string =
-         `~ CREATING TEXT ~\n` +
-         `\nNum of words: ` +
+      const option_info: string =
+         `Options {` +
+         `\n  Number of words: ` +
          this.words.length +
+         `\n  Output mode: ` +
+         this.output_mode +
+         `\n  Sort words: ` +
+         this.sort_words +
+         `\n  Output divider: "` +
+         this.output_divider +
+         `"` +
+         `\n}`;
+
+      this.logger.diagnostic(option_info);
+
+      const info: string =
          `\nSchema {\n` +
          `  input fields = "${this.schema_input.fields.join('", "')}"\n` +
          `  input delimiters = "${this.schema_input.delimiters.join('", "')}"\n` +
          `  output fields = "${this.schema_output.fields.join('", "')}"\n` +
          `  output delimiters = "${this.schema_output.delimiters.join('", "')}"\n` +
-         `}\n` +
-         `\nMode: ` +
-         this.output_mode;
-
+         `}\n`;
       this.logger.diagnostic(info);
+
+      const sort_info: string =
+         `Collator {` +
+         `\n  Alphabet: ` +
+         this.alphabet.join(", ") +
+         `\n  Invisible: ` +
+         this.invisible.join(", ") +
+         `\n}`;
+      this.logger.diagnostic(sort_info);
    }
 }
 

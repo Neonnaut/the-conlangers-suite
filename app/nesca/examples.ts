@@ -35,6 +35,32 @@ stage:
 ; except when a consonant before it is a voiced plosive.
   e -> ^ / _# / [+vowel](*)_ ! [+voiced, +plosive]_`,
  input_words: `bade\nbate\nkito\nsiəmuso\nnesca\nʔa`
+},
+latin_to_portuguese: {
+file:
+`; Latin to Portuguese sound changes
+; adapted from https://www.zompist.com/sca2.html
+
+categories:
+  V = a e i o u
+  L = ā ē ī ō ū
+  C = p t c q b d g m n l r j h f v s
+
+stage:
+  s, m -> ^ / _#
+  i -> j / _V
+  L -> V
+  e -> ^ / Vr_#
+  v -> ^ / V_V
+  u -> o /_#
+  gn -> nh
+  p, t, c -> b, d, g / V_V
+  c -> i / {i, e}_t
+  c -> u / {o u}_t
+  p -> ^ / V_t
+  ii -> i
+  e -> ^ / C_rV`,
+  input_words: `lector\ndoctor\nfocus\njocus\ndistrictus\ncīvitatem\nadoptare\nopera\nsecundus\nfīliam\npōntem`
 }
 };
 

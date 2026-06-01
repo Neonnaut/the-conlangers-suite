@@ -72,3 +72,24 @@
 - The Vocabug CLI was not printing out the generated words. Now it does.
 - Renamed 'geminate-mark' back to 'ditto-mark' in the docs
 - Removed section about "kleene-stars" in the docs
+
+## [1.0.8] - 2026-JUN-01
+
+### Modified
+
+- Using the units or words directive with Nesca gives a warning instead of an error, and disables the directive. Using the schema directive with Vocabug gives a warning and disables the directive.
+- CLI now uses colours and the payload goes to stdout, while all other messages go to stderr
+- Minor CLI error message fixes
+- Formatting and spellcheck fixes for the docs and error messages
+- The web app UI has cosmetic changes
+- A typo on the "default" example of Vocabug had a typo where the words "left" and "right" were switched
+- Modified the "Australian-like" example in Vocabug
+- Modified the greek and hangul routines
+
+### Added
+
+- Added latin to portuguese example for Nesca
+- Added "note" directive. This directive behaves like a multi-line comment
+- Added Cyrillic to Latin routine
+- Added "Romance-like" example for Vocabug
+

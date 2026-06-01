@@ -251,6 +251,8 @@ window.addEventListener("load", () => {
    // Copy results button
    document.getElementById("output-words-copy")?.addEventListener("click", () => {
       const output_words_field = document.getElementById("voc-output-words-field") as HTMLTextAreaElement;
+      const copied_message = document.getElementById("copied-message") as HTMLDivElement;
+      let hideTimer = null;
       
       if (output_words_field && output_words_field.value !== "") {
          // Select text for deprecated way and aesthetics
@@ -263,6 +265,17 @@ window.addEventListener("load", () => {
          } else {
             navigator.clipboard.writeText(output_words_field.value);
          }
+
+         copied_message.style.display = "block";
+         // Clear any previous timer
+         if (hideTimer) {
+            clearTimeout(hideTimer);
+         }
+
+         // Hide after 3 seconds
+         hideTimer = setTimeout(() => {
+            copied_message.style.display = "none";
+         }, 3000);
       }
    });
 
@@ -294,21 +307,22 @@ window.addEventListener("load", () => {
       window.open("./vocabug_docs.html", "_blank");
    });
 
-   // Clear button
-   const clear_button = document.getElementById("clear-editor") as HTMLButtonElement | null;
-   clear_button?.addEventListener("click", () => {
-      const confirmed = window.confirm("Clear EDITOR TEXT and GENERATED WORDS?");
-      if (confirmed) {
-         editor.dispatch({
-            changes: {
-               from: 0,
-               to: editor.state.doc.length,
-               insert: ''
-            }
-         });
-         set_filename('');
-         clear_results();
-      }
+   // Clear buttons
+   document.querySelectorAll(".clear-editor")?.forEach(btn => {
+      btn.addEventListener("click", function () {
+         const confirmed = window.confirm("Clear EDITOR TEXT and GENERATED WORDS?");
+         if (confirmed) {
+            editor.dispatch({
+               changes: {
+                  from: 0,
+                  to: editor.state.doc.length,
+                  insert: ''
+               }
+            });
+            set_filename('');
+            clear_results();
+         }
+      });
    });
 
    // Wrap lines checkbox

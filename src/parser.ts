@@ -226,7 +226,7 @@ class Parser {
          if (temp_directive != "none") {
             if (my_subdirective != "none") {
                this.logger.validation_error(
-                  `${my_subdirective} was not closed before directive change`,
+                  `"${my_subdirective}" was not closed before directive change`,
                   this.file_line_num,
                );
             }
@@ -260,12 +260,17 @@ class Parser {
             );
          }
 
+         // NOTES
+         if (my_directive === "notes") {
+            continue; // Ignore notes
+         }
+
          // CATEGORIES
          if (my_directive === "categories") {
             const [key, field, valid] = this.get_cat_seg_fea(line, "category");
             if (!valid) {
                this.logger.validation_error(
-                  `${line} is not a category declaration`,
+                  `"${line}" is not a category declaration`,
                   this.file_line_num,
                );
             }
@@ -278,10 +283,12 @@ class Parser {
          // WORDS
          if (my_directive === "words") {
             if (this.app !== "vocabug") {
-               this.logger.validation_error(
+               this.logger.warn(
                   `Words directive is only valid in Vocabug`,
                   this.file_line_num,
                );
+               this.disable_directive = "p";
+               return;
             }
             if (!this.valid_words_brackets(line)) {
                this.logger.validation_error(
@@ -297,27 +304,29 @@ class Parser {
          // UNITS
          if (my_directive === "units") {
             if (this.app !== "vocabug") {
-               this.logger.validation_error(
-                  `Units directive is only valid in Vocabug`,
+               this.logger.warn(
+                  `Words directive is only valid in Vocabug`,
                   this.file_line_num,
                );
+               this.disable_directive = "p";
+               return;
             }
             const [key, field, valid] = this.get_cat_seg_fea(line, "unit");
             if (!valid) {
                this.logger.validation_error(
-                  `${line} is not a unit declaration`,
+                  `"${line}" is not a unit declaration`,
                   this.file_line_num,
                );
             }
             if (!this.validate_unit(field)) {
                this.logger.validation_error(
-                  `The unit '${key}' had separator(s) outside sets -- expected separators for units to appear only in sets`,
+                  `The unit "${key}" had separator(s) outside sets -- expected separators for units to appear only in sets`,
                   this.file_line_num,
                );
             }
             if (!this.valid_words_brackets(field)) {
                this.logger.validation_error(
-                  `The unit '${key}' had missmatched brackets`,
+                  `The unit "${key}" had missmatched brackets`,
                   this.file_line_num,
                );
             }
@@ -330,17 +339,19 @@ class Parser {
          // SCHEMA
          if (my_directive === "schema") {
             if (this.app === "vocabug") {
-               this.logger.validation_error(
+               this.logger.warn(
                   `Schema directive is not valid in Vocabug`,
                   this.file_line_num,
                );
+               this.disable_directive = "p";
+               return;
             }
 
             const [type, fields, delimiters] = this.get_schema(line);
             if (type === "input") {
                if (!fields.includes("word")) {
                   this.logger.validation_error(
-                     `Input schema must include a 'word' field`,
+                     `Input schema must include a "word" field`,
                      this.file_line_num,
                   );
                }
@@ -355,14 +366,14 @@ class Parser {
             const [key, field, valid] = this.get_cat_seg_fea(line, "feature");
             if (!valid) {
                this.logger.validation_error(
-                  `${line} is not a feature declaration`,
+                  `"${line}" is not a feature declaration`,
                   this.file_line_num,
                );
             }
             const graphemes = field.split(/[,\s]+/).filter(Boolean);
             if (graphemes.length == 0) {
                this.logger.validation_error(
-                  `Feature ${key} had no graphemes`,
+                  `Feature "${key}" had no graphemes`,
                   this.file_line_num,
                );
             }
@@ -576,7 +587,7 @@ class Parser {
       // out of line loop now
       if (my_decorator != "none") {
          this.logger.validation_error(
-            `Decorator '${my_decorator}' was not followed by a directive`,
+            `Decorator "${my_decorator}" was not followed by a directive`,
             this.file_line_num,
          );
       }
@@ -680,7 +691,7 @@ class Parser {
 
       if (dotCount !== 1) {
          this.logger.validation_error(
-            `Invalid decorator format1`,
+            `Invalid decorator format`,
             this.file_line_num,
          );
       }
@@ -701,7 +712,7 @@ class Parser {
             } else if (my_property === "optionals-weight") {
                if (!my_value.endsWith("%")) {
                   this.logger.validation_error(
-                     `Invalid optionals-weight '${my_value}' -- expected a percentage value ending with '%'`,
+                     `Invalid optionals-weight "${my_value}" -- expected a percentage value ending with "%"`,
                      this.file_line_num,
                   );
                }
@@ -709,7 +720,7 @@ class Parser {
                const optionals_weight = make_percentage(my_value);
                if (optionals_weight == null) {
                   this.logger.validation_error(
-                     `Invalid optionals-weight '${my_value}' -- expected a number between 1 and 100`,
+                     `Invalid optionals-weight "${my_value}" -- expected a number between 1 and 100`,
                      this.file_line_num,
                   );
                }
@@ -741,7 +752,7 @@ class Parser {
             }
          } else {
             this.logger.validation_error(
-               `Invalid decorator format2`,
+               `Invalid decorator format`,
                this.file_line_num,
             );
          }
@@ -752,7 +763,7 @@ class Parser {
          this.logger.validation_error(`Invalid decorator`, this.file_line_num);
       } else if (old_decorator !== "none" && old_decorator !== new_decorator) {
          this.logger.validation_error(
-            `Decorator mismatch -- expected '${old_decorator}' decorator after '${old_decorator}' decorator`,
+            `Decorator mismatch -- expected "${old_decorator}" decorator after "${old_decorator}" decorator`,
             this.file_line_num,
          );
       }
@@ -786,6 +797,8 @@ class Parser {
          temp_directive = "letter-case-field";
       } else if (line === "schema:") {
          temp_directive = "schema";
+      } else if (line === "note:") {
+         temp_directive = "note";
       }
       if (temp_directive === "none") {
          return "none"; // Not a directive change
@@ -794,7 +807,7 @@ class Parser {
       // Errors
       if (current_decorator != "none" && temp_directive != current_decorator) {
          this.logger.validation_error(
-            `Directive mismatch -- expected '${current_decorator}' directive after '${current_decorator}' decorator`,
+            `Directive mismatch -- expected "${current_decorator}" directive after "${current_decorator}" decorator`,
             this.file_line_num,
          );
       }
@@ -848,7 +861,7 @@ class Parser {
 
       if (my_row.length !== my_header.length || my_key === undefined) {
          this.logger.validation_error(
-            `Cluster-field row length mismatch with header length -- expected row length of ${my_header.length} but got lenght of ${my_row.length}`,
+            `Cluster-field row length mismatch with header length -- expected row length of ${my_header.length} but got length of ${my_row.length}`,
             this.file_line_num,
          );
       }
@@ -875,7 +888,7 @@ class Parser {
       const eqCount = (line.match(/=/g) || []).length;
       if (eqCount !== 1) {
          this.logger.validation_error(
-            `Invalid routine format1 '${line}'`,
+            `Invalid routine format "${line}"`,
             this.file_line_num,
          );
       }
@@ -887,7 +900,7 @@ class Parser {
       const gtCount = (right.match(/>/g) || []).length;
       if (gtCount !== 1) {
          this.logger.validation_error(
-            `Invalid routine format '${line}'`,
+            `Invalid routine format "${line}"`,
             this.file_line_num,
          );
       }
@@ -911,12 +924,14 @@ class Parser {
          case "hangul-to-latin":
          case "greek-to-latin":
          case "latin-to-greek":
+         case "cyrillic-to-latin":
+         case "latin-to-cyrillic":
          case "xsampa-to-ipa":
          case "ipa-to-xsampa":
             return routine as Routine;
       }
       this.logger.validation_error(
-         `Invalid routine '${routine}'`,
+         `Invalid routine "${routine}"`,
          this.file_line_num,
       );
    }
@@ -1015,7 +1030,7 @@ class Parser {
       const key = divided[0].trim();
       if (key !== "input" && key !== "output") {
          this.logger.validation_error(
-            `Schema declaration was not for 'input' or 'output'`,
+            `Schema declaration was not for "input" or "output"`,
             this.file_line_num,
          );
       }
@@ -1132,7 +1147,7 @@ class Parser {
       const [before, after] = parts;
       if (!before && !after) {
          this.logger.validation_error(
-            `${kind} "${unit}" must have content on at least one side of '_'`,
+            `${kind} "${unit}" must have content on at least one side of "_"`,
             this.file_line_num,
          );
       }
@@ -1145,7 +1160,7 @@ class Parser {
       const my_key = my_row.shift();
       if (my_row.length !== top_row.length || my_key === undefined) {
          this.logger.validation_error(
-            `Feature-field row length mismatch with header length -- expected row length of ${top_row.length} but got lenght of ${my_row.length}`,
+            `Feature-field row length mismatch with header length -- expected row length of ${top_row.length} but got length of ${my_row.length}`,
             this.file_line_num,
          );
       }
@@ -1171,7 +1186,7 @@ class Parser {
             my_anti_graphemes.push(top_row[i]);
          } else {
             this.logger.validation_error(
-               `Feature-field values must be either '+', '-', or '.' -- found '${my_row[i]}' instead.`,
+               `Feature-field values must be either "+", "-", or "." -- found "${my_row[i]}" instead.`,
                this.file_line_num,
             );
          }
@@ -1195,13 +1210,13 @@ class Parser {
       const my_key = my_row.shift();
       if (my_key !== "uppercase") {
          this.logger.validation_error(
-            `Letter-case-field first column must be 'uppercase'`,
+            `Letter-case-field first column must be "uppercase"`,
             this.file_line_num,
          );
       }
       if (my_row.length !== top_row.length || my_key === undefined) {
          this.logger.validation_error(
-            `Feature-field row length mismatch with header length -- expected row length of ${top_row.length} but got lenght of ${my_row.length}`,
+            `Feature-field row length mismatch with header length -- expected row length of ${top_row.length} but got length of ${my_row.length}`,
             this.file_line_num,
          );
       }

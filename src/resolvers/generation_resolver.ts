@@ -53,7 +53,7 @@ class Generation_Resolver {
 
       if (this.wordshape_pending.content.length == 0) {
          this.logger.validation_error(
-            `No word-shapes to choose from -- expected 'words: wordshape1 wordshape2 ...'`,
+            `No word-shapes to choose from -- expected a "words" directive with word-shapes'`,
             this.wordshape_pending.line_num,
          );
       }
@@ -71,7 +71,7 @@ class Generation_Resolver {
       }
       if (!this.valid_words_weights(this.wordshape_pending.content)) {
          this.logger.validation_error(
-            `Word-shapes had invalid weights -- expected weights to follow an item and look like '*NUMBER' followed by either ',' a bracket, or ' '`,
+            `Word-shapes had invalid weights -- expected weights to follow an item and look like "*NUMBER" followed by either "," a bracket, or " ", or end of string`,
             this.wordshape_pending.line_num,
          );
       }
@@ -246,7 +246,7 @@ class Generation_Resolver {
       const match = this.wordshape_pending.content.match(/<[A-Za-z+$-]+>/);
       if (match) {
          this.logger.validation_error(
-            `Nonexistent unit detected: '${match[0]}'`,
+            `Nonexistent unit detected: "${match[0]}"`,
             this.wordshape_pending.line_num,
          );
       }

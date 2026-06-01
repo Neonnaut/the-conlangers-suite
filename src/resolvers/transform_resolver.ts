@@ -556,7 +556,7 @@ class Transform_Resolver {
 
       if (feature_mode) {
          this.logger.validation_error(
-            "Unclosed feature-matrix missing ']'",
+            `Unclosed feature-matrix missing "]"`,
             this.line_num,
          );
       }
@@ -644,7 +644,7 @@ class Transform_Resolver {
          const entry = this.features.get(key);
          if (!entry) {
             this.logger.validation_error(
-               `Unknown feature '${key}'`,
+               `Unknown feature "${key}" in feature matrix`,
                this.line_num,
             );
          }
@@ -806,7 +806,7 @@ class Transform_Resolver {
 
                   if (!looks_like_paren_wrapper) {
                      this.logger.validation_error(
-                        `Square bracket set "[${sq_content}]" is not allowed inside ${inside}`,
+                        `Square bracket set "[${sq_content}]" is not allowed inside "${inside}"`,
                         this.line_num,
                      );
                   }
@@ -978,13 +978,13 @@ class Transform_Resolver {
       const associatemes: string = parts.join("\n");
 
       const info: string =
-         `Graphemes: ` +
+         `Graphemes { ` +
          this.nesca_grammar_stream.graphemes.join(", ") +
-         `\nSyllable Boundaries: ` +
+         `\n}\nSyllable Boundaries { ` +
          this.syllable_boundaries.join(", ") +
-         `\nAssociatemes: \n` +
+         `\n}\nAssociatemes { \n` +
          associatemes +
-         `\nFeatures {\n` +
+         `\n}\nFeatures {\n` +
          features.join("\n") +
          `\n}\n` +
          format_stages

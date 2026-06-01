@@ -245,25 +245,31 @@ class Text_Builder {
    }
 
    show_debug(): void {
-      const info: string =
-         `Num of words: ` +
+      const option_info: string =
+         `Options {` +
+         `\n  Number of words: ` +
          this.num_of_words +
-         `\nOutput mode: ` +
+         `\n  Output mode: ` +
          this.output_mode +
-         `\nRemove duplicates: ` +
+         `\n  Remove duplicates: ` +
          this.remove_duplicates +
-         `\nForce word limit: ` +
+         `\n  Force word limit: ` +
          this.force_word_limit +
-         `\nSort words: ` +
+         `\n  Sort words: ` +
          this.sort_words +
-         `\nOutput divider: "` +
-         this.output_divider +
-         `"` +
-         `\nAlphabet: ` +
+         `\n  Output divider: "` +
+         `\n}`;
+
+      this.logger.diagnostic(option_info);
+
+      const sort_info: string =
+         `Collator {` +
+         `\n  Alphabet: ` +
          this.alphabet.join(", ") +
-         `\nInvisible: ` +
+         `\n  Invisible: ` +
          this.invisible.join(", ");
-      this.logger.diagnostic(info);
+      `\n}`;
+      this.logger.diagnostic(sort_info);
    }
 }
 

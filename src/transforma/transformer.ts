@@ -18,6 +18,7 @@ import Lettercase_Mapper from "./lettercase_mapper";
 import { xsampa_to_ipa, ipa_to_xsampa } from "./xsampa";
 import { latin_to_hangul, hangul_to_latin } from "./hangul";
 import { latin_to_greek, greek_to_latin } from "./greek";
+import { latin_to_cyrillic, cyrillic_to_latin } from "./cyrillic";
 import Carryover_Associator from "./carryover_associator";
 
 import Chance_Mapper from "./chance_mapper";
@@ -129,8 +130,16 @@ class Transformer {
          case "greek-to-latin":
             modified_word = greek_to_latin(full_word);
             break;
+         case "latin-to-cyrillic":
+            modified_word = latin_to_cyrillic(full_word);
+            break;
+         case "cyrillic-to-latin":
+            modified_word = cyrillic_to_latin(full_word);
+            break;
          default:
-            this.logger.validation_error("This should not have happened");
+            this.logger.validation_error(
+               "This should not have happened: unknown routine",
+            );
       }
       word.record_transformation(
          `<routine = ${routine}>`,
@@ -185,7 +194,7 @@ class Transformer {
                if (my_grapheme === null) {
                   if (my_result_token.max === Infinity) {
                      this.logger.validation_error(
-                        "This should not have happened: infinite max grapheme??",
+                        "This should not have happened: infinite max graphemes in RESULT",
                      );
                   }
                   for (let k: number = 0; k < my_result_token.max; k++) {
@@ -1038,11 +1047,6 @@ class Transformer {
             this.chance_mapper.get_is_success(t.chance) === false
          ) {
             // Failed chance roll on the matching chance
-            word.record_step(
-               "CHANCE FAILED - SKIPPED transform",
-               null,
-               t.line_num,
-            );
             continue;
          }
 

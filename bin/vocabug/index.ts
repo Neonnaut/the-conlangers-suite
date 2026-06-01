@@ -41,6 +41,9 @@ const argv = yargs(hideBin(process.argv))
    .usage('Usage: $0 <path> [options]')
 
    // aliases for default flags
+     .help("help")
+     .wrap(null) // prevents line wrapping
+     .epilog("For full documentation, visit: https://neonnaut.neocities.org/vocabug_docs")
    .alias({ help: '?', version: 'v' })
    // custom options
 
@@ -108,24 +111,16 @@ const argv = yargs(hideBin(process.argv))
       }
    })
 
-   .check((argv) => {
-      // No checks yet
+   .check(argv => {
       return true;
    })
    .parseSync() as CLI_Args;
 
 const filePath = argv._[0]; // first positional arg
 
-if (!filePath) {
-   console.error('Error: No file path provided.');
-   process.exitCode = 1;
-   process.exit();
-}
-
-const file_text = fs.readFileSync(filePath, argv.encoding);
-
 try {
-   console.log(`Generating words with Vocabug version ${VERSION}. This may take up to 30 seconds...`);
+   const file_text = fs.readFileSync(filePath, argv.encoding);
+   normal_text(`Generating words with Vocabug version ${VERSION}. This may take up to 30 seconds...`);
 
    const run = vocabug({
       file: file_text,
@@ -138,20 +133,41 @@ try {
    });
 
    for (const warning of run.warnings) {
-      console.warn(warning);
+      yellow_text(warning);
    }
    for (const error of run.errors) {
-      console.error(error);
+      red_text(error);
    }
    for (const info of run.infos) {
-      console.info(info);
+      green_text(info);
    }
    if (run.payload) {
-      console.log(
-         run.payload
-      );
+      payload_text(run.payload);
    }
-} catch {
-   process.exitCode = 1;
-   console.error(`Error: Could not find file '${argv._[0]}'.`);
+} catch (err: any) {
+   if (err.code === "ENOENT") {
+      red_text(`Error: File not found with path "` + err.path +`"`);
+   } else if (err.code === "EISDIR") {
+      red_text(`Error: You passed a directory where a file was required with path "` + err.path +`"`);
+   } else if (err.code === "EACCES" || err.code === "EPERM") {
+      red_text(`Error: You do not have permission to read or write this file, with path "` + err.path +`"`);
+   } else {
+      red_text("Error: " + err.message);
+   }
+}
+
+function green_text(s: string) {
+   process.stderr.write(`\x1b[32m${s}\x1b[0m\n`);
+}
+function yellow_text(s: string) {
+   process.stderr.write(`\x1b[33m${s}\x1b[0m\n`);
+}
+function red_text(s: string) {
+   process.stderr.write(`\x1b[31m${s}\x1b[0m\n`);
+}
+function normal_text(s: string) {
+   process.stderr.write(`${s}\n`);
+}
+function payload_text(s: string) {
+   process.stdout.write(s);
 }

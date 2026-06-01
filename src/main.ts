@@ -22,6 +22,9 @@ import type { App, Log } from "./utils/types";
 
 import Chance_Mapper from "./transforma/chance_mapper";
 
+// import { get_feature_table } from "./transforma/get_feature_table";
+// import { table_md } from "./utils/table_maker";
+
 type Vocabug_Options = {
    file: string;
    num_of_words?: number | string;
@@ -290,6 +293,20 @@ export function nesca({
          p.alphabet,
          p.invisible,
       );
+
+      /*
+      const feature_table = get_feature_table(
+         feature_resolver.features,
+         canon_graphemes_resolver.graphemes,
+         ["+nasal", "+plosive", "+fricative", "+approx"], // ONLY base rows
+         ["+bilabial", "+alveolar", "+velar", "+labio-velar"],
+         ["+voiced", "-voiced", "+wiggy", "+foo", "+bar"],
+      );
+
+      const my_table = table_md(feature_table.rows, feature_table.headers);
+
+      logger.info(`Feature Table:\n${my_table}`);
+      */
 
       // Yo! this is where we change da words !!
       // Wow. Such change

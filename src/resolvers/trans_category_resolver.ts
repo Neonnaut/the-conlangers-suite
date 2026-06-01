@@ -62,11 +62,7 @@ class Category_Resolver {
          categories.push(`  ${key} = ${category_field}`);
       }
 
-      const info: string =
-         `~ CATEGORIES ~\n` +
-         `\nCategories {\n` +
-         categories.join("\n") +
-         `\n}`;
+      const info: string = `Categories {\n` + categories.join("\n") + `\n}`;
 
       this.logger.diagnostic(info);
    }

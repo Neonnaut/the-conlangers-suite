@@ -297,7 +297,7 @@ var Parser = class {
       if (temp_directive != "none") {
         if (my_subdirective != "none") {
           this.logger.validation_error(
-            `${my_subdirective} was not closed before directive change`,
+            `"${my_subdirective}" was not closed before directive change`,
             this.file_line_num
           );
         }
@@ -327,11 +327,14 @@ var Parser = class {
           this.file_line_num
         );
       }
+      if (my_directive === "notes") {
+        continue;
+      }
       if (my_directive === "categories") {
         const [key, field, valid] = this.get_cat_seg_fea(line, "category");
         if (!valid) {
           this.logger.validation_error(
-            `${line} is not a category declaration`,
+            `"${line}" is not a category declaration`,
             this.file_line_num
           );
         }
@@ -342,10 +345,12 @@ var Parser = class {
       }
       if (my_directive === "words") {
         if (this.app !== "vocabug") {
-          this.logger.validation_error(
+          this.logger.warn(
             `Words directive is only valid in Vocabug`,
             this.file_line_num
           );
+          this.disable_directive = "p";
+          return;
         }
         if (!this.valid_words_brackets(line)) {
           this.logger.validation_error(
@@ -359,27 +364,29 @@ var Parser = class {
       }
       if (my_directive === "units") {
         if (this.app !== "vocabug") {
-          this.logger.validation_error(
-            `Units directive is only valid in Vocabug`,
+          this.logger.warn(
+            `Words directive is only valid in Vocabug`,
             this.file_line_num
           );
+          this.disable_directive = "p";
+          return;
         }
         const [key, field, valid] = this.get_cat_seg_fea(line, "unit");
         if (!valid) {
           this.logger.validation_error(
-            `${line} is not a unit declaration`,
+            `"${line}" is not a unit declaration`,
             this.file_line_num
           );
         }
         if (!this.validate_unit(field)) {
           this.logger.validation_error(
-            `The unit '${key}' had separator(s) outside sets -- expected separators for units to appear only in sets`,
+            `The unit "${key}" had separator(s) outside sets -- expected separators for units to appear only in sets`,
             this.file_line_num
           );
         }
         if (!this.valid_words_brackets(field)) {
           this.logger.validation_error(
-            `The unit '${key}' had missmatched brackets`,
+            `The unit "${key}" had missmatched brackets`,
             this.file_line_num
           );
         }
@@ -390,16 +397,18 @@ var Parser = class {
       }
       if (my_directive === "schema") {
         if (this.app === "vocabug") {
-          this.logger.validation_error(
+          this.logger.warn(
             `Schema directive is not valid in Vocabug`,
             this.file_line_num
           );
+          this.disable_directive = "p";
+          return;
         }
         const [type, fields, delimiters] = this.get_schema(line);
         if (type === "input") {
           if (!fields.includes("word")) {
             this.logger.validation_error(
-              `Input schema must include a 'word' field`,
+              `Input schema must include a "word" field`,
               this.file_line_num
             );
           }
@@ -412,14 +421,14 @@ var Parser = class {
         const [key, field, valid] = this.get_cat_seg_fea(line, "feature");
         if (!valid) {
           this.logger.validation_error(
-            `${line} is not a feature declaration`,
+            `"${line}" is not a feature declaration`,
             this.file_line_num
           );
         }
         const graphemes = field.split(/[,\s]+/).filter(Boolean);
         if (graphemes.length == 0) {
           this.logger.validation_error(
-            `Feature ${key} had no graphemes`,
+            `Feature "${key}" had no graphemes`,
             this.file_line_num
           );
         }
@@ -595,7 +604,7 @@ var Parser = class {
     }
     if (my_decorator != "none") {
       this.logger.validation_error(
-        `Decorator '${my_decorator}' was not followed by a directive`,
+        `Decorator "${my_decorator}" was not followed by a directive`,
         this.file_line_num
       );
     }
@@ -673,7 +682,7 @@ var Parser = class {
     const eqCount = (line.match(/=/g) || []).length;
     if (dotCount !== 1) {
       this.logger.validation_error(
-        `Invalid decorator format1`,
+        `Invalid decorator format`,
         this.file_line_num
       );
     }
@@ -689,7 +698,7 @@ var Parser = class {
         } else if (my_property === "optionals-weight") {
           if (!my_value.endsWith("%")) {
             this.logger.validation_error(
-              `Invalid optionals-weight '${my_value}' -- expected a percentage value ending with '%'`,
+              `Invalid optionals-weight "${my_value}" -- expected a percentage value ending with "%"`,
               this.file_line_num
             );
           }
@@ -697,7 +706,7 @@ var Parser = class {
           const optionals_weight = make_percentage(my_value);
           if (optionals_weight == null) {
             this.logger.validation_error(
-              `Invalid optionals-weight '${my_value}' -- expected a number between 1 and 100`,
+              `Invalid optionals-weight "${my_value}" -- expected a number between 1 and 100`,
               this.file_line_num
             );
           }
@@ -728,7 +737,7 @@ var Parser = class {
         }
       } else {
         this.logger.validation_error(
-          `Invalid decorator format2`,
+          `Invalid decorator format`,
           this.file_line_num
         );
       }
@@ -737,7 +746,7 @@ var Parser = class {
       this.logger.validation_error(`Invalid decorator`, this.file_line_num);
     } else if (old_decorator !== "none" && old_decorator !== new_decorator) {
       this.logger.validation_error(
-        `Decorator mismatch -- expected '${old_decorator}' decorator after '${old_decorator}' decorator`,
+        `Decorator mismatch -- expected "${old_decorator}" decorator after "${old_decorator}" decorator`,
         this.file_line_num
       );
     }
@@ -769,13 +778,15 @@ var Parser = class {
       temp_directive = "letter-case-field";
     } else if (line === "schema:") {
       temp_directive = "schema";
+    } else if (line === "note:") {
+      temp_directive = "note";
     }
     if (temp_directive === "none") {
       return "none";
     }
     if (current_decorator != "none" && temp_directive != current_decorator) {
       this.logger.validation_error(
-        `Directive mismatch -- expected '${current_decorator}' directive after '${current_decorator}' decorator`,
+        `Directive mismatch -- expected "${current_decorator}" directive after "${current_decorator}" decorator`,
         this.file_line_num
       );
     }
@@ -813,7 +824,7 @@ var Parser = class {
     const my_key = my_row.shift();
     if (my_row.length !== my_header.length || my_key === void 0) {
       this.logger.validation_error(
-        `Cluster-field row length mismatch with header length -- expected row length of ${my_header.length} but got lenght of ${my_row.length}`,
+        `Cluster-field row length mismatch with header length -- expected row length of ${my_header.length} but got length of ${my_row.length}`,
         this.file_line_num
       );
     }
@@ -836,7 +847,7 @@ var Parser = class {
     const eqCount = (line.match(/=/g) || []).length;
     if (eqCount !== 1) {
       this.logger.validation_error(
-        `Invalid routine format1 '${line}'`,
+        `Invalid routine format "${line}"`,
         this.file_line_num
       );
     }
@@ -845,7 +856,7 @@ var Parser = class {
     const gtCount = (right.match(/>/g) || []).length;
     if (gtCount !== 1) {
       this.logger.validation_error(
-        `Invalid routine format '${line}'`,
+        `Invalid routine format "${line}"`,
         this.file_line_num
       );
     }
@@ -865,12 +876,14 @@ var Parser = class {
       case "hangul-to-latin":
       case "greek-to-latin":
       case "latin-to-greek":
+      case "cyrillic-to-latin":
+      case "latin-to-cyrillic":
       case "xsampa-to-ipa":
       case "ipa-to-xsampa":
         return routine;
     }
     this.logger.validation_error(
-      `Invalid routine '${routine}'`,
+      `Invalid routine "${routine}"`,
       this.file_line_num
     );
   }
@@ -948,7 +961,7 @@ var Parser = class {
     const key = divided[0].trim();
     if (key !== "input" && key !== "output") {
       this.logger.validation_error(
-        `Schema declaration was not for 'input' or 'output'`,
+        `Schema declaration was not for "input" or "output"`,
         this.file_line_num
       );
     }
@@ -1035,7 +1048,7 @@ var Parser = class {
     const [before, after] = parts;
     if (!before && !after) {
       this.logger.validation_error(
-        `${kind} "${unit}" must have content on at least one side of '_'`,
+        `${kind} "${unit}" must have content on at least one side of "_"`,
         this.file_line_num
       );
     }
@@ -1046,7 +1059,7 @@ var Parser = class {
     const my_key = my_row.shift();
     if (my_row.length !== top_row.length || my_key === void 0) {
       this.logger.validation_error(
-        `Feature-field row length mismatch with header length -- expected row length of ${top_row.length} but got lenght of ${my_row.length}`,
+        `Feature-field row length mismatch with header length -- expected row length of ${top_row.length} but got length of ${my_row.length}`,
         this.file_line_num
       );
     }
@@ -1069,7 +1082,7 @@ var Parser = class {
         my_anti_graphemes.push(top_row[i]);
       } else {
         this.logger.validation_error(
-          `Feature-field values must be either '+', '-', or '.' -- found '${my_row[i]}' instead.`,
+          `Feature-field values must be either "+", "-", or "." -- found "${my_row[i]}" instead.`,
           this.file_line_num
         );
       }
@@ -1092,13 +1105,13 @@ var Parser = class {
     const my_key = my_row.shift();
     if (my_key !== "uppercase") {
       this.logger.validation_error(
-        `Letter-case-field first column must be 'uppercase'`,
+        `Letter-case-field first column must be "uppercase"`,
         this.file_line_num
       );
     }
     if (my_row.length !== top_row.length || my_key === void 0) {
       this.logger.validation_error(
-        `Feature-field row length mismatch with header length -- expected row length of ${top_row.length} but got lenght of ${my_row.length}`,
+        `Feature-field row length mismatch with header length -- expected row length of ${top_row.length} but got length of ${my_row.length}`,
         this.file_line_num
       );
     }
@@ -2181,28 +2194,34 @@ var finals = {
   // ㅎ
 };
 var medials = {
-  u\u00ED: 16,
-  // ㅟ
-  \u1EE5\u00ED: 19,
+  eui: 19,
   // ㅢ
+  yae: 3,
+  // ㅒ
+  yeo: 6,
+  // ㅕ
+  wae: 10,
+  // ㅙ
+  weo: 14,
+  // ㅝ
+  ui: 16,
+  // ㅟ
+  ae: 1,
+  // ㅐ
+  eo: 4,
+  // ㅓ
+  eu: 18,
+  // ㅡ
   yo: 12,
   // ㅛ
   yu: 17,
   // ㅠ
-  y\u1EB9: 3,
-  // ㅒ
   ya: 2,
   // ㅑ
   ye: 7,
   // ㅖ
-  y\u1ECD: 6,
-  // ㅕ
   wa: 9,
   // ㅘ
-  w\u1EB9: 10,
-  // ㅙ
-  w\u1ECD: 14,
-  // ㅝ
   we: 15,
   // ㅞ
   wi: 11,
@@ -2211,16 +2230,10 @@ var medials = {
   // ㅗ
   u: 13,
   // ㅜ
-  \u1EB9: 1,
-  // ㅐ
   a: 0,
   // ㅏ
-  \u1ECD: 4,
-  // ㅓ
   e: 5,
   // ㅔ
-  \u1EE5: 18,
-  // ㅡ
   i: 20
   // ㅣ
 };
@@ -2348,24 +2361,24 @@ function hangul_to_latin(input) {
 
 // src/transforma/greek.ts
 var latin_to_greek_code_map = {
+  oh: "\u03C9",
+  \u00F3h: "\u03CE",
+  \u00F2h: "\u1F7C",
+  eh: "\u03B7",
+  \u00E9h: "\u03AE",
+  \u00E8h: "\u1F74",
   a: "\u03B1",
   \u00E1: "\u03AC",
   \u00E0: "\u1F70",
   e: "\u03B5",
   \u00E9: "\u03AD",
   \u00E8: "\u1F72",
-  \u1EB9: "\u03B7",
-  \u1EB9\u0301: "\u03AE",
-  \u1EB9\u0300: "\u1F74",
   i: "\u03B9",
   \u00ED: "\u03AF",
   \u00EC: "\u1F76",
   o: "\u03BF",
   \u00F3: "\u03CC",
   \u00F2: "\u1F78",
-  \u1ECD: "\u03C9",
-  \u1ECD\u0301: "\u03CE",
-  \u1ECD\u0300: "\u1F7C",
   u: "\u03C5",
   \u00FA: "\u03CD",
   \u00F9: "\u1F7A",
@@ -2383,13 +2396,12 @@ var latin_to_greek_code_map = {
   t: "\u03C4",
   x: "\u03C7",
   z: "\u03B6",
-  h: "\u0371",
-  \u010D: "\u0377",
+  ch: "\u0377",
   c: "\u03DB",
   q: "\u03BE",
-  \u00FE: "\u03B8",
-  \u1E55: "\u03C8",
-  \u0161: "\u03F8",
+  th: "\u03B8",
+  ph: "\u03C8",
+  sh: "\u03F8",
   w: "\u03DD",
   j: "\u03F3"
 };
@@ -2410,6 +2422,84 @@ function greek_to_latin(input) {
   let out = "";
   for (const char of input) {
     out += greek_to_latin_code_map[char] ?? char;
+  }
+  return out;
+}
+
+// src/transforma/cyrillic.ts
+var latin_to_cyrillic_code_map = {
+  ya: "\u044F",
+  ye: "\u0454",
+  yi: "\u0457",
+  yo: "\u0451",
+  yu: "\u044E",
+  a: "\u0430",
+  e: "\u0435",
+  i: "\u0438",
+  o: "\u043E",
+  u: "\u0443",
+  \u00E1: "\u0467",
+  \u00E9: "\u044D",
+  \u00ED: "\u0456",
+  \u00F3: "\u0275",
+  \u00FA: "\u04AF",
+  "'": "\u044C",
+  \u00E8: "\u044A",
+  \u00EC: "\u044B",
+  \u00F2: "\u0463",
+  \u00F9: "\u04B1",
+  b: "\u0431",
+  v: "\u0432",
+  g: "\u0433",
+  d: "\u0434",
+  z: "\u0437",
+  k: "\u043A",
+  l: "\u043B",
+  m: "\u043C",
+  n: "\u043D",
+  p: "\u043F",
+  r: "\u0440",
+  s: "\u0441",
+  t: "\u0442",
+  f: "\u0444",
+  h: "\u0445",
+  c: "\u0446",
+  j: "\u0439",
+  w: "\u045E",
+  tj: "\u045B",
+  gj: "\u0452",
+  zj: "\u0436",
+  cj: "\u0447",
+  dj: "\u045F",
+  sj: "\u0448",
+  lj: "\u0459",
+  nj: "\u045A",
+  nx: "\u04C8",
+  zx: "\u0498",
+  sx: "\u04AB",
+  gx: "\u0491",
+  qx: "\u0493",
+  jx: "\u0458",
+  q: "\u051B",
+  sjx: "\u0449"
+};
+var cyrillic_to_latin_code_map = Object.fromEntries(
+  Object.entries(latin_to_cyrillic_code_map).map(([latin, cyrillic]) => [
+    cyrillic,
+    latin
+  ])
+);
+function latin_to_cyrillic(input) {
+  let out = "";
+  for (const char of input) {
+    out += latin_to_cyrillic_code_map[char] ?? char;
+  }
+  return out;
+}
+function cyrillic_to_latin(input) {
+  let out = "";
+  for (const char of input) {
+    out += cyrillic_to_latin_code_map[char] ?? char;
   }
   return out;
 }
@@ -2540,8 +2630,16 @@ var Transformer = class {
       case "greek-to-latin":
         modified_word = greek_to_latin(full_word);
         break;
+      case "latin-to-cyrillic":
+        modified_word = latin_to_cyrillic(full_word);
+        break;
+      case "cyrillic-to-latin":
+        modified_word = cyrillic_to_latin(full_word);
+        break;
       default:
-        this.logger.validation_error("This should not have happened");
+        this.logger.validation_error(
+          "This should not have happened: unknown routine"
+        );
     }
     word.record_transformation(
       `<routine = ${routine}>`,
@@ -2579,7 +2677,7 @@ var Transformer = class {
           if (my_grapheme === null) {
             if (my_result_token.max === Infinity) {
               this.logger.validation_error(
-                "This should not have happened: infinite max grapheme??"
+                "This should not have happened: infinite max graphemes in RESULT"
               );
             }
             for (let k = 0; k < my_result_token.max; k++) {
@@ -3175,11 +3273,6 @@ var Transformer = class {
         break;
       }
       if (t.chance != null && this.chance_mapper.get_is_success(t.chance) === false) {
-        word.record_step(
-          "CHANCE FAILED - SKIPPED transform",
-          null,
-          t.line_num
-        );
         continue;
       }
       if (t.target.length == 0 && (t.t_type === "rule" || t.t_type === "cluster-field")) {
@@ -3519,15 +3612,21 @@ var Text_Builder = class {
     return ".";
   }
   show_debug() {
-    const info = `Num of words: ` + this.num_of_words + `
-Output mode: ` + this.output_mode + `
-Remove duplicates: ` + this.remove_duplicates + `
-Force word limit: ` + this.force_word_limit + `
-Sort words: ` + this.sort_words + `
-Output divider: "` + this.output_divider + `"
-Alphabet: ` + this.alphabet.join(", ") + `
-Invisible: ` + this.invisible.join(", ");
-    this.logger.diagnostic(info);
+    const option_info = `Options {
+  Number of words: ` + this.num_of_words + `
+  Output mode: ` + this.output_mode + `
+  Remove duplicates: ` + this.remove_duplicates + `
+  Force word limit: ` + this.force_word_limit + `
+  Sort words: ` + this.sort_words + `
+  Output divider: "
+}`;
+    this.logger.diagnostic(option_info);
+    const sort_info = `Collator {
+  Alphabet: ` + this.alphabet.join(", ") + `
+  Invisible: ` + this.invisible.join(", ");
+    `
+}`;
+    this.logger.diagnostic(sort_info);
   }
 };
 var text_builder_default = Text_Builder;
@@ -3830,7 +3929,7 @@ var Supra_Builder = class {
       const match = valid_content_regex.exec(content);
       if (!match) {
         this.logger.validation_error(
-          `Invalid supra-set item '${fullMatch}' -- expected all supra-set items to look like '[A]', '[^]' or '[A*2]'`,
+          `Invalid supra-set item "${fullMatch}" -- expected all supra-set items to look like "[A]", "[^]" or "[A*2]"`,
           wordshape_line_num
         );
       }
@@ -3851,7 +3950,7 @@ var Supra_Builder = class {
     while ((match = id_regex.exec(input)) !== null) {
       const id = Number(match[1]);
       if (!(id in this.letters) || !(id in this.weights)) {
-        this.logger.validation_error(`Missing data for ID '${id}'`, null);
+        this.logger.validation_error(`Missing data for ID "${id}"`, null);
       }
       ids.push(id.toString());
       weights.push(this.weights[id]);
@@ -3864,7 +3963,7 @@ var Supra_Builder = class {
       const id = Number(id_str);
       if (!(id in this.letters)) {
         this.logger.validation_error(
-          `Unknown ID '${id}' found in input.`,
+          `Unknown ID "${id}" found in input`,
           null
         );
       }
@@ -4278,7 +4377,7 @@ var Transform_Resolver = class {
     }
     if (feature_mode) {
       this.logger.validation_error(
-        "Unclosed feature-matrix missing ']'",
+        `Unclosed feature-matrix missing "]"`,
         this.line_num
       );
     }
@@ -4332,7 +4431,7 @@ var Transform_Resolver = class {
       const entry = this.features.get(key);
       if (!entry) {
         this.logger.validation_error(
-          `Unknown feature '${key}'`,
+          `Unknown feature "${key}" in feature matrix`,
           this.line_num
         );
       }
@@ -4449,7 +4548,7 @@ var Transform_Resolver = class {
             const looks_like_paren_wrapper = inside === "(" && prev === "(" && next === ")";
             if (!looks_like_paren_wrapper) {
               this.logger.validation_error(
-                `Square bracket set "[${sq_content}]" is not allowed inside ${inside}`,
+                `Square bracket set "[${sq_content}]" is not allowed inside "${inside}"`,
                 this.line_num
               );
             }
@@ -4572,10 +4671,13 @@ var Transform_Resolver = class {
       parts.push(chain);
     }
     const associatemes = parts.join("\n");
-    const info = `Graphemes: ` + this.nesca_grammar_stream.graphemes.join(", ") + `
-Syllable Boundaries: ` + this.syllable_boundaries.join(", ") + `
-Associatemes: 
+    const info = `Graphemes { ` + this.nesca_grammar_stream.graphemes.join(", ") + `
+}
+Syllable Boundaries { ` + this.syllable_boundaries.join(", ") + `
+}
+Associatemes { 
 ` + associatemes + `
+}
 Features {
 ` + features.join("\n") + `
 }
@@ -4614,14 +4716,14 @@ var Nesca_Grammar_Stream = class {
         return [{ type: "insertion", base: "^" }];
       } else {
         this.logger.validation_error(
-          `Unexpected character '${stream}' in mode '${mode}'`,
+          `Unexpected character "${stream}" in mode ${mode}`,
           line_num
         );
       }
     } else if (stream === "0") {
       if (mode !== "RESULT") {
         this.logger.validation_error(
-          `Reject not allowed in '${mode}'`,
+          `Reject not allowed in ${mode}`,
           line_num
         );
       }
@@ -4637,7 +4739,7 @@ var Nesca_Grammar_Stream = class {
       if (char === "%") {
         if (mode === "RESULT") {
           this.logger.validation_error(
-            `Anythings-mark not allowed in '${mode}'`,
+            `Anythings-mark not allowed in ${mode}`,
             line_num
           );
         }
@@ -4650,7 +4752,7 @@ var Nesca_Grammar_Stream = class {
         let look_ahead = i + 1;
         if (stream[look_ahead] !== "[") {
           this.logger.validation_error(
-            `Expected '[' after '%' for anythings-mark`,
+            `Expected "[" after "%" for anythings-mark`,
             line_num
           );
         } else {
@@ -4704,7 +4806,7 @@ var Nesca_Grammar_Stream = class {
       } else if (char === "*") {
         if (mode == "RESULT") {
           this.logger.validation_error(
-            `Wildcard not allowed in '${mode}'`,
+            `Wildcard not allowed in ${mode}`,
             line_num
           );
         }
@@ -4713,13 +4815,13 @@ var Nesca_Grammar_Stream = class {
       } else if (char == "#") {
         if (mode !== "BEFORE" && mode !== "AFTER") {
           this.logger.validation_error(
-            `Word-boundary not allowed in '${mode}'`,
+            `Word-boundary not allowed in ${mode}`,
             line_num
           );
         }
         if (i !== 0 && i + 1 !== stream.length) {
           this.logger.validation_error(
-            `Hash must be at the start or end of '${mode}'`,
+            `Hash must be at the start or end of ${mode}`,
             line_num
           );
         }
@@ -4730,7 +4832,7 @@ var Nesca_Grammar_Stream = class {
       } else if (char == "$") {
         if (mode !== "BEFORE" && mode !== "AFTER") {
           this.logger.validation_error(
-            `Syllable-boundary not allowed in '${mode}'`,
+            `Syllable-boundary not allowed in ${mode}`,
             line_num
           );
         }
@@ -4748,7 +4850,7 @@ var Nesca_Grammar_Stream = class {
         if (stream[look_ahead] === "T") {
           if (mode === "TARGET") {
             this.logger.validation_error(
-              `Target-mark not allowed in '${mode}'`,
+              `Target-mark not allowed in ${mode}`,
               line_num
             );
           }
@@ -4757,7 +4859,7 @@ var Nesca_Grammar_Stream = class {
         } else if (stream[look_ahead] === "M") {
           if (mode === "TARGET") {
             this.logger.validation_error(
-              `Metathesis-mark not allowed in '${mode}'`,
+              `Metathesis-mark not allowed in "${mode}"`,
               line_num
             );
           }
@@ -4771,7 +4873,7 @@ var Nesca_Grammar_Stream = class {
         } else if (stream[look_ahead] === "E") {
           if (mode !== "TARGET") {
             this.logger.validation_error(
-              `Empty-mark only allowed in 'TARGET'`,
+              `Empty-mark only allowed in TARGET`,
               line_num
             );
           }
@@ -4789,7 +4891,7 @@ var Nesca_Grammar_Stream = class {
           continue;
         } else {
           this.logger.validation_error(
-            `A 'T', 'M' or '=' did not follow '&' in '${mode}'`,
+            `A "T", "M" or "=" did not follow "&" in ${mode}`,
             line_num
           );
         }
@@ -4810,14 +4912,14 @@ var Nesca_Grammar_Stream = class {
           continue;
         } else {
           this.logger.validation_error(
-            `Invalid reference capture syntax in '${mode}'`,
+            `Invalid reference capture syntax in ${mode}`,
             line_num
           );
         }
       } else if (/^[1-9]$/.test(char)) {
         if (mode === "TARGET") {
           this.logger.validation_error(
-            "Reference-mark not allowed in 'TARGET'",
+            "Reference-mark not allowed in TARGET",
             line_num
           );
         }
@@ -4836,7 +4938,7 @@ var Nesca_Grammar_Stream = class {
         SYNTAX_CHARS_AND_CARET.includes(char)
       ) {
         this.logger.validation_error(
-          `Unexpected syntax character '${char}' in ${mode}`,
+          `Unexpected syntax character "${char}" in ${mode}`,
           line_num
         );
       } else {
@@ -4876,7 +4978,7 @@ var Nesca_Grammar_Stream = class {
       } else if (stream[i] === "+") {
         if (mode === "RESULT") {
           this.logger.validation_error(
-            `Quantifier not allowed in '${mode}'`,
+            `Quantifier not allowed in ${mode}`,
             line_num
           );
         }
@@ -4887,7 +4989,7 @@ var Nesca_Grammar_Stream = class {
         let look_ahead = i + 1;
         if (stream[look_ahead] !== "[") {
           this.logger.validation_error(
-            `Expected '[' after '?' for quantifier`,
+            `Expected "[" after "?" for quantifier`,
             line_num
           );
         } else {
@@ -4929,7 +5031,7 @@ var Nesca_Grammar_Stream = class {
             }
             if (max === Infinity && mode === "RESULT") {
               this.logger.validation_error(
-                `In '${mode}', '${new_token.base}' cannot be reproduced an infinite amount of times`,
+                `In ${mode}, "${new_token.base}" cannot be reproduced an infinite amount of times`,
                 line_num
               );
             }
@@ -4946,7 +5048,7 @@ var Nesca_Grammar_Stream = class {
         if (new_token.max != Infinity) {
           if (new_token.min > new_token.max) {
             this.logger.validation_error(
-              `Invalid quantifier: min '${new_token.min}' cannot be greater than max '${new_token.max}'`,
+              `Invalid quantifier: min "${new_token.min}" cannot be greater than max "${new_token.max}"`,
               line_num
             );
           }
@@ -4993,14 +5095,14 @@ var Nesca_Grammar_Stream = class {
         return [{ type: "deletion", base: "^" }];
       } else {
         this.logger.validation_error(
-          `Unexpected character '${stream}' in mode '${mode}'`,
+          `Unexpected character "${stream}" in ${mode}`,
           line_num
         );
       }
     } else if (stream === "0") {
       if (mode !== "RESULT") {
         this.logger.validation_error(
-          `Reject not allowed in '${mode}'`,
+          `Reject not allowed in ${mode}`,
           line_num
         );
       }
@@ -5015,7 +5117,7 @@ var Nesca_Grammar_Stream = class {
       }
       if (char === "^" || char === "0") {
         this.logger.validation_error(
-          `Unexpected character '${char}' in cluster-field`,
+          `Unexpected character "${char}" in cluster-field`,
           line_num
         );
       }
@@ -5097,13 +5199,13 @@ var Category_Resolver = class {
     for (const [key, value] of this.category_pending) {
       if (!this.valid_category_brackets(value.content)) {
         this.logger.validation_error(
-          `Category '${key}' had missmatched brackets`,
+          `Category "${key}" had missmatched brackets`,
           value.line_num
         );
       }
       if (!this.valid_category_weights(value.content)) {
         this.logger.validation_error(
-          `Category '${key}' had invalid weights -- expected weights to follow an item and look like '*NUMBER' followed by either ',', a bracket, or ' '`,
+          `Category "${key}" had invalid weights -- expected weights to follow an item and look like "*NUMBER" followed by either ",", a bracket, or " "`,
           value.line_num
         );
       }
@@ -5286,7 +5388,7 @@ var Generation_Resolver = class {
     let inside_brackets = 0;
     if (this.wordshape_pending.content.length == 0) {
       this.logger.validation_error(
-        `No word-shapes to choose from -- expected 'words: wordshape1 wordshape2 ...'`,
+        `No word-shapes to choose from -- expected a "words" directive with word-shapes'`,
         this.wordshape_pending.line_num
       );
     }
@@ -5302,7 +5404,7 @@ var Generation_Resolver = class {
     }
     if (!this.valid_words_weights(this.wordshape_pending.content)) {
       this.logger.validation_error(
-        `Word-shapes had invalid weights -- expected weights to follow an item and look like '*NUMBER' followed by either ',' a bracket, or ' '`,
+        `Word-shapes had invalid weights -- expected weights to follow an item and look like "*NUMBER" followed by either "," a bracket, or " ", or end of string`,
         this.wordshape_pending.line_num
       );
     }
@@ -5429,7 +5531,7 @@ var Generation_Resolver = class {
     const match = this.wordshape_pending.content.match(/<[A-Za-z+$-]+>/);
     if (match) {
       this.logger.validation_error(
-        `Nonexistent unit detected: '${match[0]}'`,
+        `Nonexistent unit detected: "${match[0]}"`,
         this.wordshape_pending.line_num
       );
     }
@@ -5530,13 +5632,13 @@ var Feature_Resolver = class {
         }
         if (item.includes("^")) {
           this.logger.validation_error(
-            `Invalid grapheme '${item}' has a misplaced caret`,
+            `Invalid grapheme "${item}" has a misplaced caret`,
             value.line_num
           );
         }
         if (item.startsWith("+") || item.startsWith("-") || item.startsWith(">")) {
           this.logger.validation_error(
-            `Referenced feature '${item}' not found`,
+            `Referenced feature "${item}" not found`,
             value.line_num
           );
         }
@@ -5547,7 +5649,7 @@ var Feature_Resolver = class {
       );
       if (x_filtered.length === 0) {
         this.logger.validation_error(
-          `Feature '${key}' had zero graphemes`,
+          `Feature "${key}" had zero graphemes`,
           value.line_num
         );
       }
@@ -5818,7 +5920,7 @@ function vocabug({
 }
 
 // src/utils/version.ts
-var VERSION = "1.0.7";
+var VERSION = "1.0.8";
 
 // bin/vocabug/index.ts
 var encodings = [
@@ -5831,7 +5933,7 @@ var encodings = [
   "utf16le",
   "utf8"
 ];
-var argv = yargs(hideBin(process.argv)).usage("Usage: $0 <path> [options]").alias({ help: "?", version: "v" }).option("num_of_words", {
+var argv = yargs(hideBin(process.argv)).usage("Usage: $0 <path> [options]").help("help").wrap(null).epilog("For full documentation, visit: https://neonnaut.neocities.org/vocabug_docs").alias({ help: "?", version: "v" }).option("num_of_words", {
   alias: "n",
   describe: "Number of words to generate",
   type: "number",
@@ -5888,14 +5990,9 @@ var argv = yargs(hideBin(process.argv)).usage("Usage: $0 <path> [options]").alia
   return true;
 }).parseSync();
 var filePath = argv._[0];
-if (!filePath) {
-  console.error("Error: No file path provided.");
-  process.exitCode = 1;
-  process.exit();
-}
-var file_text = fs.readFileSync(filePath, argv.encoding);
 try {
-  console.log(`Generating words with Vocabug version ${VERSION}. This may take up to 30 seconds...`);
+  const file_text = fs.readFileSync(filePath, argv.encoding);
+  normal_text(`Generating words with Vocabug version ${VERSION}. This may take up to 30 seconds...`);
   const run = vocabug({
     file: file_text,
     num_of_words: argv.num_of_words,
@@ -5906,20 +6003,44 @@ try {
     output_divider: argv.output_divider
   });
   for (const warning of run.warnings) {
-    console.warn(warning);
+    yellow_text(warning);
   }
   for (const error of run.errors) {
-    console.error(error);
+    red_text(error);
   }
   for (const info of run.infos) {
-    console.info(info);
+    green_text(info);
   }
   if (run.payload) {
-    console.log(
-      run.payload
-    );
+    payload_text(run.payload);
   }
-} catch {
-  process.exitCode = 1;
-  console.error(`Error: Could not find file '${argv._[0]}'.`);
+} catch (err) {
+  if (err.code === "ENOENT") {
+    red_text(`Error: File not found with path "` + err.path + `"`);
+  } else if (err.code === "EISDIR") {
+    red_text(`Error: You passed a directory where a file was required with path "` + err.path + `"`);
+  } else if (err.code === "EACCES" || err.code === "EPERM") {
+    red_text(`Error: You do not have permission to read or write this file, with path "` + err.path + `"`);
+  } else {
+    red_text("Error: " + err.message);
+  }
+}
+function green_text(s) {
+  process.stderr.write(`\x1B[32m${s}\x1B[0m
+`);
+}
+function yellow_text(s) {
+  process.stderr.write(`\x1B[33m${s}\x1B[0m
+`);
+}
+function red_text(s) {
+  process.stderr.write(`\x1B[31m${s}\x1B[0m
+`);
+}
+function normal_text(s) {
+  process.stderr.write(`${s}
+`);
+}
+function payload_text(s) {
+  process.stdout.write(s);
 }

@@ -10,12 +10,14 @@ npm install -g the-conlangers-suite
 yarn global add the-conlangers-suite
 ```
 
-Then envoke the Vocabug CLI with:
+## Usage
+
+The general syntax of the CLI is:
 ```
 vocabug <path> [options]
 ```
 
-`<path>` is the required path to the input text file
+`<path>` is the required path to the definition file, typically a text file.
 
 Options:
 

@@ -706,7 +706,7 @@ textarea:disabled {
    color: var(--disabled-button-text);
 }
 .dropdown-btn {
-   width: 100px;
+   display: inline-block;
 }
 
 /* /// */
@@ -1186,6 +1186,8 @@ font-family: "Charis SIL", "Doulos SIL", Gentium, Arial, Serif;
       padding: 3px 8px 2px 8px;
       background: none;
       border: none;
+      color: var(--button-text);
+      user-select: none;
 }
 
 @media only screen and (min-width: 360px) {
@@ -1234,4 +1236,19 @@ font-family: "Charis SIL", "Doulos SIL", Gentium, Arial, Serif;
 #editor {
    flex-grow: 1;
    display: block;
+}
+
+#clear-editor:hover {
+   background: #ba0038;
+   color: #fff;
+
+}
+
+details>summary::-webkit-details-marker {
+  display: none;
+}
+
+details>summary::marker {
+  display: none;
+  content: "";
 }
