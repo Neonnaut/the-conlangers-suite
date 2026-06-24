@@ -130,10 +130,22 @@ export type Token =
         key: string;
         min: number;
         max: number | typeof Infinity;
+     }
+   | {
+        type: "recast-category";
+        base: string;
+        graphemes: string[];
+        weights: number[];
+
+        min: number;
+        max: number | typeof Infinity;
+        escaped?: boolean;
+        named_reference_bind?: string;
+        association?: Association;
      };
 
 export type Transform = {
-   t_type: "rule" | "cluster-field" | Routine;
+   t_type: "rule" | "cluster-field" | Routine | "recast";
    target: Token[][];
    result: Token[][];
    conditions: { before: Token[]; after: Token[] }[];
@@ -143,7 +155,7 @@ export type Transform = {
 };
 
 export type Transform_Pending = {
-   t_type: "rule" | "cluster-field" | Routine;
+   t_type: "rule" | "cluster-field" | Routine | "recast";
    target: string;
    result: string;
    conditions: string[];

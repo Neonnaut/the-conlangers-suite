@@ -32,7 +32,7 @@
             <img src="img/nesca.svg" alt="Logo of astronaut" style="float: left;">
 
             <h1 style="margin-bottom: 10px;">Nesca<br>documentation</h1>
-            <b>Version <a class="VERSION">1.0.8</a></b>
+            <b>Version <a class="VERSION">1.0.9</a></b>
          </div>
          <br>
 
@@ -76,6 +76,7 @@
             <li><a href="#chapStage">The stage directive</a>
             <ol class="nice-list">
                <li><a href="#chapStageName">Naming stages</a>
+               <li><a href="#chapRules">Rules</a>
             </ol>
             
             </li>
@@ -99,6 +100,8 @@
                      <li><a href="#chapSyllableBoundariesDirective">Syllable boundaries directive</a></li>
                   </ol>
                </li>
+               
+               
             </ol>
             </li>
 
@@ -124,7 +127,7 @@
             </ol>
             </li>
 
-            <li><a href="#chapWildcardsAndQuantifiers">Wildcards and quantifiers</a>
+            <li><a href="#chapQuantifiersAndWildcards">Quantifiers and wildcards</a>
             <ol class="nice-list">
                <li><a href="#chapQuantifier">Quantifier</a></li>
                <li><a href="#chapBoundedQuantifier">Bounded quantifier</a></li>
@@ -155,26 +158,19 @@
                   </li>
                   <li><a href="#chapAssociatemes">Associatemes</a></li>
                   <li><a href="#chapLetterCaseField">Letter case field</a></li>
+                  <li><a href="#chapRecasts">Recasts</a></li>
                   
             </ol>
             </li>
-            
-
-            <li><a href="#chapBlock">Blocks</a>
-            <ol class="nice-list">
-               <li><a href="#chapChance">Chance block</a></li>
-            </ol>
-            </li>
-         </ol>
 
          <h2 id="chapAbout"><a class="head-num">1</a>About Nesca</h2>
-         <p>This is the complete documentation for <a href="./nesca.html">Nesca</a> version <a class="VERSION">1.0.8</a></p>
-         <p>Nesca, a "sound change applier", applies transformation rules to words to change them. It can be used for historical or fictional sound changes, to spell words differently, or to convert words to other alphabets. Nesca is an easy to use but powerful tool for conlangers and linguists.</p>
+         <p>This is the complete documentation for <a href="./nesca.html">Nesca</a> version <a class="VERSION">1.0.9</a></p>
+         <p>Nesca is a Sound Change Applier. It applies transformation rules to words to change them. It can be used for historical or fictional sound changes, to spell words differently, or to convert words to other alphabets. Nesca is an easy to use but powerful tool for conlangers and linguists.</p>
 
          <p>Nesca is one of the applications belonging to <a href="https://github.com/Neonnaut/the-conlangers-suite">The Conlangers Suite</a>. You can install Nesca to be used in your own projects or as a command-line-interface <a href="https://www.npmjs.com/package/the-conlangers-suite">here</a>.</p>
 
          <!--
-         <p>Nesca has been influenced by similar SCAs, most notably: Brassica, Lexurgy, Geoff's Sound Change Applier, and KathTheDragon's SCE.</p>
+         <p>Nesca has been influenced by similar SCAs, most notably: Brassica, Lexurgy, Geoff's Sound Change Applier, ASCA, and KathTheDragon's SCE.</p>
          -->
 
          <h2 id="chapInterface"><a class="head-num">2</a>Interface</h2>
@@ -291,6 +287,10 @@
                <tr>
                   <td><code class="example">&gt;&gt;</code>, <code class="example">-&gt;</code>, <code class="example">=&gt;</code>, <code class="example">⇒</code> or <code class="example">→</code></td>
                   <td>Indicates <a href="#chapTheChange">change</a></td>
+               </tr>
+               <tr>
+                  <td><code class="example">&lt;recast-as&gt;</code></td>
+                  <td>Indicates a <a href="#chapRecasts">recast</a></td>
                </tr>
                <tr>
                   <td><code class="example">,</code> or <code class="example">&nbsp;</code></td>
@@ -616,7 +616,7 @@
   <span class="catkey">V</span> <span class="link">=</span> a<span class="link">,</span> i<span class="link">,</span> e<span class="link">,</span> o<span class="link">,</span> <span class="catkey">L</span></div>
          
          <h2 id="chapSchema"><a class="head-num">5</a>Schema</h2>
-         <p>For each input word, it is possible to split the input word into various fields such as &quot;word&quot; and &quot;class&quot; and any other fields in the input word, such as &quot;meaning&quot; or &quot;gloss&quot;, with the schema directive.</p>
+         <p>For each input word, it is possible to split the input word into various fields such as "word" and "class" and any other fields in the input word, such as "meaning" or "gloss", with the schema directive.</p>
 
          <p>For example, let's say we have input words in this format, and this is one of the words:</p>
 <div class="prog-pre">wiggyfoobar [a type of spigot] &quot;noun&quot;
@@ -650,18 +650,15 @@
   a<span class="link">,</span> b<span class="link">,</span> c<span class="link">,</span> ch<span class="link">,</span> e<span class="link">,</span> f<span class="link">,</span> h<span class="link">,</span> i<span class="link">,</span> k<span class="link">,</span> l<span class="link">,</span> m<span class="link">,</span> n<span class="link">,</span> o<span class="link">,</span> p<span class="link">,</span> p'<span class="link">,</span> r<span class="link">,</span> s<span class="link">,</span> t<span class="link">,</span> t'<span class="link">,</span> y</div>
          <p>In the above example, we defined <code class="example">ch</code> as a grapheme. This will stop a rule such as <code class="example">c -> g</code> changing the word <code class="example">chat</code> into <code class="example">ghat</code>, but it will make <code class="example">cobra</code> change into <code class="example">gobra</code>.</p>
 
-         <p>Which graphemes are 'associatemes' of their 'bases' are declared in the graphemes directive. Read more about this in <a href="#chapAssociatemes">this section of the documentation</a>.</p>
+         <p>Which graphemes are "associatemes" of their "bases" are declared in the graphemes directive. Read more about this in <a href="#chapAssociatemes">this section of the documentation</a>.</p>
 
          <h2 id="chapStage"><a class="head-num">9</a>The stage directive</h2>
          <p>Once words are generated, you might want to modify them to prevent certain sequences, outright reject certain words, or simulate historical sound changes. This is the purpose of transforms, which are all declared in the stage directive:</p>
         <div class="prog-pre"><span class="directive">stage</span><code class="link">:</code>
 <span class="comment">; Your transforms go here</span></div>
 
-         <p>The default transform is a rule. These should be familiar to anyone who knows a little about phonological rules. The two other types of transforms are <a href="#chapClusterfield">cluster-fields</a> and <a href="#chapRoutine">routines</a>.</p>
+         <p>The default transform is a <a href="#chapRules">rule</a>. These should be familiar to anyone who knows a little about phonological rules. The two other types of transforms are <a href="#chapClusterfield">cluster-fields</a> and <a href="#chapRoutine">routines</a>.</p>
 
-         <p>A rule can be summarised as four fields: <code class="example">CHANGE / CONDITION ! EXCEPTION</code>. The characters <code class="example">/</code> and <code class="example">!</code> that precede each field (except for the <code class="example">CHANGE</code>) are necessary for signalling each field. For example, including a <code class="example">!</code> will signal that this rule contains an exception, and all text following it until the next field marker will be interpreted as such.</p>
-
-         <p>Every rule begins on a new line and must contain a <code class="example">CHANGE</code>. The <code class="example">CONDITION</code> or <code class="example">EXCEPTION</code> fields are optional.</p>
          <p>If you want to capture graphemes that are normally syntax characters in transforms, you will need to <a href="#vocEscapeTransform">escape them</a>.</p>
 
          <p>When this document uses examples to explain transformations, the last comment shows an example word transforming. For example <code class="example">; amda ==> ampa</code> means the rule will transform the word <code class="example">amda</code> into <code class="example">ampa</code></p>
@@ -672,11 +669,21 @@
 <code class="directive">stage</code><code class="link">:</code>
 <span class="comment">; Your transforms go here</span></div>
 
+         <h3 id="chapRules"><a class="head-num">9.2</a>Rules</h3>
+         <p>A rule can be summarised as four fields: <code class="example">CHANGE / CONDITION ! EXCEPTION</code>. The operators <code class="example">/</code> and <code class="example">!</code> that precede each field (except for the <code class="example">CHANGE</code>) are necessary for signalling each field. For example, including a <code class="example">!</code> will signal that this rule contains an exception, and all text following it until the next field marker will be interpreted as such.</p>
+
+         <p>Every rule begins on a new line and must contain a <code class="example">CHANGE</code>. The <code class="example">CONDITION</code> or <code class="example">EXCEPTION</code> fields are optional.</p>
+
+         <p>Rules can be wrapped on multiple lines after the field indicating operators:</p>
+         <div class="prog-pre">k <span class="link">-></span>
+ch <span class="link">/</span>
+<span class="link">_</span>i</div>
+
          <h2 id="chapTheChange"><a class="head-num">10</a>The change</h2>
          <p>The format of a rule's <code class="example">CHANGE</code> can be expressed as <code class="example">TARGET -> REPLACEMENT</code>.</p>
          <ul class="paragraphian">
             <li><code class="example">TARGET</code> specifies which part of the word is being changed</li>
-            <li>Then followed by hyphen and greater-than-sign <code class="example">-&gt;</code>. <code class="example">-&gt;</code> can be swapped with either <code class="example">&gt;></code>, <code class="example">=&gt;</code>, <code class="example">⇒</code> or <code class="example">→</code> if you prefer</li>
+            <li>Then followed by a hyphen and greater-than-sign <code class="example">-&gt;</code>. <code class="example">-&gt;</code> can be swapped with either <code class="example">&gt;></code>, <code class="example">=&gt;</code>, <code class="example">⇒</code> or <code class="example">→</code> if you prefer</li>
             <li><code class="example">REPLACEMENT</code> is what <code class="example">TARGET</code> is changing into, or in other words, replacing</li>
          </ul>
          <p>Let's look at a simple unconditional rule:</p>
@@ -781,21 +788,21 @@
 <p>This is to say <code class="example">{Bz}v -> ^</code> is invalid.</p>
 
          <h2 id="chapFeatures"><a class="head-num">16</a>Features</h2>
-         <p>Let's say you had the grapheme, or rather, phoneme /i/ and wanted to capture it by its distinctive vowel features, <code class="example">+high</code>, <code class="example">-round</code> and <code class="example">+front</code>, and turn it into a phoneme marked with <code class="example">+high</code>, <code class="example">-round</code> and <code class="example">+back</code> features, perhaps /ɯ/. The features directive and feature matrices let you do this. The features can be described as binary and 'fully-specified'.</p>
+         <p>Let's say you had the grapheme, or rather, phoneme /i/ and wanted to capture it by its distinctive vowel features, <code class="example">+high</code>, <code class="example">-round</code> and <code class="example">+front</code>, and turn it into a phoneme marked with <code class="example">+high</code>, <code class="example">-round</code> and <code class="example">+back</code> features, perhaps /ɯ/. The features directive and feature matrices let you do this. The features can be described as binary and "fully-specified".</p>
          <p>The key of all features must consist of lowercase letters a to z, uppercase letters a to z, <code class="example">.</code>, <code class="example">-</code> or <code class="example">+</code></p>
 
          <h3 id="chapProFeature"><a class="head-num">16.1</a>Pro-feature</h3>
-         <p>A feature prepended with a plus sign <code class="example">+</code> is a 'pro-feature'. For example <code class="example">+voice</code>. We can define a set of graphemes that are marked by this feature by using this pro-feature. For example:</p>
+         <p>A feature prepended with a plus sign <code class="example">+</code> is a "pro-feature". For example <code class="example">+voice</code>. We can define a set of graphemes that are marked by this feature by using this pro-feature. For example:</p>
         <div class="prog-pre"><span class="directive">features</span><span class="link">:</span>
   <span class="catkey">+voice</span> <span class="link">=</span> b<span class="link">,</span> d<span class="link">,</span> g<span class="link">,</span> v<span class="link">,</span> z</div>
 
          <h3 id="chapAntiFeature"><a class="head-num">16.2</a>Anti-feature</h3>
-         <p>A feature prepended with a minus sign <code class="example">-</code> is an 'anti-feature'. For example <code class="example">-voice</code>. We can define a set of graphemes that are marked by a lack of this feature by using this anti-feature. For example:</p>
+         <p>A feature prepended with a minus sign <code class="example">-</code> is an "anti-feature". For example <code class="example">-voice</code>. We can define a set of graphemes that are marked by a lack of this feature by using this anti-feature. For example:</p>
         <div class="prog-pre"><span class="directive">features</span><span class="link">:</span>
   <span class="catkey">-voice</span> <span class="link">=</span> p<span class="link">,</span> t<span class="link">,</span> k<span class="link">,</span> f<span class="link">,</span> s</div>
 
          <h3 id="chapParaFeature"><a class="head-num">16.3</a>Para-feature</h3>
-         <p>A feature prepended with a greater-than-sign <code class="example">&gt;</code> is a 'para-feature'. A para-feature is simply a pro-feature where the graphemes marked as the anti-feature of this feature are the graphemes in the <code class="example">graphemes:</code> directive that are not not marked by this para-feature:</p>
+         <p>A feature prepended with a greater-than-sign <code class="example">&gt;</code> is a "para-feature". A para-feature is simply a pro-feature where the graphemes marked as the anti-feature of this feature are the graphemes in the <code class="example">graphemes:</code> directive that are not not marked by this para-feature:</p>
         <div class="prog-pre"><span class="directive">graphemes</span><span class="link">:</span>
   a<span class="link">,</span> b<span class="link">,</span> h<span class="link">,</span> i<span class="link">,</span> k<span class="link">,</span> n<span class="link">,</span> o<span class="link">,</span> t
 <span class="directive">features</span><span class="link">:</span>
@@ -812,11 +819,11 @@
         <div class="prog-pre"><span class="directive">features</span><span class="link">:</span>
   <span class="catkey">+vowel</span> <span class="link">=</span> a<span class="link">,</span> i<span class="link">,</span> o<br>  <span class="catkey">+non-yod</span> <span class="link">=</span> <span class="catkey">+vowel</span><span class="link">,</span> <span class="operator">^</span>i</div>
 
-         <p>Use a caret in front of a grapheme to ensure that that grapheme is not part of the pro/anti/para-feature. In the example above, the pro-feature '<code class="example">+non-yod</code>' is composed of the graphemes <code class="example">a</code> and <code class="example">o</code> -- the grapheme <code class="example">i</code> is not part of this pro-feature. Due to the recursive nature of nested features, this removed grapheme will be removed... aggressively. For example, If <code class="example">+non-yod</code> were to be referenced in a different feature, that feature would always not have <code class="example">i</code> as a grapheme.</p>
+         <p>Use a caret in front of a grapheme to ensure that that grapheme is not part of the pro/anti/para-feature. In the example above, the pro-feature "<code class="example">+non-yod</code>" is composed of the graphemes <code class="example">a</code> and <code class="example">o</code> -- the grapheme <code class="example">i</code> is not part of this pro-feature. Due to the recursive nature of nested features, this removed grapheme will be removed... aggressively. For example, If <code class="example">+non-yod</code> were to be referenced in a different feature, that feature would always not have <code class="example">i</code> as a grapheme.</p>
 
          <h3 id="chapUsingFeatures"><a class="head-num">16.5</a>Using Features</h3>
 
-         <p>To capture graphemes that are marked by features in a transform, the features must be listed in a 'feature-matrix' surrounded by <code class="example">[</code> and <code class="example">]</code>. The graphemes in a word must be marked by each pro-/anti-feature in the feature-matrix to be captured. For example if a feature-matrix <code class="example">[+high, +back]</code> captures the graphemes: <code class="example">u, ɯ</code>, another feature-matrix <code class="example">[+high, +back, -round]</code> would capture <code class="example">ɯ</code> only.</p>
+         <p>To capture graphemes that are marked by features in a transform, the features must be listed in a "feature-matrix" surrounded by <code class="example">[</code> and <code class="example">]</code>. The graphemes in a word must be marked by each pro-/anti-feature in the feature-matrix to be captured. For example if a feature-matrix <code class="example">[+high, +back]</code> captures the graphemes: <code class="example">u, ɯ</code>, another feature-matrix <code class="example">[+high, +back, -round]</code> would capture <code class="example">ɯ</code> only.</p>
          <p>The very simple example below is written to change all voiceless graphemes that have a voiced counterpart into their voiced counterparts:</p>
 
         <div class="prog-pre"><span class="directive">features</span><span class="link">:</span>
@@ -829,7 +836,7 @@
 
          <p>In this rule, in <code class="example">REPLACEMENT</code>, <code class="example">[+voice]</code> has a symmetrical one-to-one change of graphemes from the graphemes in <code class="example">[-voice]</code> in <code class="example">TARGET</code>, leading to a concurrent change. Let's quickly imagine a scenario where the only <code class="example">[+voice]</code> grapheme was <code class="example">b</code>. The result will be a merging of all <code class="example">-voice</code> graphemes into <code class="example">b</code>: <code class="example">tamepfa ==&gt; bamebba</code>.</p>
 
-         <p>It should be noted that feature-matrices in <code class="example">TARGET</code> have no carryover to feature-matrices in <code class="example">REPLACEMENT</code>. For example, in a bogus rule such as <code class="example">o -> [+high]</code> the program will <b>not</b> try to transform <code class="example">&lt;o&gt;</code> into it's [+high] counterpart, it will try and replace <code class="example">&lt;o&gt;</code> with some grapheme marked as <code class="example">[+high]</code> and will probably fail unless only one grapheme is marked as <code class="example">[+high]</code>.</p>
+         <p>It should be noted that feature-matrices in <code class="example">TARGET</code> have no carryover to feature-matrices in <code class="example">REPLACEMENT</code>. For example, in a bogus rule such as <code class="example">o -> [+high]</code> the program will <b>not</b> try to transform <code class="example">&lt;o&gt;</code> into its [+high] counterpart, it will try and replace <code class="example">&lt;o&gt;</code> with some grapheme marked as <code class="example">[+high]</code> and will probably fail unless only one grapheme is marked as <code class="example">[+high]</code>.</p>
 
                   <p>If the category is inside a set, it MUST be listed as an item on its own:</p>
         <div class="prog-pre"><span class="directive">features</span><span class="link">:</span>
@@ -879,15 +886,15 @@ round  <code class='regexp'>-</code> <code class='regexp'>-</code> <code class='
 
 
 
-         <h2 id="chapWildcardsAndQuantifiers"><a class="head-num">17</a>Wildcards and quantifiers</h2>
-         <p>Wildcards and the like in this section are special tokens that can represent arbitrary amounts of arbitrary graphemes, which is especially useful when you don't know precisely how many, or of what kind of grapheme there will be between two target graphemes in a word.</p>
+         <h2 id="chapQuantifiersAndWildcards"><a class="head-num">17</a>Quantifiers and wildcards</h2>
+         <p>Quantifiers and wildcards in this section are special tokens that can represent arbitrary amounts of arbitrary graphemes, which is especially useful when you don't know precisely how many, or of what kind of grapheme there will be between two target graphemes in a word.</p>
 
          <h3 id="chapQuantifier"><a class="head-num">17.1</a>Quantifier</h3>
          <p>Quantifier, using <code class="example">+</code>, will match once or as many times as possible to the grapheme to the left of it. Quantifier cannot be used in <code class="example">REPLACEMENT</code>:</p>
         <div class="prog-pre">  a<span class="regexp">+</span> <span class="link">-></span> o<br><code class="comment">; raraaaaa ==> roro</code></div>
 
          <h3 id="chapBoundedQuantifier"><a class="head-num">17.2</a>Bounded quantifier</h3>
-         <p>The bounded quantifier matches as many times its digit(s), enclosed in <code class="example">?[</code> and <code class="example">]</code>, to the things to the left.</p>
+         <p>The bounded quantifier matches as many times its digit(s), enclosed in <code class="example">?[</code> and <code class="example">]</code>, to the things to its left.</p>
         <div class="prog-pre"><span class="comment">; Change &lt;o&gt; into &lt;x&gt; only when preceded by three &lt;r&gt;s</span><br>  o <span class="link">-></span> x <span class="link">/</span> r<span class="regexp">?[</span>3<span class="regexp">]</span><span class="link">_</span>
 <code class="comment">; ororrro ==> ororrrx</code></div>
 
@@ -927,7 +934,7 @@ round  <code class='regexp'>-</code> <code class='regexp'>-</code> <code class='
         <div class="prog-pre"><span class="comment">; Simulate spreading of nasality to vowels</span><br>  a<span class="link">,</span> i<span class="link">,</span> u <span class="link">-></span> ã<span class="link">,</span> ĩ<span class="link">,</span> ũ <span class="link">/</span> <span class="regexp">{</span>ã<span class="link">,</span> ĩ<span class="link">,</span> ũ<span class="regexp">}</span><span class="regexp">%[]</span><span class="link">_</span> <br><span class="comment">; pabãdruliga ==> pabãdrũlĩgã</span></div>
 
          <h3 id="chapLaziness"><a class="head-num">17.5.1</a>Laziness and cowardliness</h3>
-         <p>By listing graphemes and grapheme sequences inside the square brackets, we can alter the "greedy" behaviour of an anythings-mark with degrees of "laziness" and 'cowardliness'.</p>
+         <p>By listing graphemes and grapheme sequences inside the square brackets, we can alter the "greedy" behaviour of an anythings-mark with degrees of "laziness" and "cowardliness".</p>
 
          <p><b>Consuming negative lookahead, AKA "laziness"</b>:</p>
 
@@ -947,9 +954,9 @@ round  <code class='regexp'>-</code> <code class='regexp'>-</code> <code class='
   <span class="regexp">%[</span><span class="regexp">{</span>p<span class="link">,</span>t<span class="link">,</span>k<span class="regexp">}</span>r<span class="regexp">]</span> <span class="link">-></span> x 
 <span class="comment">; kotatros -> xos</span></div> 
 
-         <p><b>Negative lookahead, AKA 'cowardliness'</b>:</p>
+         <p><b>Negative lookahead, AKA "cowardliness"</b>:</p>
 
-         <p>Sometimes it is necessary for graphemes to block the spread <i>without</i> having them be consumed, which I have dubbed 'cowardliness'. To do this put a pipe <code class="example">|</code> after the lazy items and list the cowardly items. For example we might want the graphemes <code class="example">k</code> or <code class="example">g</code> to prevent the rightward spread of nasal vowels to non nasal vowels:</p>
+         <p>Sometimes it is necessary for graphemes to block the spread <i>without</i> having them be consumed, which I have dubbed "cowardliness". To do this put a pipe <code class="example">|</code> after the lazy items and list the cowardly items. For example we might want the graphemes <code class="example">k</code> or <code class="example">g</code> to prevent the rightward spread of nasal vowels to non nasal vowels:</p>
          
         <div class="prog-pre">  a<span class="link">,</span> i<span class="link">,</span> u <span class="link">-></span> ã<span class="link">,</span> ĩ<span class="link">,</span> ũ <span class="link">/</span> <span class="regexp">{</span>ã<span class="link">,</span> ĩ<span class="link">,</span> ũ<span class="regexp">}</span><span class="regexp">%[</span><span class="link">|</span> k<span class="link">,</span> g<span class="regexp">]</span><span class="link">_</span><br><span class="comment">; pabãdruliga ==> pabãdrũlĩga</span></div>
 
@@ -1346,7 +1353,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
   r<span class="regexp">%[</span>l<span class="regexp">]</span> <span class="link">-></span> <span class="catkey">&M</span><br><span class="comment">; parabla ==> palabra</span></div>
 
          <h3 id="chapEmptyMark"><a class="head-num">19.4</a>Empty-mark</h3>
-         <p>An Empty-mark using <code class="example">&E</code>, inserts an 'empty' grapheme into the captured <code class="example">TARGET</code> graphemes. It is only allowed in <code class="example">TARGET</code></p>
+         <p>An Empty-mark using <code class="example">&E</code>, inserts an "empty" grapheme into the captured <code class="example">TARGET</code> graphemes. It is only allowed in <code class="example">TARGET</code></p>
 
          <p>One use for it is a trick to make one-place long-distance metathesis work, for example:</p>
 
@@ -1356,11 +1363,11 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
 <span class="comment">; kotatros -> krotatos</span></div>
 
          <h3 id="chapReference"><a class="head-num">19.5</a>Reference</h3>
-         <p>Sometimes graphemes must be copied or asserted to be a certain grapheme between other graphemes. This is the purpose of 'reference'. Reference is fairly straightforward, but there is a lot of jargon and different behaviour between fields to explain.</p>
+         <p>Sometimes graphemes must be copied or asserted to be a certain grapheme between other graphemes. This is the purpose of "reference". Reference is fairly straightforward, but there is a lot of jargon and different behaviour between fields to explain.</p>
 
          <h4 id="chapSingularReference"><a class="head-num">19.5.1</a>Reference of singular grapheme</h4>
 
-         <p>A grapheme (or graphemes) are bound to a reference using a 'reference-capture', to the right of some grapheme. A reference-capture looks like <code class='example'>=</code> followed by a single-digit positive number. This number is called the 'reference-key' of the reference. The grapheme (or graphemes) bound to the reference is called the 'reference-value'.</p>
+         <p>A grapheme (or graphemes) are bound to a reference using a "reference-capture", to the right of some grapheme. A reference-capture looks like <code class='example'>=</code> followed by a single-digit positive number. This number is called the "reference-key" of the reference. The grapheme (or graphemes) bound to the reference is called the "reference-value".</p>
 
          <p>The key behaviours of reference-capture are:</p>
          <ul class="paragraphian">
@@ -1371,7 +1378,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
             <li>For reference-capture in conditions, a grapheme is captured only if that condition is met</li>
          </ul>
 
-         <p>The captured grapheme can then be reproduced elsewhere in the rule with a 'reference-mark', even before the reference-capture. The reference-mark invokes the reference-key of a reference.</p>
+         <p>The captured grapheme can then be reproduced elsewhere in the rule with a "reference-mark", even before the reference-capture. The reference-mark invokes the reference-key of a reference.</p>
 
          <p>The key behaviours of reference-mark are:</p>
          <ul class="paragraphian">
@@ -1388,7 +1395,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
 
          <p>In the rule above, we are binding the <code class='example'>[+vowel]</code> feature-matrix to the reference <code class='example'>1</code>, by appending <code class='example'>=1</code> to it. Whatever this grapheme from <code class='example'>[+vowel]</code> is when the condition is met, is captured as the value of <code class='example'>1</code>. Then the value of backrefence <code class='example'>1</code> is in <code class='example'>AFTER</code> by invoking its reference-mark.</p>
 
-        <div class="prog-pre"><span class="comment">; Insert an 'echo vowel' at the end of &lt;ʔ&gt; final words</span>
+        <div class="prog-pre"><span class="comment">; Insert an "echo vowel" at the end of &lt;ʔ&gt; final words</span>
   <span class="operator">^</span> <span class="link">-&gt;</span> <span class="catkey">1</span> <span class="regexp">/</span> <span class="catkey">[+vowel]</span><span class="regexp">=1</span>ʔ<span class="link">_</span><span class="regexp">#</span>
 <span class="comment">; foobaʔ ==&gt; foobaʔa</span></div>
 
@@ -1396,11 +1403,11 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
 
          <h4 id="chapReferenceSequence"><a class="head-num">19.5.2</a>Reference of grapheme sequence</h4>
 
-         <p>Now that 'reference-capture' and 'reference-mark' has been (hopefully) introduced and explained adequately, let's explain how to capture and reference a sequence of graphemes.</p>
+         <p>Now that "reference-capture" and "reference-mark" has been (hopefully) introduced and explained adequately, let's explain how to capture and reference a sequence of graphemes.</p>
 
-         <p>To start capturing a sequence, you use a 'start-reference-capture', <code class="example">&=</code> before the graphemes to be captured. Then at the end of the graphemes to be captured, a 'reference-capture' is used to bind those graphemes to a reference:</p>
+         <p>To start capturing a sequence, you use a "start-reference-capture", <code class="example">&=</code> before the graphemes to be captured. Then at the end of the graphemes to be captured, a "reference-capture" is used to bind those graphemes to a reference:</p>
 
-        <div class="prog-pre"><span class="comment">; Insert an 'echo double vowel' at the end of vowel + vowel + &lt;ʔ&gt; final words</span>
+        <div class="prog-pre"><span class="comment">; Insert an "echo double vowel" at the end of vowel + vowel + &lt;ʔ&gt; final words</span>
   <span class="operator">^</span> <span class="link">-&gt;</span> <span class="catkey">1</span> <span class="regexp">/</span> <span class="regexp">&=</span><span class="catkey">V</span><span class="catkey">V</span><span class="regexp">=1</span>ʔ<span class="link">_</span><span class="regexp">#</span>
 <span class="comment">; foobaaʔ ==&gt; foobaaʔaa</span></div>
          
@@ -1411,7 +1418,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
         <div class="prog-pre">  <span class="regexp">{</span>a<span class="link">,</span> á<span class="link">,</span> à<span class="regexp">}</span> <span class="link">-&gt;</span> <span class="regexp">{</span>e<span class="link">,</span> é<span class="link">,</span> è<span class="regexp">}</span><br><span class="comment">; daná ==&gt; dené</span></div>
 
          <p>This workaround uses alternators, but lacks semantic clarity and scalability, and is outright tedious.</p>
-         <p>To solve this, are 'associatemes' -- aligned variant graphemes associated with their base grapheme, and other associated graphemes -- other SCAs might use the terms "floating diacritics" or "autosegmentals". These allow you to target all forms of a grapheme with a single token. To set up associatemes, they must be stated in the <code class="example">graphemes</code> directive with the base associateme set of an entry inside curly braces, and each variant set in curly braces with a <code class="example">&lt;</code> to the left of the base set, or another variant set, like so:</p>
+         <p>To solve this, are "associatemes" -- aligned variant graphemes associated with their base grapheme, and other associated graphemes -- other SCAs might use the terms "floating diacritics" or "autosegmentals". These allow you to target all forms of a grapheme with a single token. To set up associatemes, they must be stated in the <code class="example">graphemes</code> directive with the base associateme set of an entry inside curly braces, and each variant set in curly braces with a <code class="example">&lt;</code> to the left of the base set, or another variant set, like so:</p>
          
         <div class="prog-pre"><span class="directive">graphemes</span><span class="link">: <span class="regexp">
   {</span></span>a<span class="link">,</span> e<span class="link">,</span> i<span class="link">,</span> o<span class="link">,</span> u<span class="regexp">}</span><span class="regexp">&lt;</span><span class="regexp">{</span>á<span class="link">,</span> é<span class="link">,</span> í<span class="link">,</span> ó<span class="link">,</span> ú<span class="regexp">}</span><span class="regexp">&lt;</span><span class="regexp">{</span>à<span class="link">,</span> è<span class="link">,</span> ì<span class="link">,</span> ò<span class="link">,</span> ù<span class="regexp">}</span></div>
@@ -1423,7 +1430,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
             <li>This does not mean that we can have only one grouping set. For example <code class="example">{a,i,o}&lt;{á,í,ó}, {a,b,c}&lt;{x,y,z}</code> is valid</li>
          </ul>
 
-         <p>In a rule, you then put a tilde after the grapheme to mark it as a base associateme. This is called a 'based-mark'. For example:</p>
+         <p>In a rule, you then put a tilde after the grapheme to mark it as a base associateme. This is called a "based-mark". For example:</p>
          
 
                  <div class="prog-pre"><span class="directive">graphemes</span><span class="link">: <span class="regexp">
@@ -1449,8 +1456,26 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
 <span class="catkey">uppercase</span> I İ 'O TH
 </div>
 
+         <h3 id="chapRecasts"><a class="head-num">19.8</a>Recasts</h3>
+         <p>Recasts, introduced in version 1.0.9, behave like rules but the <code class="example">RESULT</code> is regenerated from a category according to its distribution.</p>
+         <p>This is one way to ensure that certain combinations of graphemes are not generated in the word generation process, and to ensure that certain combinations of graphemes are generated. Recasts do not reproduce a natural linguistic phenomenon, they are shortcut to achieve your phonotactic constraints.</p>
+         <p>To create recasts, you write it in the same way as rules, only the arrow is replaced with <code class="example">&lt;recast-as&gt;</code> and the <code class="example">RESULT</code> is a single category with optional modifiers such as quantifiers.</p>
+         <p>Let's look at an example:</p>
+        <div class="prog-pre"><span class="directive">categories</span><span class="link">:</span>
+  <span class="catkey">V</span> <span class="link">=</span> a<span class="link">,</span> i<span class="link">,</span> u<span class="link">,</span> e<span class="link">,</span> o
+  <span class="catkey">Y</span> <span class="link">=</span> u<span class="link">,</span> a<span class="link">,</span> o<span class="link">,</span> e<span class="link"></span>
+ 
+<span class="directive">stage</span><span class="link">:</span>
+  <span class="catkey">V</span> <span class="link">&lt;recast-as></span> <span class="catkey">Y</span> <span class="link">/</span> y<span class="link">_</span></div>
+<p>This means that if a <code class="example">y</code> is found before a <code class="example">V</code> category, the pool of graphemes for <code class="example">V</code> is constrained to <code class="example">u, o, a, e</code>. Where <code class="example">yi</code> is now invalid, and <code class="example">yu</code> is the most likely to be randomly picked.</p>
+
+<div class="prog-pre"><span class="directive">stage</span><span class="link">:</span>
+  <span class="operator">^</span> <span class="link">&lt;recast-as></span> <span class="catkey">C</span> <span class="link">/</span> <span class="catkey">F</span><span class="regexp">$</span><span class="link">_</span><span class="catkey">V</span></div>
+
+  <p>This inserts a consonant between a grapheme from the <code class="example">F</code> category, a syllable divider and a vowel. This prevents codas from yielding to the onset.</p>
+
          <h2 id="chapBlock"><a class="head-num">20</a>Blocks</h2>
-         <p>Blocks modify the behaviour of transforms that are inside them with 'condition and event' logic.</p>
+         <p>Blocks modify the behaviour of transforms that are inside them with "condition and event" logic.</p>
          <p>They begin with a <code class="example">&lt;@</code> at the beginning of a line, and end with a <code class="example">&gt;</code> on the beginning of a line.</p>
 
          <h3 id="chapChance"><a class="head-num">20.1</a>Chance block</h3>
@@ -1460,8 +1485,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
   a <span class="link">-></span> b
   x <span class="link">-></span> y
 <span class="directive">&gt;</span></div>
-
-         <p>The above example's transforms have a 60% chance of occuring on each word.</p>
+         <p>All of the above example's transforms in the block have a 60% chance of occuring on each word.</p>
       </section>
 
    </div>

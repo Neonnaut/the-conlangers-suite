@@ -515,6 +515,7 @@ class Parser {
                my_subdirective = "clusterfield";
                my_header = top_row;
                continue;
+            } else if (line.startsWith("<recasts")) {
             } else if (line.startsWith("<routine")) {
                if (my_wrapped_rule.length != 0) {
                   this.logger.validation_error(
@@ -568,11 +569,16 @@ class Parser {
                line = my_wrapped_rule + " " + line;
                my_wrapped_rule = "";
 
-               const [target, result, conditions, exceptions] =
+               const [target, result, conditions, exceptions, is_recast] =
                   this.get_transform(line);
 
+               let t_type: "rule" | Routine | "recast" = "rule";
+               if (is_recast) {
+                  t_type = "recast";
+               }
+
                this.push_transform_to_stage({
-                  t_type: "rule",
+                  t_type: t_type,
                   target: target,
                   result: result,
                   conditions: conditions,
@@ -580,6 +586,7 @@ class Parser {
                   chance: this.chance_mapper.get_last_chance(),
                   line_num: this.file_line_num,
                });
+
                continue;
             }
          }
@@ -939,13 +946,20 @@ class Parser {
    // TRANSFORMS !!!
 
    // This is run on parsing file. We then have to run resolve_transforms aftter parse file
-   private get_transform(input: string): [string, string, string[], string[]] {
+   private get_transform(
+      input: string,
+   ): [string, string, string[], string[], boolean] {
       if (input === "") {
          this.logger.validation_error(`No input`, this.file_line_num);
       }
 
+      const is_recast = input.includes("<recast-as>");
+
       input = input.replace(/\/\//g, "!"); // Replace '//' with '!'
-      const divided = input.split(/>>|->|→|=>|⇒/);
+      const divided = is_recast
+         ? input.split("<recast-as>")
+         : input.split(/>>|->|→|=>|⇒/);
+
       if (divided.length === 1) {
          this.logger.validation_error(
             `No arrows in transform`,
@@ -1006,7 +1020,7 @@ class Parser {
 
       const { conditions, exceptions } = this.get_environment(environment);
 
-      return [target, result, conditions, exceptions];
+      return [target, result, conditions, exceptions, is_recast];
    }
 
    private get_schema(input: string): ["input" | "output", string[], string[]] {

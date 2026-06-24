@@ -11,9 +11,9 @@ html {
    --li-marker: #afafaf;
    --drag-lines: #555555;
 
-   --active-bg: #b51931;
+   --active-bg: #a3154e;
    --active-text: #fff;
-   --select-bg: #a3154e;
+   --select-bg: #7c8bec;
    --select-text: #fff;
 
    --error-text: #ff7a7a;
@@ -90,9 +90,9 @@ html {
    --li-marker: #616161;
    --drag-lines: #bbbbbb;
 
-   --active-bg: #b51931;
+   --active-bg: #a3154e;
    --active-text: #fff;
-   --select-bg: #a3154e;
+   --select-bg: #7c8bec;
    --select-text: #fff;
 
    --error-text: #8b0000;
@@ -108,10 +108,8 @@ html {
    --toolbar-bg: #e1e1e1;
    --nav-arrow: #000;
    /* CODE & BUTTON & TEXTBOX */
-   --code-bg: #eedfdf;
-   --code-text: #000;
-   --button-bg: #eaeeff;
-   --button-text: #000;
+   --button-bg: #5d5dbe;
+   --button-text: #fff;
    --select-border: #4c4c80;
 
    --input-box-border: #6f6f6f;
@@ -167,9 +165,9 @@ html {
    --li-marker: #6e8890;
    --drag-lines: #bcbcbc;
 
-   --active-bg: #aa8002;
+   --active-bg: #aa2f02;
    --active-text: #fff;
-   --select-bg: #a75613;
+   --select-bg: #f4852b;
    --select-text: #fff;
 
    --error-text: #8b0000;
@@ -187,8 +185,8 @@ html {
    /* CODE & BUTTON & TEXTBOX */
    --code-bg: #eedfdf;
    --code-text: #000;
-   --button-bg: #eaeeff;
-   --button-text: #073642;
+   --button-bg: #cd7b23;
+   --button-text: #ffffff;
    --select-border: #4c4c80;
 
    --input-box-border: #ababab;
@@ -665,8 +663,6 @@ textarea {
    background: var(--button-bg);
    color: var(--button-text);
 
-   border: 1px solid rgba(0,0,0,0.4);
-   box-shadow: inset 0 1px 3px rgb(0 0 0 / 50%), 0 1px rgb(0 0 0 / 20%);
    font-size: 1.2em;
    font-weight: 500;
    line-height: 1;
@@ -677,25 +673,23 @@ textarea {
    -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;
    user-select: none;
    cursor: pointer;
+
+   border: 1px solid rgba(0,0,0,0.4);
+   box-shadow: inset 0 1px 3px rgba(140,140,140,0.5), 0 1px rgba(140,140,140,0.2);
 }
 .styled-button[type="disabled"], .styled-button:disabled {
    background: var(--disabled-button-bg);
    color: var(--disabled-button-text);
+   box-shadow: none;
 }
-
 
 .styled-button:hover:not(:disabled), #main_menu:hover, .dropdown-btn:hover {
-   box-shadow: inset 0 1px 3px rgba(140,140,140,0.5), 0 1px rgba(140,140,140,0.2);
-}
-
-.styled-button[type="disabled"], .styled-button:disabled,
-input:disabled {
-   background: var(--disabled-button-bg);
-   color: var(--disabled-button-text);
+   box-shadow: inset 0 2px 3px rgba(180, 180, 180, 0.6), 0 1px rgba(180, 180, 180, 0.2);
 }
 
 .styled-button:active:not(:disabled), 
-.dropdown-btn:active:not(:disabled) {
+.dropdown-btn:active:not(:disabled),
+#main_menu:active {
    color: var(--select-text);
    background: var(--select-bg);
 }
@@ -1189,7 +1183,7 @@ font-family: "Charis SIL", "Doulos SIL", Gentium, Arial, Serif;
       padding: 3px 8px 2px 8px;
       background: none;
       border: none;
-      color: var(--button-text);
+      color: var(--text);
       user-select: none;
 }
 

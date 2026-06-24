@@ -1,6 +1,6 @@
 {
    "name": "the-conlangers-suite",
-   "version": "1.0.8",
+   "version": "1.0.9",
    "type": "module",
    "description": "Vocabulary generator and sound change applier",
    "author": "Neonnaut",

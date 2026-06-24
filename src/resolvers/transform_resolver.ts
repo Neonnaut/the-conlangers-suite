@@ -13,8 +13,7 @@ class Transform_Resolver {
    private output_mode: Output_Mode;
 
    public nesca_grammar_stream: Nesca_Grammar_Stream;
-   public categories: Map<string, string[]>;
-
+   public categories: Map<string, { graphemes: string[]; weights: number[] }>;
    public stages_pending: {
       transforms_pending: Transform_Pending[];
       name: string;
@@ -43,7 +42,7 @@ class Transform_Resolver {
       logger: Logger,
       output_mode: Output_Mode,
       nesca_grmmar_stream: Nesca_Grammar_Stream,
-      categories: Map<string, string[]>,
+      categories: Map<string, { graphemes: string[]; weights: number[] }>,
 
       stages_pending: {
          transforms_pending: Transform_Pending[];
@@ -116,7 +115,10 @@ class Transform_Resolver {
                line_num: this.line_num,
             });
             continue;
-         } else if (transform_pending[i].t_type !== "rule") {
+         } else if (
+            transform_pending[i].t_type !== "rule" &&
+            transform_pending[i].t_type !== "recast"
+         ) {
             // Routine type
             output_transforms.push({
                t_type: transform_pending[i].t_type,
@@ -140,47 +142,25 @@ class Transform_Resolver {
          const target_altors: string[][] =
             this.resolve_alt_opt(target_with_fea);
 
-         const result = transform_pending[i].result; // string
-         // Replace category keys with category graphemes, must be item, or alone
-         const result_with_cat = this.categories_into_transform(result);
-         // Replace feature matrix keys with feature matrix graphemes
-         const result_with_fea = this.features_into_transform(result_with_cat);
-         // Resolve alternators or optionalators as array of arrays
-         const result_altors: string[][] =
-            this.resolve_alt_opt(result_with_fea);
+         let tokenised_target_array: Token[][] = [];
+         let tokenised_result_array: Token[][] = [];
 
-         // Make sure lengths are good, and get merging change / sets
-         const { result_array, target_array } = this.normaliseTransformLength(
-            target_altors,
-            result_altors,
-         );
-
-         // Flatten the arrays
-         const result_length_match: string[] = result_array.flat();
-         const target_length_match: string[] = target_array.flat();
-
-         const tokenised_target_array: Token[][] = [];
-         // Grammar stream for target
-         for (let j = 0; j < target_length_match.length; j++) {
-            tokenised_target_array.push(
-               this.nesca_grammar_stream.main_parser(
-                  target_length_match[j],
-                  "TARGET",
-                  this.line_num,
-               ),
-            );
-         }
-
-         const tokenised_result_array: Token[][] = [];
-         // Grammar stream for result
-         for (let j = 0; j < result_length_match.length; j++) {
-            tokenised_result_array.push(
-               this.nesca_grammar_stream.main_parser(
-                  result_length_match[j],
-                  "RESULT",
-                  this.line_num,
-               ),
-            );
+         if (transform_pending[i].t_type === "recast") {
+            // If it's a recast, there must be a single category in RESULT
+            // that we parse as a recast-category, this is only allowed
+            // in Vocabug mode
+            [tokenised_target_array, tokenised_result_array] =
+               this.formalise_recast_transform_target_result(
+                  transform_pending[i].result,
+                  target_altors,
+               );
+         } else {
+            // Normal transform rule
+            [tokenised_target_array, tokenised_result_array] =
+               this.formalise_rule_transform_target_result(
+                  transform_pending[i].result,
+                  target_altors,
+               );
          }
 
          const chance = transform_pending[i].chance;
@@ -273,8 +253,10 @@ class Transform_Resolver {
 
          output_transforms.push({
             t_type: transform_pending[i].t_type,
+
             target: tokenised_target_array,
             result: tokenised_result_array,
+
             conditions: new_conditions,
             exceptions: new_exceptions,
             chance: chance,
@@ -282,6 +264,101 @@ class Transform_Resolver {
          });
       }
       return output_transforms;
+   }
+
+   formalise_rule_transform_target_result(
+      result: string,
+      target_altors: string[][],
+   ): [Token[][], Token[][]] {
+      // Replace category keys with category graphemes, must be item, or alone
+      const result_with_cat = this.categories_into_transform(result);
+      // Replace feature matrix keys with feature matrix graphemes
+      const result_with_fea = this.features_into_transform(result_with_cat);
+      // Resolve alternators or optionalators as array of arrays
+      const result_altors: string[][] = this.resolve_alt_opt(result_with_fea);
+
+      // Make sure lengths are good, and get merging change / sets
+      const { result_array, target_array } = this.normalise_transform_length(
+         target_altors,
+         result_altors,
+      );
+
+      // Flatten the arrays
+      const result_length_match: string[] = result_array.flat();
+      const target_length_match: string[] = target_array.flat();
+
+      const tokenised_target_array: Token[][] = [];
+      // Grammar stream for target
+      for (let j = 0; j < target_length_match.length; j++) {
+         tokenised_target_array.push(
+            this.nesca_grammar_stream.main_parser(
+               target_length_match[j],
+               "TARGET",
+               this.line_num,
+            ),
+         );
+      }
+
+      const tokenised_result_array: Token[][] = [];
+      // Grammar stream for result
+      for (let j = 0; j < result_length_match.length; j++) {
+         tokenised_result_array.push(
+            this.nesca_grammar_stream.main_parser(
+               result_length_match[j],
+               "RESULT",
+               this.line_num,
+            ),
+         );
+      }
+      return [tokenised_target_array, tokenised_result_array];
+   }
+
+   formalise_recast_transform_target_result(
+      result: string,
+      target: string[][],
+   ): [Token[][], Token[][]] {
+      // Flatten the arrays
+      const target_length_match: string[] = target.flat();
+
+      const tokenised_target_array: Token[][] = [];
+      // Grammar stream for target
+      for (let j = 0; j < target_length_match.length; j++) {
+         tokenised_target_array.push(
+            this.nesca_grammar_stream.main_parser(
+               target_length_match[j],
+               "TARGET",
+               this.line_num,
+            ),
+         );
+      }
+
+      const tokenised_result_array: Token[][] = [];
+
+      const my_key = result[0] ?? "";
+      const modify = result.slice(1);
+
+      // Check that result is inside this.categories as base
+      if (this.categories.has(my_key)) {
+         // Get the category's graphemes and weights and key
+         // Get the rest and treat as modifiers to the recast category
+
+         const got_category = this.categories.get(my_key);
+         const new_token = this.nesca_grammar_stream.recast_category_parser(
+            my_key,
+            got_category!.graphemes,
+            got_category!.weights,
+            modify,
+            this.line_num,
+         );
+         tokenised_result_array.push([new_token]);
+      } else {
+         this.logger.validation_error(
+            `RESULT "${result}" in a recast transform must be a single category key`,
+            this.line_num,
+         );
+      }
+
+      return [tokenised_target_array, tokenised_result_array];
    }
 
    environment_helper(input: string): [string, string] {
@@ -469,11 +546,12 @@ class Transform_Resolver {
             continue;
          }
 
-         // Category expansion (always expand, no boundary checks)
+         // Category expansion
          if (this.categories.has(char)) {
             const entry = this.categories.get(char)!;
 
-            const expanded = entry.filter((g) => !g.includes("^")).join(", ");
+            // NEW: extract graphemes from the object
+            const expanded = entry.graphemes.join(", ");
 
             const isParenWrapped = this.check_bracket_context(
                input,
@@ -481,12 +559,12 @@ class Transform_Resolver {
                i,
                "category",
             );
+
             if (isParenWrapped) {
-               // inside ( [X] ) -> allowed
                output += `${expanded}`;
                continue;
             }
-            // top-level -> allowed
+
             output += `{${expanded}}`;
             continue;
          }
@@ -663,7 +741,7 @@ class Transform_Resolver {
       return intersection.join(", ");
    }
 
-   normaliseTransformLength(
+   normalise_transform_length(
       target: string[][],
       result: string[][],
    ): { target_array: string[][]; result_array: string[][] } {
@@ -920,7 +998,8 @@ class Transform_Resolver {
 
             if (
                my_transform.t_type != "rule" &&
-               my_transform.t_type != "cluster-field"
+               my_transform.t_type != "cluster-field" &&
+               my_transform.t_type != "recast"
             ) {
                format_transforms.push(
                   `  <routine = ${my_transform.t_type}> @ ln:${my_transform.line_num + 1}`,
@@ -949,8 +1028,11 @@ class Transform_Resolver {
                conditions += ` / ${this.format_tokens(my_transform.conditions[j].before)}_${this.format_tokens(my_transform.conditions[j].after)}`;
             }
 
+            const arrow =
+               my_transform.t_type === "recast" ? "<recast-as>" : "→";
+
             format_transforms.push(
-               `  ${my_target.join(", ")} → ${my_result.join(", ")}${conditions}${exceptions}${chance} @ ln:${my_transform.line_num + 1}`,
+               `  ${my_target.join(", ")} ${arrow} ${my_result.join(", ")}${conditions}${exceptions}${chance} @ ln:${my_transform.line_num + 1}`,
             );
          }
          format_stages.push({

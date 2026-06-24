@@ -93,3 +93,13 @@
 - Added Cyrillic to Latin routine
 - Added "Romance-like" example for Vocabug
 
+## [1.0.9] - 2026-JUN-25
+
+### Modified
+
+- Modified the "Australian-like" example in Vocabug
+- Restructured the docs. The rule line wrapping feature had not been documented yet
+
+### Added
+
+- Added recast transforms

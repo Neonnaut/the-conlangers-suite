@@ -14,7 +14,10 @@ class Category_Resolver {
    private category_pending: Map<string, { content: string; line_num: number }>;
    public categories: Map<string, { graphemes: string[]; weights: number[] }>;
 
-   public trans_categories: Map<string, string[]>;
+   public trans_categories: Map<
+      string,
+      { graphemes: string[]; weights: number[] }
+   >;
 
    constructor(
       logger: Logger,
@@ -42,8 +45,15 @@ class Category_Resolver {
    }
 
    private get_trans_categories() {
-      for (const [key, value] of this.categories) {
-         this.trans_categories.set(key, value.graphemes);
+      this.trans_categories = new Map();
+
+      for (const [key, entry] of this.categories) {
+         const filtered = entry.graphemes.filter((g) => !g.includes("^"));
+
+         this.trans_categories.set(key, {
+            graphemes: filtered,
+            weights: filtered.map(() => 1), // keep weights aligned
+         });
       }
    }
 

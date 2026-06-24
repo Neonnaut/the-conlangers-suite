@@ -10,39 +10,39 @@ export function get_feature_table(
    const get = (f: string) => features.get(f)?.graphemes ?? [];
 
    const intersect = (a: string[], b: string[]) => {
-      const bSet = new Set(b);
-      return a.filter((g) => bSet.has(g) && allowed.has(g));
+      const b_set = new Set(b);
+      return a.filter((g) => b_set.has(g) && allowed.has(g));
    };
 
    // Preload column sets
-   const colSets = new Map<string, string[]>();
-   for (const c of columns) colSets.set(c, get(c));
+   const col_sets = new Map<string, string[]>();
+   for (const c of columns) col_sets.set(c, get(c));
 
    // All feature names
-   const allFeatureNames = Array.from(features.keys());
+   const all_feature_names = Array.from(features.keys());
 
    // Splitter features = everything except rows and columns
-   const splitterFeatures = allFeatureNames.filter(
+   const splitter_features = all_feature_names.filter(
       (f) => !rows.includes(f) && !columns.includes(f),
    );
 
-   type RowSpec = { base: string; label: string; set: string[] };
-   const specs: RowSpec[] = [];
+   type row_spec = { base: string; label: string; set: string[] };
+   const specs: row_spec[] = [];
 
    for (const base of rows) {
-      const baseSet = intersect(get(base), my_graphemes);
-      if (baseSet.length === 0) continue;
+      const base_set = intersect(get(base), my_graphemes);
+      if (base_set.length === 0) continue;
 
       // Compute signatures
-      const signatureMap = new Map<
+      const signature_map = new Map<
          string,
          { sig: string[]; items: string[] }
       >();
 
-      for (const g of baseSet) {
+      for (const g of base_set) {
          const sig: string[] = [];
 
-         for (const f of splitterFeatures) {
+         for (const f of splitter_features) {
             if (get(f).includes(g)) sig.push(f);
          }
 
@@ -52,13 +52,13 @@ export function get_feature_table(
          );
 
          const key = sig.join(" ");
-         if (!signatureMap.has(key)) {
-            signatureMap.set(key, { sig, items: [] });
+         if (!signature_map.has(key)) {
+            signature_map.set(key, { sig, items: [] });
          }
-         signatureMap.get(key)!.items.push(g);
+         signature_map.get(key)!.items.push(g);
       }
 
-      const groups = Array.from(signatureMap.values());
+      const groups = Array.from(signature_map.values());
 
       // If only one group → do NOT qualify the row
       if (groups.length === 1) {
@@ -73,35 +73,35 @@ export function get_feature_table(
    }
 
    // Build table rows
-   const resultRows = specs.map((spec) => {
+   const result_rows = specs.map((spec) => {
       const cells = columns.map((col) => {
-         const items = intersect(spec.set, colSets.get(col) ?? []);
+         const items = intersect(spec.set, col_sets.get(col) ?? []);
          return items[0] ?? "";
       });
       return { row: spec.label, cells };
    });
 
    // Sort by base feature order
-   resultRows.sort((a, b) => {
-      const aBase = a.row.split(/\s+/).at(-1)!;
-      const bBase = b.row.split(/\s+/).at(-1)!;
-      return rows.indexOf(aBase) - rows.indexOf(bBase);
+   result_rows.sort((a, b) => {
+      const a_base = a.row.split(/\s+/).at(-1)!;
+      const b_base = b.row.split(/\s+/).at(-1)!;
+      return rows.indexOf(a_base) - rows.indexOf(b_base);
    });
 
    // Remove empty columns
-   const keepColumn = columns.map((_, colIndex) =>
-      resultRows.some((r) => r.cells[colIndex] !== ""),
+   const keep_column = columns.map((_, col_index) =>
+      result_rows.some((r) => r.cells[col_index] !== ""),
    );
 
-   const filteredHeaders = columns.filter((_, i) => keepColumn[i]);
+   const filtered_headers = columns.filter((_, i) => keep_column[i]);
 
-   const filteredRows = resultRows.map((r) => ({
+   const filtered_rows = result_rows.map((r) => ({
       row: r.row,
-      cells: r.cells.filter((_, i) => keepColumn[i]),
+      cells: r.cells.filter((_, i) => keep_column[i]),
    }));
 
    return {
-      headers: filteredHeaders,
-      rows: filteredRows,
+      headers: filtered_headers,
+      rows: filtered_rows,
    };
 }

@@ -348,129 +348,174 @@ class Nesca_Grammar_Stream {
             }
          }
 
-         // ✅ Modifier parsing (applies to any token type except word-boundary, reject, deletion, insertion)
+         // -------------------------
+         // APPLY MODIFIERS
+         // -------------------------
+         const modded = this.parse_modifiers(
+            stream,
+            i,
+            new_token,
+            mode,
+            line_num,
+         );
+         tokens.push(modded.token);
+         i = modded.next_i;
+      }
+      return tokens;
+   }
 
-         if (stream[i] === ":") {
-            new_token.min = 2;
-            new_token.max = 2; // Default quantifier
+   parse_modifiers(
+      stream: string,
+      i: number,
+      token: Token,
+      mode: Token_Stream_Mode,
+      line_num: number,
+   ): { token: Token; next_i: number } {
+      if (!("min" in token) || !("max" in token)) {
+         return { token, next_i: i };
+      }
+
+      while (true) {
+         const char = stream[i];
+
+         // No more modifiers → stop
+         if (char !== ":" && char !== "+" && char !== "?" && char !== "~") {
+            break;
+         }
+
+         // ":" exactly twice
+         if (char === ":") {
+            token.min = 2;
+            token.max = 2;
             i++;
-         } else if (stream[i] === "+") {
+            continue;
+         }
+
+         // "+" one or more
+         if (char === "+") {
             if (mode === "RESULT") {
                this.logger.validation_error(
                   `Quantifier not allowed in ${mode}`,
                   line_num,
                );
             }
-            new_token.min = 1;
-            new_token.max = Infinity; // Default quantifier
+            token.min = 1;
+            token.max = Infinity;
             i++;
-         } else if (stream[i] === "?") {
-            let look_ahead = i + 1;
-            if (stream[look_ahead] !== "[") {
+            continue;
+         }
+
+         // "?[min,max]"
+         if (char === "?") {
+            let look = i + 1;
+
+            if (stream[look] !== "[") {
                this.logger.validation_error(
                   `Expected "[" after "?" for quantifier`,
                   line_num,
                );
+            }
+
+            look++;
+            let quant = "";
+            while (look < stream.length && stream[look] !== "]") {
+               quant += stream[look++];
+            }
+
+            if (stream[look] !== "]") {
+               this.logger.validation_error(`Unclosed quantifier`, line_num);
+            }
+
+            const parts = quant.split(",");
+
+            if (parts.length === 1) {
+               const n = parseInt(parts[0], 10);
+               if (isNaN(n)) {
+                  this.logger.validation_error(
+                     `Invalid quantifier value: "${parts[0]}"`,
+                     line_num,
+                  );
+               }
+               token.min = n;
+               token.max = n;
+            } else if (parts.length === 2) {
+               const [minStr, maxStr] = parts;
+               const min = minStr === "" ? 1 : parseInt(minStr, 10);
+               const max = maxStr === "" ? Infinity : parseInt(maxStr, 10);
+
+               if (minStr !== "" && isNaN(min)) {
+                  this.logger.validation_error(
+                     `Invalid min value: "${minStr}"`,
+                     line_num,
+                  );
+               }
+               if (maxStr !== "" && max !== Infinity && isNaN(max)) {
+                  this.logger.validation_error(
+                     `Invalid max value: "${maxStr}"`,
+                     line_num,
+                  );
+               }
+               if (max === Infinity && mode === "RESULT") {
+                  this.logger.validation_error(
+                     `In ${mode}, "${token.base}" cannot be reproduced an infinite amount of times`,
+                     line_num,
+                  );
+               }
+
+               token.min = min;
+               token.max = max;
             } else {
-               look_ahead += 1;
-               let quantifier = "";
-               while (
-                  look_ahead < stream.length &&
-                  stream[look_ahead] !== "]"
-               ) {
-                  quantifier += stream[look_ahead];
-                  look_ahead++;
-               }
-               if (stream[look_ahead] !== "]") {
-                  this.logger.validation_error(`Unclosed quantifier`, line_num);
-               }
-
-               const parts = quantifier.split(",");
-               if (parts.length === 1) {
-                  const n = parseInt(parts[0], 10);
-                  if (isNaN(n)) {
-                     this.logger.validation_error(
-                        `Invalid quantifier value: "${parts[0]}"`,
-                        line_num,
-                     );
-                  }
-                  new_token.min = n;
-                  new_token.max = n;
-               } else if (parts.length === 2) {
-                  const [minStr, maxStr] = parts;
-                  const min = minStr === "" ? 1 : parseInt(minStr, 10);
-                  const max = maxStr === "" ? Infinity : parseInt(maxStr, 10);
-                  if (minStr !== "" && isNaN(min)) {
-                     this.logger.validation_error(
-                        `Invalid min value: "${minStr}"`,
-                        line_num,
-                     );
-                  }
-                  if (maxStr !== "" && max !== null && isNaN(max)) {
-                     this.logger.validation_error(
-                        `Invalid max value: "${maxStr}"`,
-                        line_num,
-                     );
-                  }
-                  if (max === Infinity && mode === "RESULT") {
-                     this.logger.validation_error(
-                        `In ${mode}, "${new_token.base}" cannot be reproduced an infinite amount of times`,
-                        line_num,
-                     );
-                  }
-                  new_token.min = min;
-                  new_token.max = max;
-               } else {
-                  this.logger.validation_error(
-                     `Invalid quantifier format: "${quantifier}"`,
-                     line_num,
-                  );
-               }
-
-               i = look_ahead + 1;
+               this.logger.validation_error(
+                  `Invalid quantifier format: "${quant}"`,
+                  line_num,
+               );
             }
-            if (new_token.max != Infinity) {
-               if (new_token.min > new_token.max) {
-                  this.logger.validation_error(
-                     `Invalid quantifier: min "${new_token.min}" cannot be greater than max "${new_token.max}"`,
-                     line_num,
-                  );
-               }
+
+            if (token.max !== Infinity && token.min > token.max) {
+               this.logger.validation_error(
+                  `Invalid quantifier: min "${token.min}" cannot be greater than max "${token.max}"`,
+                  line_num,
+               );
             }
+
+            i = look + 1;
+            continue;
          }
-         if (stream[i] === "~") {
-            if (new_token.type !== "grapheme") {
+
+         // "~" based-mark
+         if (char === "~") {
+            if (token.type !== "grapheme") {
                this.logger.validation_error(
                   `Based-mark only allowed after grapheme token`,
                   line_num,
                );
-            }
-
-            const location = this.find_base_location(
-               this.associateme_mapper,
-               new_token.base,
-            );
-            if (!location) {
-               this.logger.validation_error(
-                  `Grapheme "${new_token.base}" with a based-mark was not an associateme base`,
-                  line_num,
+            } else {
+               const location = this.find_base_location(
+                  this.associateme_mapper,
+                  token.base,
                );
+               if (!location) {
+                  this.logger.validation_error(
+                     `Grapheme "${token.base}" with a based-mark was not an associateme base`,
+                     line_num,
+                  );
+               } else {
+                  const [entry_id, base_id] = location;
+                  token.association = {
+                     entry_id,
+                     base_id,
+                     variant_id: 0,
+                     is_target: mode === "TARGET",
+                  };
+               }
             }
-            const [entry_id, base_id] = location;
-            new_token.association = {
-               entry_id: entry_id,
-               base_id: base_id,
-               variant_id: 0, // Placeholder; to be filled during generation
-               is_target: mode === "TARGET",
-            };
-            i++;
-         }
 
-         if (new_token.type !== "pending") {
-            tokens.push(new_token);
+            i++;
+            continue;
          }
       }
-      return tokens;
+
+      return { token, next_i: i };
    }
 
    cluster_parser(
@@ -550,6 +595,40 @@ class Nesca_Grammar_Stream {
          }
       }
       return tokens;
+   }
+
+   recast_category_parser(
+      base: string,
+      graphemes: string[],
+      weights: number[],
+      modify: string,
+      line_number: number,
+   ): Token {
+      const new_token: Token = {
+         type: "recast-category",
+         base: base,
+         graphemes: graphemes,
+         weights: weights,
+         min: 1,
+         max: 1,
+      };
+
+      const modded = this.parse_modifiers(
+         modify,
+         0,
+         new_token,
+         "RESULT",
+         line_number,
+      );
+
+      if (modded.next_i != modify.length) {
+         this.logger.validation_error(
+            "The RESULT of a recast transform must be a category with optional modifiers",
+            line_number,
+         );
+      }
+
+      return modded.token;
    }
 
    find_base_location(

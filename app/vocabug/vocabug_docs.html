@@ -31,7 +31,7 @@
             <img src="./img/vocabug_logo.svg" alt="Logo of letter V with bug antennae" style="float: left;">
 
             <h1 style="margin-bottom: 10px;">Vocabug<br>docs</h1>
-            <b>Version <a class="VERSION">1.0.8</a></b>
+            <b>Version <a class="VERSION">1.0.9</a></b>
          </div>
          <br>
 
@@ -101,6 +101,7 @@
             <li><a href="#chapStage">The stage directive</a>
             <ol class="nice-list">
                <li><a href="#chapStageName">Naming stages</a>
+               <li><a href="#chapRules">Rules</a>
             </ol>
             
             </li>
@@ -151,7 +152,7 @@
             </ol>
             </li>
 
-            <li><a href="#chapWildcardsAndQuantifiers">Wildcards and quantifiers</a>
+            <li><a href="#chapQuantifiersAndWildcards">Quantifiers and wildcards</a>
             <ol class="nice-list">
                <li><a href="#chapQuantifier">Quantifier</a></li>
                <li><a href="#chapBoundedQuantifier">Bounded quantifier</a></li>
@@ -182,6 +183,7 @@
                   </li>
                   <li><a href="#chapAssociatemes">Associatemes</a></li>
                   <li><a href="#chapLetterCaseField">Letter case field</a></li>
+                  <li><a href="#chapRecasts">Recasts</a></li>
                   
             </ol>
             </li>
@@ -193,18 +195,17 @@
             </ol>
             </li>
 
-
             <li><a href="#chapabugQuestionsAndAnswers">Questions and answers</a></li>
          </ol>
 
          <h2 id="chapAbout"><a class="head-num">1</a>About Vocabug</h2>
-         <p>This is the complete documentation for <a href="./vocabug.html">Vocabug</a>, version <a class="VERSION">1.0.8</a>. Vocabug randomly generates vocabulary from a given definition of graphemes and word patterns. It can be used to generate words for a fictional language, original nicknames or passwords, or just for fun.</p>
+         <p>This is the complete documentation for <a href="./vocabug.html">Vocabug</a>, version <a class="VERSION">1.0.9</a>. Vocabug randomly generates vocabulary from a given definition of graphemes and word patterns. It can be used to generate words for a fictional language, original nicknames or passwords, or just for fun.</p>
 
          <p>This word generator is designed to be a successor to the Williams' <a href="https://github.com/bbrk24/lexifer-ts">Lexifer</a> and to the legendary <a href="https://github.com/nai888/awkwords">Awkwords</a>. Vocabug is one of the applications belonging to <a href="https://github.com/Neonnaut/the-conlangers-suite">The Conlangers Suite</a>. You can also install Vocabug to be used in your own projects or as a command-line-interface <a href="https://www.npmjs.com/package/the-conlangers-suite">here</a>. If you would prefer a more typical user interface with simple syntax, please check out <a href="https://neonnaut.neocities.org/vocabug-lite">Vocabug-lite</a>.</p>
 
          <h2 id="chapInterface"><a class="head-num">2</a>Interface</h2>
          <ul class="paragraphian">
-            <li>The textbox at the top of the program is the 'definition-build editor'. A definition-build defines the graphemes, frequencies, word-shapes and transforms that generate the final words. There will already be a default definition-build in the definition-build editor, or the previous definition-build that generated words</li>
+            <li>The textbox at the top of the program is the "definition-build editor". A definition-build defines the graphemes, frequencies, word-shapes and transforms that generate the final words. There will already be a default definition-build in the definition-build editor, or the previous definition-build that generated words</li>
             
             <li>Use the <code class="example">Generate</code> button to see Vocabug produce words. Yes, there are two generate buttons.</li>
 
@@ -222,7 +223,7 @@
 
             
 
-            <li>Below the copy words button is an 'output terminal'. It provides useful information about the generation run</li>
+            <li>Below the copy words button is an "output terminal". It provides useful information about the generation run</li>
          </ul>
 
          <h3 id="chapOptions"><a class="head-num">2.1</a>Options</h3>
@@ -243,21 +244,21 @@
             <li><code class="example">Sort words</code> sorts the words in alphabetical order, or the order defined in the <code class="example">alphabet:</code> directive</li>
 
             <li><code class="example">Editor wrap lines</code> will make the definition-build editor jump to the next line if the line escapes the width of the definition-build editor</li>
-            <li><code class="example">Show keyboard</code> will reveal a 'keyboard', a character selector, below the options. Clicking on a character will insert that character into the editor</li>
+            <li><code class="example">Show keyboard</code> will reveal a "keyboard", a character selector, below the options. Clicking on a character will insert that character into the editor</li>
 
             <li>Use the buttons in the <code class="example">Themes</code> dropdown to change the colour theme of the editor</li>
          </ul>
 
          <h3 id="chapSaveLoad"><a class="head-num">2.2</a>File save / load</h3>
          <ul class="paragraphian">
-            <li>Use the <code class="example">Save file</code> button to download the definition-build as a file called 'vocabug.txt', or whatever you named your file in the <code class="example">File name:</code> field. The file is always a ".txt" type</li>
+            <li>Use the <code class="example">Save file</code> button to download the definition-build as a file called "vocabug.txt", or whatever you named your file in the <code class="example">File name:</code> field. The file is always a ".txt" type</li>
             <li>Use the <code class="example">Load file</code> button to load a file from your system into the definition-build editor</li>
             <li>Use the buttons in the <code class="example">Examples</code> dropdown to load an example into the definition-build editor</li>
          </ul>
 
          <h2 id="chapOverallStructure"><a class="head-num">3</a>Overall structure</h2>
 
-         <p>A definition-build is comprised of two top-level concepts: 'directives' and 'decorators'.</p>
+         <p>A definition-build is comprised of two top-level concepts: "directives" and "decorators".</p>
             
          <p>Directives are laid out like blocks and define the functions of Vocabug. The primary directives are the <a href="#chapWords">words</a> directive, which creates each word, and the <a href="#chapStage">stage</a> directive, which modifies each word with transforms. The other directives define concepts that are used by these primary directives.</p>
 
@@ -386,6 +387,10 @@
                   <td>Indicates <a href="#chapTheChange">change</a></td>
                </tr>
                <tr>
+                  <td><code class="example">&lt;recast-as&gt;</code></td>
+                  <td>Indicates a <a href="#chapRecasts">recast</a></td>
+               </tr>
+               <tr>
                   <td><code class="example">,</code> or <code class="example">&nbsp;</code></td>
                   <td>Separates choices</td>
                </tr>
@@ -451,7 +456,7 @@
                </tr>
                <tr>
                   <td><code class="example">%[</code> and <code class="example">|</code> and <code class="example">]</code></td>
-                  <td><a href="#chapLaziness">Anythings-mark</a> with degrees or 'cowardliness'</td>
+                  <td><a href="#chapLaziness">Anythings-mark</a> with degrees or "cowardliness"</td>
                </tr>
 
                <tr>
@@ -707,19 +712,19 @@
          
          <p>Need more than 26 categories? The following additional characters can be used as the key of a category: <code class="example">Á Ć É Ǵ Í Ḱ Ĺ Ḿ Ń Ó Ṕ Ŕ Ś Ú Ẃ Ý Ź À È Ì Ǹ Ò Ù Ẁ Ỳ Ǎ Č Ď Ě Ǧ Ȟ Ǐ Ǩ Ľ Ň Ǒ Ř Š Ť Ǔ Ž Ä Ë Ḧ Ï Ö Ü Ẅ Ẍ Ÿ Γ Δ Θ Λ Ξ Π Σ Φ Ψ Ω</code></p>
             
-         <h3 id="chapCategoryinCategory"><a class="head-num">4.1</a>Categories inside categories and set-categories</h3>
+         <h3 id="chapCategoryinCategory"><a class="head-num">4.1</a>Categories inside categories and category-sets</h3>
          <p>You can use categories inside categories, as long as the referenced category has previously been defined. For example:</p>
         <div class="prog-pre"><code class="link">@</code><code class="directive">categories</code><code class="link">.</code><code class="directive">distribution</code> <code class="link">=</code> <code class="attribute">flat</code>
 <span class="directive">categories</span><code class="link">:</code>
   <span class="catkey">L</span> <span class="link">=</span> aa<span class="link">,</span> ii<span class="link">,</span> ee<span class="link">,</span> oo
   <span class="catkey">V</span> <span class="link">=</span> a<span class="link">,</span> i<span class="link">,</span> e<span class="link">,</span> o<span class="link">,</span> <span class="catkey">L</span></div>
          <p>In the example above, <code class="example">V</code> has a 20% chance of being a long vowel.</p>
-         <p>You can also enclose a set of graphemes in curly braces <code class="example">{</code> and <code class="example">}</code>. This is called a 'set-category'. This set will be treated as if it were a reference to a category in terms of frequency. For example, we could write the same example as this:</p>
+         <p>You can also enclose a set of graphemes in curly braces <code class="example">{</code> and <code class="example">}</code>. This is called a "set-category". This set will be treated as if it were a reference to a category in terms of frequency. For example, we could write the same example as this:</p>
         <div class="prog-pre"><code class="link">@</code><code class="directive">categories</code><code class="link">.</code><code class="directive">distribution</code> <code class="link">=</code> <code class="attribute">flat</code>
 <span class="directive">categories</span><code class="link">:</code>
   <span class="catkey">V</span> <span class="link">=</span> a<span class="link">,</span> i<span class="link">,</span> e<span class="link">,</span> o<span class="link">,</span> <span class="cm-matchingBracket"><span class="regexp">{</span></span>aa<span class="link">,</span> ii<span class="link">,</span> ee<span class="link">,</span> oo<span class="cm-matchingBracket"><span class="regexp">}</span></span></div>
-         <p>Assigning weights to categories in categories and set-categories is possible.</p>
-         <p>Categories inside categories and set-categories CANNOT be a part of any sequence. for example <code class="example">C = Xz</code> or <code class="example">C = x{c, d}</code> or <code class="example">C = {a, b}{c, d}</code> will not give the results you might want. To get sequence-like behaviour like that, you will need to use <a href="#chapUnits">units</a>.</p>
+         <p>Assigning weights to categories in categories and category-sets is possible.</p>
+         <p>Categories inside categories and category-sets CANNOT be a part of any sequence. for example <code class="example">C = Xz</code> or <code class="example">C = x{c, d}</code> or <code class="example">C = {a, b}{c, d}</code> will not give the results you might want. To get sequence-like behaviour like that, you will need to use <a href="#chapUnits">units</a>.</p>
 
          <h3 id="chapNullGrapheme"><a class="head-num">4.2</a>Null grapheme</h3>
          <p>If a word is built using the syntax character <code class="example">^</code>, it will disappear in the generated word. In other words <code class="example">^</code> is a null grapheme. If you want to use <code class="example">^</code> as a grapheme, you will need to <a href="#chapEscapeWord">escape it</a>. To use other syntax characters as graphemes, they must be escaped too.</p>
@@ -727,7 +732,7 @@
          <h2 id="chapBuildingWords"><a class="head-num">5</a>Building words</h2>
 
          <h3 id="chapWords"><a class="head-num">5.1</a>Words</h3>
-         <p>The <code class="example">words</code> directive defines a set of 'word-shapes' that Vocabug will choose from to create words. A word-shape can consist of individual graphemes, <a href="#chapCategories">categories</a>, <a href="#chapUnits">units</a> or a mixture of both.</p>
+         <p>The <code class="example">words</code> directive defines a set of "word-shapes" that Vocabug will choose from to create words. A word-shape can consist of individual graphemes, <a href="#chapCategories">categories</a>, <a href="#chapUnits">units</a> or a mixture of both.</p>
 
          <p>Word-shapes are separated by a comma, space, or a newline.</p>
 
@@ -757,7 +762,7 @@
 <span class="directive">words</span><code class="link">:</code>
   <span class="catkey"><code class="regexp">&lt;</code><span class="catkey">$</span><code class="regexp">&gt;</code><code class="regexp">&lt;</code><span class="catkey">$</span><code class="regexp">&gt;</code></span><code class="link">,</code> <code class="regexp">&lt;</code><span class="catkey">$</span><code class="regexp">&gt;</code><code class="link">,</code> <span class="catkey"><code class="regexp">&lt;</code><span class="catkey">$</span><code class="regexp">&gt;</code><code class="regexp">&lt;</code><span class="catkey">$</span><code class="regexp">&gt;</code><code class="regexp">&lt;</code><span class="catkey">$</span><code class="regexp">&gt;</code></span><code class="link">,</code> <code class="regexp">&lt;</code><span class="catkey">Vowel-only</span><code class="regexp">&gt;</code></div>
 
-         <p>You can put units inside units. For example: <code class="example">Example = $$</code></p>
+         <p>You can use units inside units. For example: <code class="example">Example = $$</code></p>
 
          <h3 id="chapPickOne"><a class="head-num">5.3</a>Pick-one-set</h3>
          <p>A pick-one-set is a group of graphemes and categories separated by spaces or commas, enclosed in curly braces <code class="example">{</code> and <code class="example">}</code>. Vocabug will pick an option from that pick-one just like it would from a unit. For example:</p>
@@ -775,32 +780,32 @@
          <p>Using round brackets, <code class="example">(</code> and <code class="example">)</code>, optional-set works the same way as <a href="#chapPickOne">pick-one-set</a>, the only difference is that what's inside them can either appear in the word or not. The probability of each of these variants is 10% by default.</p>
         <div class="prog-pre"><span class="directive">words</span><code class="link">:</code>
   ta<span class="regexp">(</span>n<span class="link">,</span> t<span class="link">,</span> l<span class="regexp">)</span></div>
-         <p>In the above example, there is a 10% chance of getting one of <code class="example">tan</code>, <code class="example">tat</code> or <code class="example">tal</code>, but a 90% chance of <code class="example">ta</code>.</p>
+         <p>In the above example, there is a 10% chance of producing one of <code class="example">tan</code>, <code class="example">tat</code> or <code class="example">tal</code>, but a 90% chance of <code class="example">ta</code>.</p>
 
          <h4 id="chapOptionalsWeight"><a class="head-num">5.4.1</a>Optionals weight</h4>
-         <p>By default, an optional-set has a 10% chance of being included in the word. You can change this probability with a decorator.</p>
+         <p>By default, an optional-set has a 10% chance of being included in the word. You can change this probability globally with a decorator.</p>
 
         <div class="prog-pre"><code class="link">@</code><code class="directive">words</code><code class="link">.</code><code class="directive">optionals-weight</code> <code class="link">=</code> <code class="attribute">10%</code><br><code class="directive">words</code><code class="link">:</code><br>  example</div>
 
          <h3 id="chapSupraSet"><a class="head-num">5.5</a>Supra-set</h3>
-         <p>A 'supra-set', is applied over the entire word, and there can only be one supra set. Square brackets <code class="example">[</code> and <code class="example">]</code>, denotes each item in the supra-set and their location in the word. The items of a supra-set can only be a category, or the null grapheme <code class="example">^</code>. Only one item in the supra-set will be picked for that generated word.</p>
+         <p>A "supra-set", is applied over the entire word, and there can only be one supra set. Square brackets <code class="example">[</code> and <code class="example">]</code>, denote each item in the supra-set and their location in the word. The items of a supra-set can only be a category, or the null grapheme <code class="example">^</code>. Only one item in the supra-set will be picked for that generated word.</p>
          <p>Supra-set is a feature designed to help generate words with stress systems, pitch accent systems, or other word-based suprasegmentals. Here is an example where it is used for a stress system:</p>
         <div class="prog-pre"><code class="directive">categories</code><code class="link">:</code>
-  <span class="catkey">C</span> <span class="link">=</span> t<br>  <span class="catkey">V</span> <span class="link">=</span> a<br>  <span class="catkey">X</span> <span class="link">=</span> '
+  <span class="catkey">C</span> <span class="link">=</span> g<br>  <span class="catkey">V</span> <span class="link">=</span> a<br>  <span class="catkey">X</span> <span class="link">=</span> '
 <span class="directive">words</span><code class="link">:</code>
   <span class="regexp">([</span><span class="catkey">X</span><span class="regexp">]</span><span class="catkey">C</span><span class="catkey">V</span><span class="regexp">)[</span><span class="catkey">X</span><span class="regexp">]</span><span class="catkey">CV</span></div>
-         <p>This produces any of the following words: <code class="example">'ta</code>, <code class="example">ta'ta</code>, <code class="example">'tata</code>, never any words with more than one <code class="example">'</code>. Notice here that <code class="example">ta</code> is not possible -- A supra-set item is only chosen after dealing with any sets that the supra-set items are nested in.</p>
+         <p>This produces any of the following words: <code class="example">'ga</code>, <code class="example">ga'ga</code>, <code class="example">'gaga</code>, never any words with more than one <code class="example">'</code>. Notice here that <code class="example">ga</code> is not possible, only <code class="example">'ga</code>, because a supra-set item is only chosen after dealing with any sets that the supra-set items are nested in.</p>
          
          <h4 id="chapSupraSetWeight"><a class="head-num">5.5.1</a>Supra-set weight</h4> 
          <p>You can set the weights of supra-set items like so:</p>
         <div class="prog-pre"><code class="directive">categories</code><code class="link">:</code>
-  <span class="catkey">R</span> <span class="link">=</span> r
+  <span class="catkey">T</span> <span class="link">=</span> ˦<span class="link">,</span> ˩˧
 <code class="directive">units</code><code class="link">:</code>
-  <span class="catkey">X</span> <span class="link">=</span> o<span class="regexp">[</span><span class="catkey">R</span><span class="weight">*8</span><span class="regexp">]</span><br>  <span class="catkey">Y</span> <span class="link">=</span> e<span class="regexp">[</span><span class="catkey">R</span><span class="weight">*2</span><span class="regexp">]</span>
+  <span class="catkey">X</span> <span class="link">=</span> ga<span class="regexp">[</span><span class="catkey">R</span><span class="weight">*8</span><span class="regexp">]</span><br>  <span class="catkey">Y</span> <span class="link">=</span> ga<span class="regexp">[</span><span class="catkey">R</span><span class="weight">*2</span><span class="regexp">]</span>
 <span class="directive">words</span><code class="link">:</code>
   <code class="regexp">&lt;</code><span class="catkey">X</span><code class="regexp">&gt;</code><code class="regexp">&lt;</code><span class="catkey">Y</span><code class="regexp">&gt;</code></div>
-         <p>The above example has an 80% chance of generating <code class="example">ore</code> and a 20% chance of generating <code class="example">oer</code>.</p>
-         <p>Supra-set item weights support a sentinel value -- a 'super-heavy' value <code class="example">s</code>. This <code class="example">s</code> will ensure the supra-set item attached to this weight is always chosen over others. For example: <code class="example">[V*s]</code></p>
+         <p>The above example has an 80% chance of generating either <code class="example">ga˦ga</code> or <code class="example">ga˩˧ga</code> but a 20% chance of generating either <code class="example">gaga˦</code> or <code class="example">gaga˩˧</code>.</p>
+         <p>Supra-set item weights support a sentinel value -- a "super-heavy" value <code class="example">s</code>. This <code class="example">s</code> will ensure the supra-set item attached to this weight is always chosen over others. For example: <code class="example">[V*s]</code></p>
 
          <h3 id="chapDistributions"><a class="head-num">5.6</a>Default distributions</h3>
          <p><b>The ordering of items matters</b> in <a href="#chapCategories">categories</a>, <a href="#chapUnits">units</a> and <a href="#chapWords">word-shapes</a>. The first item will be chosen the most often, the second grapheme the second most often, and so on.</p>
@@ -811,7 +816,7 @@
          <ul class="paragraphian">
             <li>A <code class="example">zipfian</code> distribution approximates natural language frequency for words, where the highest-ranked item receives the greatest weight, and subsequent ones decay steeply until flattening out.</li>
             <li>A <code class="example">gusein-zade</code> distribution offers a gentler slope that is natural across phonemes in a language, following a logarithmic decay that still prioritizes top-ranked items but spreads weight more evenly</li>
-            <li><code class="example">Shallow</code> distribution, the red-headed step-child of the distributions. It doesn't occur in natural linguistics, but offers us something between Flat and Gusein-Zade. It is Zipfian in nature, a 'long-tailed Zipfian distribution'</li>
+            <li><code class="example">Shallow</code> distribution, the red-headed step-child of the distributions. It doesn't occur in natural linguistics, but offers us something between Flat and Gusein-Zade. It is Zipfian in nature, a "long-tailed Zipfian distribution"</li>
             <li>A <code class="example">flat</code> distribution treats all items equally. This is not to say the items will be evenly chosen -- items are still being randomly chosen on a generation, they just have uniform weights</li>
          </ul>
 
@@ -825,7 +830,7 @@
   <span class="catkey">$</span> <span class="link">=</span> <span class="regexp">{</span><span class="catkey">V</span><span class="weight">*8</span><span class="link">,</span> x<span class="weight">*2</span><span class="regexp">}</span>
 <span class="directive">words</span><code class="link">:</code>
   <code class="regexp">&lt;</code><span class="catkey">$</span><code class="regexp">&gt;</code><span class="weight">*2</span><span class="link">,</span> y</div>
-         <p><code class="example">V</code> has approximately the following probabilities: a: 33%, e: 27%, i: 20%, o: 13%, u: 7%. The <a href="#chapPickOne">pick-one-set</a> in the <code class="example">$</code> unit has an 80% chance of producing a V category over the x grapheme. And the first word-shape in the <code class="example">words</code> directive has twice the chance of being chosen over the next word-shape.</p>
+         <p>In the above example, <code class="example">V</code> has approximately the following probabilities: a: 33%, e: 27%, i: 20%, o: 13%, u: 7%. The <a href="#chapPickOne">pick-one-set</a> in the <code class="example">$</code> unit has an 80% chance of producing a V category over the x grapheme. And the first word-shape in the <code class="example">words</code> directive has twice the chance of being chosen over the next word-shape.</p>
          <p>As you might have noticed in the example above, in a sequence that has at least one weighted option, it overwrites any default distributions. Also important to note is that any other option that you had not given a weight (inside that set, or on the surface level), is given a weight of 1.</p>
 
          <h2 id="chapAlphabetisation"><a class="head-num">6</a>The alphabet directive</h2>
@@ -847,18 +852,15 @@
   a<span class="link">,</span> b<span class="link">,</span> c<span class="link">,</span> ch<span class="link">,</span> e<span class="link">,</span> f<span class="link">,</span> h<span class="link">,</span> i<span class="link">,</span> k<span class="link">,</span> l<span class="link">,</span> m<span class="link">,</span> n<span class="link">,</span> o<span class="link">,</span> p<span class="link">,</span> p'<span class="link">,</span> r<span class="link">,</span> s<span class="link">,</span> t<span class="link">,</span> t'<span class="link">,</span> y</div>
          <p>In the above example, we defined <code class="example">ch</code> as a grapheme. This will stop a rule such as <code class="example">c -> g</code> changing the word <code class="example">chat</code> into <code class="example">ghat</code>, but it will make <code class="example">cobra</code> change into <code class="example">gobra</code>.</p>
 
-         <p>Which graphemes are 'associatemes' of their 'bases' are declared in the graphemes directive. Read more about this in <a href="#chapAssociatemes">this section of the documentation</a>.</p>
+         <p>Which graphemes are "associatemes" of their "bases" are declared in the graphemes directive. Read more about this in <a href="#chapAssociatemes">this section of the documentation</a>.</p>
 
          <h2 id="chapStage"><a class="head-num">9</a>The stage directive</h2>
          <p>Once words are generated, you might want to modify them to prevent certain sequences, outright reject certain words, or simulate historical sound changes. This is the purpose of transforms, which are all declared in the stage directive:</p>
         <div class="prog-pre"><span class="directive">stage</span><code class="link">:</code>
 <span class="comment">; Your transforms go here</span></div>
 
-         <p>The default transform is a rule. These should be familiar to anyone who knows a little about phonological rules. The two other types of transforms are <a href="#chapClusterfield">cluster-fields</a> and <a href="#chapRoutine">routines</a>.</p>
+         <p>The default transform is a <a href="#chapRules">rule</a>. These should be familiar to anyone who knows a little about phonological rules. The two other types of transforms are <a href="#chapClusterfield">cluster-fields</a> and <a href="#chapRoutine">routines</a>.</p>
 
-         <p>A rule can be summarised as four fields: <code class="example">CHANGE / CONDITION ! EXCEPTION</code>. The characters <code class="example">/</code> and <code class="example">!</code> that precede each field (except for the <code class="example">CHANGE</code>) are necessary for signalling each field. For example, including a <code class="example">!</code> will signal that this rule contains an exception, and all text following it until the next field marker will be interpreted as such.</p>
-
-         <p>Every rule begins on a new line and must contain a <code class="example">CHANGE</code>. The <code class="example">CONDITION</code> or <code class="example">EXCEPTION</code> fields are optional.</p>
          <p>If you want to capture graphemes that are normally syntax characters in transforms, you will need to <a href="#vocEscapeTransform">escape them</a>.</p>
 
          <p>When this document uses examples to explain transformations, the last comment shows an example word transforming. For example <code class="example">; amda ==> ampa</code> means the rule will transform the word <code class="example">amda</code> into <code class="example">ampa</code></p>
@@ -869,11 +871,21 @@
 <code class="directive">stage</code><code class="link">:</code>
 <span class="comment">; Your transforms go here</span></div>
 
+         <h3 id="chapRules"><a class="head-num">9.2</a>Rules</h3>
+         <p>A rule can be summarised as four fields: <code class="example">CHANGE / CONDITION ! EXCEPTION</code>. The operators <code class="example">/</code> and <code class="example">!</code> that precede each field (except for the <code class="example">CHANGE</code>) are necessary for signalling each field. For example, including a <code class="example">!</code> will signal that this rule contains an exception, and all text following it until the next field marker will be interpreted as such.</p>
+
+         <p>Every rule begins on a new line and must contain a <code class="example">CHANGE</code>. The <code class="example">CONDITION</code> or <code class="example">EXCEPTION</code> fields are optional.</p>
+
+         <p>Rules can be wrapped on multiple lines after the field indicating operators:</p>
+         <div class="prog-pre">k <span class="link">-></span>
+ch <span class="link">/</span>
+<span class="link">_</span>i</div>
+
          <h2 id="chapTheChange"><a class="head-num">10</a>The change</h2>
          <p>The format of a rule's <code class="example">CHANGE</code> can be expressed as <code class="example">TARGET -> REPLACEMENT</code>.</p>
          <ul class="paragraphian">
             <li><code class="example">TARGET</code> specifies which part of the word is being changed</li>
-            <li>Then followed by hyphen and greater-than-sign <code class="example">-&gt;</code>. <code class="example">-&gt;</code> can be swapped with either <code class="example">&gt;></code>, <code class="example">=&gt;</code>, <code class="example">⇒</code> or <code class="example">→</code> if you prefer</li>
+            <li>Then followed by a hyphen and greater-than-sign <code class="example">-&gt;</code>. <code class="example">-&gt;</code> can be swapped with either <code class="example">&gt;></code>, <code class="example">=&gt;</code>, <code class="example">⇒</code> or <code class="example">→</code> if you prefer</li>
             <li><code class="example">REPLACEMENT</code> is what <code class="example">TARGET</code> is changing into, or in other words, replacing</li>
          </ul>
          <p>Let's look at a simple unconditional rule:</p>
@@ -978,21 +990,21 @@
 <p>This is to say <code class="example">{Bz}v -> ^</code> is invalid.</p>
 
          <h2 id="chapFeatures"><a class="head-num">16</a>Features</h2>
-         <p>Let's say you had the grapheme, or rather, phoneme /i/ and wanted to capture it by its distinctive vowel features, <code class="example">+high</code>, <code class="example">-round</code> and <code class="example">+front</code>, and turn it into a phoneme marked with <code class="example">+high</code>, <code class="example">-round</code> and <code class="example">+back</code> features, perhaps /ɯ/. The features directive and feature matrices let you do this. The features can be described as binary and 'fully-specified'.</p>
+         <p>Let's say you had the grapheme, or rather, phoneme /i/ and wanted to capture it by its distinctive vowel features, <code class="example">+high</code>, <code class="example">-round</code> and <code class="example">+front</code>, and turn it into a phoneme marked with <code class="example">+high</code>, <code class="example">-round</code> and <code class="example">+back</code> features, perhaps /ɯ/. The features directive and feature matrices let you do this. The features can be described as binary and "fully-specified".</p>
          <p>The key of all features must consist of lowercase letters a to z, uppercase letters a to z, <code class="example">.</code>, <code class="example">-</code> or <code class="example">+</code></p>
 
          <h3 id="chapProFeature"><a class="head-num">16.1</a>Pro-feature</h3>
-         <p>A feature prepended with a plus sign <code class="example">+</code> is a 'pro-feature'. For example <code class="example">+voice</code>. We can define a set of graphemes that are marked by this feature by using this pro-feature. For example:</p>
+         <p>A feature prepended with a plus sign <code class="example">+</code> is a "pro-feature". For example <code class="example">+voice</code>. We can define a set of graphemes that are marked by this feature by using this pro-feature. For example:</p>
         <div class="prog-pre"><span class="directive">features</span><span class="link">:</span>
   <span class="catkey">+voice</span> <span class="link">=</span> b<span class="link">,</span> d<span class="link">,</span> g<span class="link">,</span> v<span class="link">,</span> z</div>
 
          <h3 id="chapAntiFeature"><a class="head-num">16.2</a>Anti-feature</h3>
-         <p>A feature prepended with a minus sign <code class="example">-</code> is an 'anti-feature'. For example <code class="example">-voice</code>. We can define a set of graphemes that are marked by a lack of this feature by using this anti-feature. For example:</p>
+         <p>A feature prepended with a minus sign <code class="example">-</code> is an "anti-feature". For example <code class="example">-voice</code>. We can define a set of graphemes that are marked by a lack of this feature by using this anti-feature. For example:</p>
         <div class="prog-pre"><span class="directive">features</span><span class="link">:</span>
   <span class="catkey">-voice</span> <span class="link">=</span> p<span class="link">,</span> t<span class="link">,</span> k<span class="link">,</span> f<span class="link">,</span> s</div>
 
          <h3 id="chapParaFeature"><a class="head-num">16.3</a>Para-feature</h3>
-         <p>A feature prepended with a greater-than-sign <code class="example">&gt;</code> is a 'para-feature'. A para-feature is simply a pro-feature where the graphemes marked as the anti-feature of this feature are the graphemes in the <code class="example">graphemes:</code> directive that are not not marked by this para-feature:</p>
+         <p>A feature prepended with a greater-than-sign <code class="example">&gt;</code> is a "para-feature". A para-feature is simply a pro-feature where the graphemes marked as the anti-feature of this feature are the graphemes in the <code class="example">graphemes:</code> directive that are not not marked by this para-feature:</p>
         <div class="prog-pre"><span class="directive">graphemes</span><span class="link">:</span>
   a<span class="link">,</span> b<span class="link">,</span> h<span class="link">,</span> i<span class="link">,</span> k<span class="link">,</span> n<span class="link">,</span> o<span class="link">,</span> t
 <span class="directive">features</span><span class="link">:</span>
@@ -1009,11 +1021,11 @@
         <div class="prog-pre"><span class="directive">features</span><span class="link">:</span>
   <span class="catkey">+vowel</span> <span class="link">=</span> a<span class="link">,</span> i<span class="link">,</span> o<br>  <span class="catkey">+non-yod</span> <span class="link">=</span> <span class="catkey">+vowel</span><span class="link">,</span> <span class="operator">^</span>i</div>
 
-         <p>Use a caret in front of a grapheme to ensure that that grapheme is not part of the pro/anti/para-feature. In the example above, the pro-feature '<code class="example">+non-yod</code>' is composed of the graphemes <code class="example">a</code> and <code class="example">o</code> -- the grapheme <code class="example">i</code> is not part of this pro-feature. Due to the recursive nature of nested features, this removed grapheme will be removed... aggressively. For example, If <code class="example">+non-yod</code> were to be referenced in a different feature, that feature would always not have <code class="example">i</code> as a grapheme.</p>
+         <p>Use a caret in front of a grapheme to ensure that that grapheme is not part of the pro/anti/para-feature. In the example above, the pro-feature "<code class="example">+non-yod</code>" is composed of the graphemes <code class="example">a</code> and <code class="example">o</code> -- the grapheme <code class="example">i</code> is not part of this pro-feature. Due to the recursive nature of nested features, this removed grapheme will be removed... aggressively. For example, If <code class="example">+non-yod</code> were to be referenced in a different feature, that feature would always not have <code class="example">i</code> as a grapheme.</p>
 
          <h3 id="chapUsingFeatures"><a class="head-num">16.5</a>Using Features</h3>
 
-         <p>To capture graphemes that are marked by features in a transform, the features must be listed in a 'feature-matrix' surrounded by <code class="example">[</code> and <code class="example">]</code>. The graphemes in a word must be marked by each pro-/anti-feature in the feature-matrix to be captured. For example if a feature-matrix <code class="example">[+high, +back]</code> captures the graphemes: <code class="example">u, ɯ</code>, another feature-matrix <code class="example">[+high, +back, -round]</code> would capture <code class="example">ɯ</code> only.</p>
+         <p>To capture graphemes that are marked by features in a transform, the features must be listed in a "feature-matrix" surrounded by <code class="example">[</code> and <code class="example">]</code>. The graphemes in a word must be marked by each pro-/anti-feature in the feature-matrix to be captured. For example if a feature-matrix <code class="example">[+high, +back]</code> captures the graphemes: <code class="example">u, ɯ</code>, another feature-matrix <code class="example">[+high, +back, -round]</code> would capture <code class="example">ɯ</code> only.</p>
          <p>The very simple example below is written to change all voiceless graphemes that have a voiced counterpart into their voiced counterparts:</p>
 
         <div class="prog-pre"><span class="directive">features</span><span class="link">:</span>
@@ -1026,7 +1038,7 @@
 
          <p>In this rule, in <code class="example">REPLACEMENT</code>, <code class="example">[+voice]</code> has a symmetrical one-to-one change of graphemes from the graphemes in <code class="example">[-voice]</code> in <code class="example">TARGET</code>, leading to a concurrent change. Let's quickly imagine a scenario where the only <code class="example">[+voice]</code> grapheme was <code class="example">b</code>. The result will be a merging of all <code class="example">-voice</code> graphemes into <code class="example">b</code>: <code class="example">tamepfa ==&gt; bamebba</code>.</p>
 
-         <p>It should be noted that feature-matrices in <code class="example">TARGET</code> have no carryover to feature-matrices in <code class="example">REPLACEMENT</code>. For example, in a bogus rule such as <code class="example">o -> [+high]</code> the program will <b>not</b> try to transform <code class="example">&lt;o&gt;</code> into it's [+high] counterpart, it will try and replace <code class="example">&lt;o&gt;</code> with some grapheme marked as <code class="example">[+high]</code> and will probably fail unless only one grapheme is marked as <code class="example">[+high]</code>.</p>
+         <p>It should be noted that feature-matrices in <code class="example">TARGET</code> have no carryover to feature-matrices in <code class="example">REPLACEMENT</code>. For example, in a bogus rule such as <code class="example">o -> [+high]</code> the program will <b>not</b> try to transform <code class="example">&lt;o&gt;</code> into its [+high] counterpart, it will try and replace <code class="example">&lt;o&gt;</code> with some grapheme marked as <code class="example">[+high]</code> and will probably fail unless only one grapheme is marked as <code class="example">[+high]</code>.</p>
 
                   <p>If the category is inside a set, it MUST be listed as an item on its own:</p>
         <div class="prog-pre"><span class="directive">features</span><span class="link">:</span>
@@ -1076,15 +1088,15 @@ round  <code class='regexp'>-</code> <code class='regexp'>-</code> <code class='
 
 
 
-         <h2 id="chapWildcardsAndQuantifiers"><a class="head-num">17</a>Wildcards and quantifiers</h2>
-         <p>Wildcards and the like in this section are special tokens that can represent arbitrary amounts of arbitrary graphemes, which is especially useful when you don't know precisely how many, or of what kind of grapheme there will be between two target graphemes in a word.</p>
+         <h2 id="chapQuantifiersAndWildcards"><a class="head-num">17</a>Quantifiers and wildcards</h2>
+         <p>Quantifiers and wildcards in this section are special tokens that can represent arbitrary amounts of arbitrary graphemes, which is especially useful when you don't know precisely how many, or of what kind of grapheme there will be between two target graphemes in a word.</p>
 
          <h3 id="chapQuantifier"><a class="head-num">17.1</a>Quantifier</h3>
          <p>Quantifier, using <code class="example">+</code>, will match once or as many times as possible to the grapheme to the left of it. Quantifier cannot be used in <code class="example">REPLACEMENT</code>:</p>
         <div class="prog-pre">  a<span class="regexp">+</span> <span class="link">-></span> o<br><code class="comment">; raraaaaa ==> roro</code></div>
 
          <h3 id="chapBoundedQuantifier"><a class="head-num">17.2</a>Bounded quantifier</h3>
-         <p>The bounded quantifier matches as many times its digit(s), enclosed in <code class="example">?[</code> and <code class="example">]</code>, to the things to the left.</p>
+         <p>The bounded quantifier matches as many times its digit(s), enclosed in <code class="example">?[</code> and <code class="example">]</code>, to the things to its left.</p>
         <div class="prog-pre"><span class="comment">; Change &lt;o&gt; into &lt;x&gt; only when preceded by three &lt;r&gt;s</span><br>  o <span class="link">-></span> x <span class="link">/</span> r<span class="regexp">?[</span>3<span class="regexp">]</span><span class="link">_</span>
 <code class="comment">; ororrro ==> ororrrx</code></div>
 
@@ -1124,7 +1136,7 @@ round  <code class='regexp'>-</code> <code class='regexp'>-</code> <code class='
         <div class="prog-pre"><span class="comment">; Simulate spreading of nasality to vowels</span><br>  a<span class="link">,</span> i<span class="link">,</span> u <span class="link">-></span> ã<span class="link">,</span> ĩ<span class="link">,</span> ũ <span class="link">/</span> <span class="regexp">{</span>ã<span class="link">,</span> ĩ<span class="link">,</span> ũ<span class="regexp">}</span><span class="regexp">%[]</span><span class="link">_</span> <br><span class="comment">; pabãdruliga ==> pabãdrũlĩgã</span></div>
 
          <h3 id="chapLaziness"><a class="head-num">17.5.1</a>Laziness and cowardliness</h3>
-         <p>By listing graphemes and grapheme sequences inside the square brackets, we can alter the "greedy" behaviour of an anythings-mark with degrees of "laziness" and 'cowardliness'.</p>
+         <p>By listing graphemes and grapheme sequences inside the square brackets, we can alter the "greedy" behaviour of an anythings-mark with degrees of "laziness" and "cowardliness".</p>
 
          <p><b>Consuming negative lookahead, AKA "laziness"</b>:</p>
 
@@ -1144,9 +1156,9 @@ round  <code class='regexp'>-</code> <code class='regexp'>-</code> <code class='
   <span class="regexp">%[</span><span class="regexp">{</span>p<span class="link">,</span>t<span class="link">,</span>k<span class="regexp">}</span>r<span class="regexp">]</span> <span class="link">-></span> x 
 <span class="comment">; kotatros -> xos</span></div> 
 
-         <p><b>Negative lookahead, AKA 'cowardliness'</b>:</p>
+         <p><b>Negative lookahead, AKA "cowardliness"</b>:</p>
 
-         <p>Sometimes it is necessary for graphemes to block the spread <i>without</i> having them be consumed, which I have dubbed 'cowardliness'. To do this put a pipe <code class="example">|</code> after the lazy items and list the cowardly items. For example we might want the graphemes <code class="example">k</code> or <code class="example">g</code> to prevent the rightward spread of nasal vowels to non nasal vowels:</p>
+         <p>Sometimes it is necessary for graphemes to block the spread <i>without</i> having them be consumed, which I have dubbed "cowardliness". To do this put a pipe <code class="example">|</code> after the lazy items and list the cowardly items. For example we might want the graphemes <code class="example">k</code> or <code class="example">g</code> to prevent the rightward spread of nasal vowels to non nasal vowels:</p>
          
         <div class="prog-pre">  a<span class="link">,</span> i<span class="link">,</span> u <span class="link">-></span> ã<span class="link">,</span> ĩ<span class="link">,</span> ũ <span class="link">/</span> <span class="regexp">{</span>ã<span class="link">,</span> ĩ<span class="link">,</span> ũ<span class="regexp">}</span><span class="regexp">%[</span><span class="link">|</span> k<span class="link">,</span> g<span class="regexp">]</span><span class="link">_</span><br><span class="comment">; pabãdruliga ==> pabãdrũlĩga</span></div>
 
@@ -1543,7 +1555,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
   r<span class="regexp">%[</span>l<span class="regexp">]</span> <span class="link">-></span> <span class="catkey">&M</span><br><span class="comment">; parabla ==> palabra</span></div>
 
          <h3 id="chapEmptyMark"><a class="head-num">19.4</a>Empty-mark</h3>
-         <p>An Empty-mark using <code class="example">&E</code>, inserts an 'empty' grapheme into the captured <code class="example">TARGET</code> graphemes. It is only allowed in <code class="example">TARGET</code></p>
+         <p>An Empty-mark using <code class="example">&E</code>, inserts an "empty" grapheme into the captured <code class="example">TARGET</code> graphemes. It is only allowed in <code class="example">TARGET</code></p>
 
          <p>One use for it is a trick to make one-place long-distance metathesis work, for example:</p>
 
@@ -1553,11 +1565,11 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
 <span class="comment">; kotatros -> krotatos</span></div>
 
          <h3 id="chapReference"><a class="head-num">19.5</a>Reference</h3>
-         <p>Sometimes graphemes must be copied or asserted to be a certain grapheme between other graphemes. This is the purpose of 'reference'. Reference is fairly straightforward, but there is a lot of jargon and different behaviour between fields to explain.</p>
+         <p>Sometimes graphemes must be copied or asserted to be a certain grapheme between other graphemes. This is the purpose of "reference". Reference is fairly straightforward, but there is a lot of jargon and different behaviour between fields to explain.</p>
 
          <h4 id="chapSingularReference"><a class="head-num">19.5.1</a>Reference of singular grapheme</h4>
 
-         <p>A grapheme (or graphemes) are bound to a reference using a 'reference-capture', to the right of some grapheme. A reference-capture looks like <code class='example'>=</code> followed by a single-digit positive number. This number is called the 'reference-key' of the reference. The grapheme (or graphemes) bound to the reference is called the 'reference-value'.</p>
+         <p>A grapheme (or graphemes) are bound to a reference using a "reference-capture", to the right of some grapheme. A reference-capture looks like <code class='example'>=</code> followed by a single-digit positive number. This number is called the "reference-key" of the reference. The grapheme (or graphemes) bound to the reference is called the "reference-value".</p>
 
          <p>The key behaviours of reference-capture are:</p>
          <ul class="paragraphian">
@@ -1568,7 +1580,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
             <li>For reference-capture in conditions, a grapheme is captured only if that condition is met</li>
          </ul>
 
-         <p>The captured grapheme can then be reproduced elsewhere in the rule with a 'reference-mark', even before the reference-capture. The reference-mark invokes the reference-key of a reference.</p>
+         <p>The captured grapheme can then be reproduced elsewhere in the rule with a "reference-mark", even before the reference-capture. The reference-mark invokes the reference-key of a reference.</p>
 
          <p>The key behaviours of reference-mark are:</p>
          <ul class="paragraphian">
@@ -1585,7 +1597,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
 
          <p>In the rule above, we are binding the <code class='example'>[+vowel]</code> feature-matrix to the reference <code class='example'>1</code>, by appending <code class='example'>=1</code> to it. Whatever this grapheme from <code class='example'>[+vowel]</code> is when the condition is met, is captured as the value of <code class='example'>1</code>. Then the value of backrefence <code class='example'>1</code> is in <code class='example'>AFTER</code> by invoking its reference-mark.</p>
 
-        <div class="prog-pre"><span class="comment">; Insert an 'echo vowel' at the end of &lt;ʔ&gt; final words</span>
+        <div class="prog-pre"><span class="comment">; Insert an "echo vowel" at the end of &lt;ʔ&gt; final words</span>
   <span class="operator">^</span> <span class="link">-&gt;</span> <span class="catkey">1</span> <span class="regexp">/</span> <span class="catkey">[+vowel]</span><span class="regexp">=1</span>ʔ<span class="link">_</span><span class="regexp">#</span>
 <span class="comment">; foobaʔ ==&gt; foobaʔa</span></div>
 
@@ -1593,11 +1605,11 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
 
          <h4 id="chapReferenceSequence"><a class="head-num">19.5.2</a>Reference of grapheme sequence</h4>
 
-         <p>Now that 'reference-capture' and 'reference-mark' has been (hopefully) introduced and explained adequately, let's explain how to capture and reference a sequence of graphemes.</p>
+         <p>Now that "reference-capture" and "reference-mark" has been (hopefully) introduced and explained adequately, let's explain how to capture and reference a sequence of graphemes.</p>
 
-         <p>To start capturing a sequence, you use a 'start-reference-capture', <code class="example">&=</code> before the graphemes to be captured. Then at the end of the graphemes to be captured, a 'reference-capture' is used to bind those graphemes to a reference:</p>
+         <p>To start capturing a sequence, you use a "start-reference-capture", <code class="example">&=</code> before the graphemes to be captured. Then at the end of the graphemes to be captured, a "reference-capture" is used to bind those graphemes to a reference:</p>
 
-        <div class="prog-pre"><span class="comment">; Insert an 'echo double vowel' at the end of vowel + vowel + &lt;ʔ&gt; final words</span>
+        <div class="prog-pre"><span class="comment">; Insert an "echo double vowel" at the end of vowel + vowel + &lt;ʔ&gt; final words</span>
   <span class="operator">^</span> <span class="link">-&gt;</span> <span class="catkey">1</span> <span class="regexp">/</span> <span class="regexp">&=</span><span class="catkey">V</span><span class="catkey">V</span><span class="regexp">=1</span>ʔ<span class="link">_</span><span class="regexp">#</span>
 <span class="comment">; foobaaʔ ==&gt; foobaaʔaa</span></div>
          
@@ -1608,7 +1620,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
         <div class="prog-pre">  <span class="regexp">{</span>a<span class="link">,</span> á<span class="link">,</span> à<span class="regexp">}</span> <span class="link">-&gt;</span> <span class="regexp">{</span>e<span class="link">,</span> é<span class="link">,</span> è<span class="regexp">}</span><br><span class="comment">; daná ==&gt; dené</span></div>
 
          <p>This workaround uses alternators, but lacks semantic clarity and scalability, and is outright tedious.</p>
-         <p>To solve this, are 'associatemes' -- aligned variant graphemes associated with their base grapheme, and other associated graphemes -- other SCAs might use the terms "floating diacritics" or "autosegmentals". These allow you to target all forms of a grapheme with a single token. To set up associatemes, they must be stated in the <code class="example">graphemes</code> directive with the base associateme set of an entry inside curly braces, and each variant set in curly braces with a <code class="example">&lt;</code> to the left of the base set, or another variant set, like so:</p>
+         <p>To solve this, are "associatemes" -- aligned variant graphemes associated with their base grapheme, and other associated graphemes -- other SCAs might use the terms "floating diacritics" or "autosegmentals". These allow you to target all forms of a grapheme with a single token. To set up associatemes, they must be stated in the <code class="example">graphemes</code> directive with the base associateme set of an entry inside curly braces, and each variant set in curly braces with a <code class="example">&lt;</code> to the left of the base set, or another variant set, like so:</p>
          
         <div class="prog-pre"><span class="directive">graphemes</span><span class="link">: <span class="regexp">
   {</span></span>a<span class="link">,</span> e<span class="link">,</span> i<span class="link">,</span> o<span class="link">,</span> u<span class="regexp">}</span><span class="regexp">&lt;</span><span class="regexp">{</span>á<span class="link">,</span> é<span class="link">,</span> í<span class="link">,</span> ó<span class="link">,</span> ú<span class="regexp">}</span><span class="regexp">&lt;</span><span class="regexp">{</span>à<span class="link">,</span> è<span class="link">,</span> ì<span class="link">,</span> ò<span class="link">,</span> ù<span class="regexp">}</span></div>
@@ -1620,7 +1632,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
             <li>This does not mean that we can have only one grouping set. For example <code class="example">{a,i,o}&lt;{á,í,ó}, {a,b,c}&lt;{x,y,z}</code> is valid</li>
          </ul>
 
-         <p>In a rule, you then put a tilde after the grapheme to mark it as a base associateme. This is called a 'based-mark'. For example:</p>
+         <p>In a rule, you then put a tilde after the grapheme to mark it as a base associateme. This is called a "based-mark". For example:</p>
          
 
                  <div class="prog-pre"><span class="directive">graphemes</span><span class="link">: <span class="regexp">
@@ -1646,8 +1658,26 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
 <span class="catkey">uppercase</span> I İ 'O TH
 </div>
 
+         <h3 id="chapRecasts"><a class="head-num">19.8</a>Recasts</h3>
+         <p>Recasts, introduced in version 1.0.9, behave like rules but the <code class="example">RESULT</code> is regenerated from a category according to its distribution.</p>
+         <p>This is one way to ensure that certain combinations of graphemes are not generated in the word generation process, and to ensure that certain combinations of graphemes are generated. Recasts do not reproduce a natural linguistic phenomenon, they are shortcut to achieve your phonotactic constraints.</p>
+         <p>To create recasts, you write it in the same way as rules, only the arrow is replaced with <code class="example">&lt;recast-as&gt;</code> and the <code class="example">RESULT</code> is a single category with optional modifiers such as quantifiers.</p>
+         <p>Let's look at an example:</p>
+        <div class="prog-pre"><span class="directive">categories</span><span class="link">:</span>
+  <span class="catkey">V</span> <span class="link">=</span> a<span class="link">,</span> i<span class="link">,</span> u<span class="link">,</span> e<span class="link">,</span> o
+  <span class="catkey">Y</span> <span class="link">=</span> u<span class="link">,</span> a<span class="link">,</span> o<span class="link">,</span> e<span class="link"></span>
+ 
+<span class="directive">stage</span><span class="link">:</span>
+  <span class="catkey">V</span> <span class="link">&lt;recast-as></span> <span class="catkey">Y</span> <span class="link">/</span> y<span class="link">_</span></div>
+<p>This means that if a <code class="example">y</code> is found before a <code class="example">V</code> category, the pool of graphemes for <code class="example">V</code> is constrained to <code class="example">u, o, a, e</code>. Where <code class="example">yi</code> is now invalid, and <code class="example">yu</code> is the most likely to be randomly picked.</p>
+
+<div class="prog-pre"><span class="directive">stage</span><span class="link">:</span>
+  <span class="operator">^</span> <span class="link">&lt;recast-as></span> <span class="catkey">C</span> <span class="link">/</span> <span class="catkey">F</span><span class="regexp">$</span><span class="link">_</span><span class="catkey">V</span></div>
+
+  <p>This inserts a consonant between a grapheme from the <code class="example">F</code> category, a syllable divider and a vowel. This prevents codas from yielding to the onset.</p>
+
          <h2 id="chapBlock"><a class="head-num">20</a>Blocks</h2>
-         <p>Blocks modify the behaviour of transforms that are inside them with 'condition and event' logic.</p>
+         <p>Blocks modify the behaviour of transforms that are inside them with "condition and event" logic.</p>
          <p>They begin with a <code class="example">&lt;@</code> at the beginning of a line, and end with a <code class="example">&gt;</code> on the beginning of a line.</p>
 
          <h3 id="chapChance"><a class="head-num">20.1</a>Chance block</h3>
@@ -1657,10 +1687,9 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
   a <span class="link">-></span> b
   x <span class="link">-></span> y
 <span class="directive">&gt;</span></div>
-
-         <p>The above example's transforms have a 60% chance of occuring on each word.</p>
-
-         <h2 id="chapabugQuestionsAndAnswers"><a class="head-num">21</a>Questions and answers</h2>
+         <p>All of the above example's transforms in the block have a 60% chance of occuring on each word.</p>
+         
+         <h2 id="chapabugQuestionsAndAnswers"><a class="head-num">22</a>Questions and answers</h2>
          <p>Here are some common questions and answers about Vocabug:</p>
          
          <p><b>The Generate button is greyed out</b></p>
@@ -1669,14 +1698,8 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
          <p><b>I received the error "Invalid regular expression"</b></p>
          <p>This error occurs because you are using Vocabug in an old browser or old browser version that does not support lookbehind. <a href="https://caniuse.com/js-regexp-lookbehind">You can check if this applies to you here</a>.</p>
 
-         <p><b>What is a natural frequency for consonants in a language?</b></p>
-       
-         <p>There is no one-size-fits-all answer to this question, and analysing a text corpus versus a dictionary may produce different data on what the general expectation is. For example, in English, /ð/ is very uncommon among all the words in English, however it is a common phoneme in a text corpus because of the prevalence of the words <code class="example">this</code>, <code class="example">that</code>, <code class="example">those</code> and <code class="example">the</code>. And indeed, morphology, historical sound changes and word borrowing can skew any initial control you might have over frequencies.</p>
-       
-         <p>However, a good rule of thumb is that phonemes that are easy to pronounce and distinguish will be the most common.</p>
-
-         <p><b>How do I weight an individual optional-set?</b></p>
-         <p>Using the <code class="example">@words.optionals-weight</code> decorator affects the weight of all optional-sets. There is no direct way to weight an individual optional-set. You can however, use <code class="example">^</code> as an item in a pick-one set to give the set a chance of producing nothing, for example: <code class="example">a{b, c, ^*3}</code></p>
+         <p><b>This is nice and all but how do people actually use Vocabug?</b></p>
+         <p>I have written an article: <a href="https://neonnaut.neocities.org/fun_with_vocabug.html">Fun with Vocabug</a>, a collection of uses for Vocabug, my opinions on word generation, and techniques. Alternatively, load up the examples found in the web-app of Vocabug.</p>
 
       </section>
 

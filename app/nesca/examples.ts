@@ -1,17 +1,24 @@
 const examples: { [key: string]: {file:string, input_words:string} } = {
 default: {
 file:
-`graphemes:
+`
+Note:
+  Nesca is a powerful Sound Change Applier.
+  It applies transformation rules to words to change them.
+  It can be used for historical or fictional sound changes,
+  to spell words differently, or to convert words to other alphabets.
+
+graphemes:
   b, d, g, m, n, l, j, p, t, k, ʔ, s, a, i, e, o, u, ə
 
 feature-field:
-          p b t d k g ʔ s m n l j
-voiced    - + - + - + - - + + + +
-plosive   + + + + + + + - - - - -
+          p b t d k g ʔ s  m  n  l  j
+voiced    - + - + - + - -  -  -  -  -
+plosive   + + + + + + + -  -  -  -  -
 
 features:
   +voiced = b, d, g, m, n, l, j
-  -voiced = p, t, k, s, 
+  -voiced = p, t, k, s
   +plosive = p, b, t, d, k, g, ʔ
   -plosive = m, n, l, j, s
   +vowel = a i e o u ə ɨ
@@ -56,7 +63,7 @@ stage:
   gn -> nh
   p, t, c -> b, d, g / V_V
   c -> i / {i, e}_t
-  c -> u / {o u}_t
+  c -> u / {o, u}_t
   p -> ^ / V_t
   ii -> i
   e -> ^ / C_rV`,

@@ -67,7 +67,9 @@ class Word_Builder {
       // Stage four looks like `tacan!`. ready to be transformed and added to text
       let stage_four: string = "";
       for (let i = 0; i < stage_three.length; i++) {
-         // going through each char of baby
+         // going through each char of stage three,
+         // if it's a category like C, V, F, replace it with
+         // a weighted random pick from that category's graphemes
          let new_char: string = stage_three[i];
 
          for (const [category_key, category_field] of this.categories) {

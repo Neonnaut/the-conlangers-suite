@@ -21,6 +21,8 @@ import { latin_to_greek, greek_to_latin } from "./greek";
 import { latin_to_cyrillic, cyrillic_to_latin } from "./cyrillic";
 import Carryover_Associator from "./carryover_associator";
 
+import { weighted_random_pick } from "../utils/picker_utilities";
+
 import Chance_Mapper from "./chance_mapper";
 
 type Match_Result = {
@@ -40,7 +42,9 @@ type Replacement = {
 class Transformer {
    public logger: Logger;
 
-   public stages: { transforms: Transform[]; name: string }[] = [];
+   public stages: { transforms: Transform[]; name: string }[] = [
+      { transforms: [], name: "" },
+   ];
    public substages: { transforms: Transform[]; name: string }[] = [];
 
    public graphemes: string[];
@@ -179,9 +183,22 @@ class Transformer {
    ): string[] {
       const replacement_stream: string[] = [];
       for (let j = 0; j < raw_result.length; j++) {
-         const my_result_token: Token = raw_result[j];
+         let my_result_token: Token = raw_result[j];
 
-         if (my_result_token.type === "grapheme") {
+         if (my_result_token.type === "recast-category") {
+            // It's a recast category
+            // Generate grapheme(s) from category based on weights
+            const generated = weighted_random_pick(
+               my_result_token.graphemes,
+               my_result_token.weights,
+            );
+            my_result_token.base = generated;
+         }
+
+         if (
+            my_result_token.type === "grapheme" ||
+            my_result_token.type === "recast-category"
+         ) {
             if (my_result_token.association) {
                // Has association
                const my_grapheme: string | null =
@@ -789,12 +806,12 @@ class Transformer {
          transform;
 
       // ROUTINE
-      if (t_type != "rule" && t_type != "cluster-field") {
+      if (t_type != "rule" && t_type != "cluster-field" && t_type != "recast") {
          word_stream = this.run_routine(t_type, word, word_stream, line_num);
          return word_stream;
       }
 
-      if (target.length !== result.length) {
+      if (target.length !== result.length && t_type !== "recast") {
          this.logger.validation_error(
             "Mismatched target/result concurrent set lengths in a transform",
             line_num,
@@ -809,7 +826,9 @@ class Transformer {
          const carryover_associator = new Carryover_Associator();
 
          const raw_target: Token[] = target[i]; // like 'abc' of 'abc, hij > y, z'
-         const raw_result: Token[] = result[i]; // like 'y' of 'abc, hij > y, z'
+
+         const raw_result: Token[] =
+            t_type === "recast" ? result[0] : result[i]; // like 'y' of 'abc, hij > y, z' or the sole result in a recast transform
 
          let mode: "deletion" | "insertion" | "reject" | "replacement" =
             "replacement";

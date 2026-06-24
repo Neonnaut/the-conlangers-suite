@@ -1,13 +1,15 @@
+// Table Maker for the phoneme table formatter
+
 type Header = string[];
 
-type RowEntry = {
+type Row_Entry = {
    row: string;
    cells: string[]; // same length/order as header_col
 };
 
-type CellMap = RowEntry[];
+type Cell_Map = Row_Entry[];
 
-export function table_md(cells: CellMap, header_col: Header): string {
+export function table_md(cells: Cell_Map, header_col: Header): string {
    // Compute column widths
    const col_widths = new Map<string, number>();
 
@@ -55,7 +57,7 @@ export function table_md(cells: CellMap, header_col: Header): string {
    return `${header}\n${separator}\n${body}`;
 }
 
-export function table_html(cells: CellMap, header_col: Header): string {
+export function table_html(cells: Cell_Map, header_col: Header): string {
    const thead =
       `<thead><tr><th></th>` +
       header_col.map((col) => `<th>${escape_html(col)}</th>`).join("") +

@@ -541,6 +541,7 @@ var Parser = class {
           my_subdirective = "clusterfield";
           my_header = top_row;
           continue;
+        } else if (line.startsWith("<recasts")) {
         } else if (line.startsWith("<routine")) {
           if (my_wrapped_rule.length != 0) {
             this.logger.validation_error(
@@ -588,9 +589,13 @@ var Parser = class {
           }
           line = my_wrapped_rule + " " + line;
           my_wrapped_rule = "";
-          const [target, result, conditions, exceptions] = this.get_transform(line);
+          const [target, result, conditions, exceptions, is_recast] = this.get_transform(line);
+          let t_type = "rule";
+          if (is_recast) {
+            t_type = "recast";
+          }
           this.push_transform_to_stage({
-            t_type: "rule",
+            t_type,
             target,
             result,
             conditions,
@@ -893,8 +898,9 @@ var Parser = class {
     if (input === "") {
       this.logger.validation_error(`No input`, this.file_line_num);
     }
+    const is_recast = input.includes("<recast-as>");
     input = input.replace(/\/\//g, "!");
-    const divided = input.split(/>>|->|→|=>|⇒/);
+    const divided = is_recast ? input.split("<recast-as>") : input.split(/>>|->|→|=>|⇒/);
     if (divided.length === 1) {
       this.logger.validation_error(
         `No arrows in transform`,
@@ -941,7 +947,7 @@ var Parser = class {
     }
     const environment = delimiter_index === Infinity ? "" : divided[1].slice(delimiter_index).trim();
     const { conditions, exceptions } = this.get_environment(environment);
-    return [target, result, conditions, exceptions];
+    return [target, result, conditions, exceptions, is_recast];
   }
   get_schema(input) {
     const divider = "=";
@@ -1257,6 +1263,19 @@ var Word = class _Word {
   }
 };
 var word_default = Word;
+
+// src/utils/picker_utilities.ts
+function weighted_random_pick(items, weights) {
+  const total_weight = weights.reduce((acc, w) => acc + w, 0);
+  let random_value = Math.random() * total_weight;
+  for (let i = 0; i < items.length; i++) {
+    if (random_value < weights[i]) {
+      return items[i];
+    }
+    random_value -= weights[i];
+  }
+  return "";
+}
 
 // src/transforma/reference_mapper.ts
 var Reference_Mapper = class _Reference_Mapper {
@@ -2378,7 +2397,9 @@ var carryover_associator_default = Carryover_Associator;
 // src/transforma/transformer.ts
 var Transformer = class {
   logger;
-  stages = [];
+  stages = [
+    { transforms: [], name: "" }
+  ];
   substages = [];
   graphemes;
   lettercase_mapper;
@@ -2477,8 +2498,15 @@ var Transformer = class {
   result_former(raw_result, target_stream, reference_mapper, carryover_associator) {
     const replacement_stream = [];
     for (let j = 0; j < raw_result.length; j++) {
-      const my_result_token = raw_result[j];
-      if (my_result_token.type === "grapheme") {
+      let my_result_token = raw_result[j];
+      if (my_result_token.type === "recast-category") {
+        const generated = weighted_random_pick(
+          my_result_token.graphemes,
+          my_result_token.weights
+        );
+        my_result_token.base = generated;
+      }
+      if (my_result_token.type === "grapheme" || my_result_token.type === "recast-category") {
         if (my_result_token.association) {
           const my_grapheme = carryover_associator.get_result_associateme(
             my_result_token.association,
@@ -2877,11 +2905,11 @@ var Transformer = class {
   }
   apply_transform(word, word_stream, transform) {
     const { t_type, target, result, conditions, exceptions, line_num } = transform;
-    if (t_type != "rule" && t_type != "cluster-field") {
+    if (t_type != "rule" && t_type != "cluster-field" && t_type != "recast") {
       word_stream = this.run_routine(t_type, word, word_stream, line_num);
       return word_stream;
     }
-    if (target.length !== result.length) {
+    if (target.length !== result.length && t_type !== "recast") {
       this.logger.validation_error(
         "Mismatched target/result concurrent set lengths in a transform",
         line_num
@@ -2892,7 +2920,7 @@ var Transformer = class {
       const reference_mapper = new reference_mapper_default();
       const carryover_associator = new carryover_associator_default();
       const raw_target = target[i];
-      const raw_result = result[i];
+      const raw_result = t_type === "recast" ? result[0] : result[i];
       let mode = "replacement";
       if (raw_result[0].type === "deletion") {
         mode = "deletion";
@@ -3583,7 +3611,7 @@ var Transform_Resolver = class {
           line_num: this.line_num
         });
         continue;
-      } else if (transform_pending[i].t_type !== "rule") {
+      } else if (transform_pending[i].t_type !== "rule" && transform_pending[i].t_type !== "recast") {
         output_transforms.push({
           t_type: transform_pending[i].t_type,
           target: [],
@@ -3599,34 +3627,17 @@ var Transform_Resolver = class {
       const target_with_cat = this.categories_into_transform(target);
       const target_with_fea = this.features_into_transform(target_with_cat);
       const target_altors = this.resolve_alt_opt(target_with_fea);
-      const result = transform_pending[i].result;
-      const result_with_cat = this.categories_into_transform(result);
-      const result_with_fea = this.features_into_transform(result_with_cat);
-      const result_altors = this.resolve_alt_opt(result_with_fea);
-      const { result_array, target_array } = this.normaliseTransformLength(
-        target_altors,
-        result_altors
-      );
-      const result_length_match = result_array.flat();
-      const target_length_match = target_array.flat();
-      const tokenised_target_array = [];
-      for (let j = 0; j < target_length_match.length; j++) {
-        tokenised_target_array.push(
-          this.nesca_grammar_stream.main_parser(
-            target_length_match[j],
-            "TARGET",
-            this.line_num
-          )
+      let tokenised_target_array = [];
+      let tokenised_result_array = [];
+      if (transform_pending[i].t_type === "recast") {
+        [tokenised_target_array, tokenised_result_array] = this.formalise_recast_transform_target_result(
+          transform_pending[i].result,
+          target_altors
         );
-      }
-      const tokenised_result_array = [];
-      for (let j = 0; j < result_length_match.length; j++) {
-        tokenised_result_array.push(
-          this.nesca_grammar_stream.main_parser(
-            result_length_match[j],
-            "RESULT",
-            this.line_num
-          )
+      } else {
+        [tokenised_target_array, tokenised_result_array] = this.formalise_rule_transform_target_result(
+          transform_pending[i].result,
+          target_altors
         );
       }
       const chance = transform_pending[i].chance;
@@ -3717,6 +3728,71 @@ var Transform_Resolver = class {
       });
     }
     return output_transforms;
+  }
+  formalise_rule_transform_target_result(result, target_altors) {
+    const result_with_cat = this.categories_into_transform(result);
+    const result_with_fea = this.features_into_transform(result_with_cat);
+    const result_altors = this.resolve_alt_opt(result_with_fea);
+    const { result_array, target_array } = this.normalise_transform_length(
+      target_altors,
+      result_altors
+    );
+    const result_length_match = result_array.flat();
+    const target_length_match = target_array.flat();
+    const tokenised_target_array = [];
+    for (let j = 0; j < target_length_match.length; j++) {
+      tokenised_target_array.push(
+        this.nesca_grammar_stream.main_parser(
+          target_length_match[j],
+          "TARGET",
+          this.line_num
+        )
+      );
+    }
+    const tokenised_result_array = [];
+    for (let j = 0; j < result_length_match.length; j++) {
+      tokenised_result_array.push(
+        this.nesca_grammar_stream.main_parser(
+          result_length_match[j],
+          "RESULT",
+          this.line_num
+        )
+      );
+    }
+    return [tokenised_target_array, tokenised_result_array];
+  }
+  formalise_recast_transform_target_result(result, target) {
+    const target_length_match = target.flat();
+    const tokenised_target_array = [];
+    for (let j = 0; j < target_length_match.length; j++) {
+      tokenised_target_array.push(
+        this.nesca_grammar_stream.main_parser(
+          target_length_match[j],
+          "TARGET",
+          this.line_num
+        )
+      );
+    }
+    const tokenised_result_array = [];
+    const my_key = result[0] ?? "";
+    const modify = result.slice(1);
+    if (this.categories.has(my_key)) {
+      const got_category = this.categories.get(my_key);
+      const new_token = this.nesca_grammar_stream.recast_category_parser(
+        my_key,
+        got_category.graphemes,
+        got_category.weights,
+        modify,
+        this.line_num
+      );
+      tokenised_result_array.push([new_token]);
+    } else {
+      this.logger.validation_error(
+        `RESULT "${result}" in a recast transform must be a single category key`,
+        this.line_num
+      );
+    }
+    return [tokenised_target_array, tokenised_result_array];
   }
   environment_helper(input) {
     const [left = "", right = ""] = input.split("_", 2);
@@ -3858,7 +3934,7 @@ var Transform_Resolver = class {
       }
       if (this.categories.has(char)) {
         const entry = this.categories.get(char);
-        const expanded = entry.filter((g) => !g.includes("^")).join(", ");
+        const expanded = entry.graphemes.join(", ");
         const isParenWrapped = this.check_bracket_context(
           input,
           i,
@@ -3987,7 +4063,7 @@ var Transform_Resolver = class {
     );
     return intersection.join(", ");
   }
-  normaliseTransformLength(target, result) {
+  normalise_transform_length(target, result) {
     if (result.length === 1 && target.length > 1) {
       result = Array(target.length).fill(result[0]);
     }
@@ -4169,7 +4245,7 @@ var Transform_Resolver = class {
       const my_transforms = stage.transforms;
       for (let i = 0; i < my_transforms.length; i++) {
         const my_transform = my_transforms[i];
-        if (my_transform.t_type != "rule" && my_transform.t_type != "cluster-field") {
+        if (my_transform.t_type != "rule" && my_transform.t_type != "cluster-field" && my_transform.t_type != "recast") {
           format_transforms.push(
             `  <routine = ${my_transform.t_type}> @ ln:${my_transform.line_num + 1}`
           );
@@ -4192,8 +4268,9 @@ var Transform_Resolver = class {
         for (let j = 0; j < my_transform.conditions.length; j++) {
           conditions += ` / ${this.format_tokens(my_transform.conditions[j].before)}_${this.format_tokens(my_transform.conditions[j].after)}`;
         }
+        const arrow = my_transform.t_type === "recast" ? "<recast-as>" : "\u2192";
         format_transforms.push(
-          `  ${my_target.join(", ")} \u2192 ${my_result.join(", ")}${conditions}${exceptions}${chance} @ ln:${my_transform.line_num + 1}`
+          `  ${my_target.join(", ")} ${arrow} ${my_result.join(", ")}${conditions}${exceptions}${chance} @ ln:${my_transform.line_num + 1}`
         );
       }
       format_stages.push({
@@ -4514,121 +4591,142 @@ var Nesca_Grammar_Stream = class {
           new_token.escaped = true;
         }
       }
-      if (stream[i] === ":") {
-        new_token.min = 2;
-        new_token.max = 2;
+      const modded = this.parse_modifiers(
+        stream,
+        i,
+        new_token,
+        mode,
+        line_num
+      );
+      tokens.push(modded.token);
+      i = modded.next_i;
+    }
+    return tokens;
+  }
+  parse_modifiers(stream, i, token, mode, line_num) {
+    if (!("min" in token) || !("max" in token)) {
+      return { token, next_i: i };
+    }
+    while (true) {
+      const char = stream[i];
+      if (char !== ":" && char !== "+" && char !== "?" && char !== "~") {
+        break;
+      }
+      if (char === ":") {
+        token.min = 2;
+        token.max = 2;
         i++;
-      } else if (stream[i] === "+") {
+        continue;
+      }
+      if (char === "+") {
         if (mode === "RESULT") {
           this.logger.validation_error(
             `Quantifier not allowed in ${mode}`,
             line_num
           );
         }
-        new_token.min = 1;
-        new_token.max = Infinity;
+        token.min = 1;
+        token.max = Infinity;
         i++;
-      } else if (stream[i] === "?") {
-        let look_ahead = i + 1;
-        if (stream[look_ahead] !== "[") {
+        continue;
+      }
+      if (char === "?") {
+        let look = i + 1;
+        if (stream[look] !== "[") {
           this.logger.validation_error(
             `Expected "[" after "?" for quantifier`,
             line_num
           );
+        }
+        look++;
+        let quant = "";
+        while (look < stream.length && stream[look] !== "]") {
+          quant += stream[look++];
+        }
+        if (stream[look] !== "]") {
+          this.logger.validation_error(`Unclosed quantifier`, line_num);
+        }
+        const parts = quant.split(",");
+        if (parts.length === 1) {
+          const n = parseInt(parts[0], 10);
+          if (isNaN(n)) {
+            this.logger.validation_error(
+              `Invalid quantifier value: "${parts[0]}"`,
+              line_num
+            );
+          }
+          token.min = n;
+          token.max = n;
+        } else if (parts.length === 2) {
+          const [minStr, maxStr] = parts;
+          const min = minStr === "" ? 1 : parseInt(minStr, 10);
+          const max = maxStr === "" ? Infinity : parseInt(maxStr, 10);
+          if (minStr !== "" && isNaN(min)) {
+            this.logger.validation_error(
+              `Invalid min value: "${minStr}"`,
+              line_num
+            );
+          }
+          if (maxStr !== "" && max !== Infinity && isNaN(max)) {
+            this.logger.validation_error(
+              `Invalid max value: "${maxStr}"`,
+              line_num
+            );
+          }
+          if (max === Infinity && mode === "RESULT") {
+            this.logger.validation_error(
+              `In ${mode}, "${token.base}" cannot be reproduced an infinite amount of times`,
+              line_num
+            );
+          }
+          token.min = min;
+          token.max = max;
         } else {
-          look_ahead += 1;
-          let quantifier = "";
-          while (look_ahead < stream.length && stream[look_ahead] !== "]") {
-            quantifier += stream[look_ahead];
-            look_ahead++;
-          }
-          if (stream[look_ahead] !== "]") {
-            this.logger.validation_error(`Unclosed quantifier`, line_num);
-          }
-          const parts = quantifier.split(",");
-          if (parts.length === 1) {
-            const n = parseInt(parts[0], 10);
-            if (isNaN(n)) {
-              this.logger.validation_error(
-                `Invalid quantifier value: "${parts[0]}"`,
-                line_num
-              );
-            }
-            new_token.min = n;
-            new_token.max = n;
-          } else if (parts.length === 2) {
-            const [minStr, maxStr] = parts;
-            const min = minStr === "" ? 1 : parseInt(minStr, 10);
-            const max = maxStr === "" ? Infinity : parseInt(maxStr, 10);
-            if (minStr !== "" && isNaN(min)) {
-              this.logger.validation_error(
-                `Invalid min value: "${minStr}"`,
-                line_num
-              );
-            }
-            if (maxStr !== "" && max !== null && isNaN(max)) {
-              this.logger.validation_error(
-                `Invalid max value: "${maxStr}"`,
-                line_num
-              );
-            }
-            if (max === Infinity && mode === "RESULT") {
-              this.logger.validation_error(
-                `In ${mode}, "${new_token.base}" cannot be reproduced an infinite amount of times`,
-                line_num
-              );
-            }
-            new_token.min = min;
-            new_token.max = max;
-          } else {
-            this.logger.validation_error(
-              `Invalid quantifier format: "${quantifier}"`,
-              line_num
-            );
-          }
-          i = look_ahead + 1;
+          this.logger.validation_error(
+            `Invalid quantifier format: "${quant}"`,
+            line_num
+          );
         }
-        if (new_token.max != Infinity) {
-          if (new_token.min > new_token.max) {
-            this.logger.validation_error(
-              `Invalid quantifier: min "${new_token.min}" cannot be greater than max "${new_token.max}"`,
-              line_num
-            );
-          }
+        if (token.max !== Infinity && token.min > token.max) {
+          this.logger.validation_error(
+            `Invalid quantifier: min "${token.min}" cannot be greater than max "${token.max}"`,
+            line_num
+          );
         }
+        i = look + 1;
+        continue;
       }
-      if (stream[i] === "~") {
-        if (new_token.type !== "grapheme") {
+      if (char === "~") {
+        if (token.type !== "grapheme") {
           this.logger.validation_error(
             `Based-mark only allowed after grapheme token`,
             line_num
           );
-        }
-        const location = this.find_base_location(
-          this.associateme_mapper,
-          new_token.base
-        );
-        if (!location) {
-          this.logger.validation_error(
-            `Grapheme "${new_token.base}" with a based-mark was not an associateme base`,
-            line_num
+        } else {
+          const location = this.find_base_location(
+            this.associateme_mapper,
+            token.base
           );
+          if (!location) {
+            this.logger.validation_error(
+              `Grapheme "${token.base}" with a based-mark was not an associateme base`,
+              line_num
+            );
+          } else {
+            const [entry_id, base_id] = location;
+            token.association = {
+              entry_id,
+              base_id,
+              variant_id: 0,
+              is_target: mode === "TARGET"
+            };
+          }
         }
-        const [entry_id, base_id] = location;
-        new_token.association = {
-          entry_id,
-          base_id,
-          variant_id: 0,
-          // Placeholder; to be filled during generation
-          is_target: mode === "TARGET"
-        };
         i++;
-      }
-      if (new_token.type !== "pending") {
-        tokens.push(new_token);
+        continue;
       }
     }
-    return tokens;
+    return { token, next_i: i };
   }
   cluster_parser(stream, mode, line_num) {
     let i = 0;
@@ -4696,6 +4794,30 @@ var Nesca_Grammar_Stream = class {
     }
     return tokens;
   }
+  recast_category_parser(base, graphemes, weights, modify, line_number) {
+    const new_token = {
+      type: "recast-category",
+      base,
+      graphemes,
+      weights,
+      min: 1,
+      max: 1
+    };
+    const modded = this.parse_modifiers(
+      modify,
+      0,
+      new_token,
+      "RESULT",
+      line_number
+    );
+    if (modded.next_i != modify.length) {
+      this.logger.validation_error(
+        "The RESULT of a recast transform must be a category with optional modifiers",
+        line_number
+      );
+    }
+    return modded.token;
+  }
   find_base_location(mapper, grapheme) {
     for (let entry_id = 0; entry_id < mapper.length; entry_id++) {
       const entry = mapper[entry_id];
@@ -4740,15 +4862,19 @@ var Category_Resolver = class {
     }
     for (const [key, value] of this.category_pending) {
       const new_category_field = value.content.split(/[,\s]+/).filter(Boolean);
-      this.trans_categories.set(key, new_category_field);
+      const weights = new_category_field.map(() => 1);
+      this.trans_categories.set(key, {
+        graphemes: new_category_field,
+        weights
+      });
     }
   }
   show_debug() {
     const categories = [];
     for (const [key, value] of this.trans_categories) {
       const cat_field = [];
-      for (let i = 0; i < value.length; i++) {
-        cat_field.push(`${value[i]}`);
+      for (let i = 0; i < value.graphemes.length; i++) {
+        cat_field.push(`${value.graphemes[i]}`);
       }
       const category_field = `${cat_field.join(", ")}`;
       categories.push(`  ${key} = ${category_field}`);
@@ -5270,7 +5396,7 @@ function nesca({
 }
 
 // src/utils/version.ts
-var VERSION = "1.0.8";
+var VERSION = "1.0.9";
 
 // bin/nesca/index.ts
 var encodings = [

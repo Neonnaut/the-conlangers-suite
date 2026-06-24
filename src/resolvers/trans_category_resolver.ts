@@ -9,7 +9,10 @@ class Category_Resolver {
 
    private category_pending: Map<string, { content: string; line_num: number }>;
 
-   public trans_categories: Map<string, string[]>;
+   public trans_categories: Map<
+      string,
+      { graphemes: string[]; weights: number[] }
+   >;
 
    constructor(
       logger: Logger,
@@ -42,11 +45,19 @@ class Category_Resolver {
       }
 
       // Resolve categories
+
       for (const [key, value] of this.category_pending) {
          const new_category_field: string[] = value.content
             .split(/[,\s]+/)
             .filter(Boolean);
-         this.trans_categories.set(key, new_category_field); ////
+
+         // Create weights: 1 per grapheme
+         const weights = new_category_field.map(() => 1);
+
+         this.trans_categories.set(key, {
+            graphemes: new_category_field,
+            weights: weights,
+         });
       }
    }
 
@@ -54,8 +65,8 @@ class Category_Resolver {
       const categories = [];
       for (const [key, value] of this.trans_categories) {
          const cat_field: string[] = [];
-         for (let i = 0; i < value.length; i++) {
-            cat_field.push(`${value[i]}`);
+         for (let i = 0; i < value.graphemes.length; i++) {
+            cat_field.push(`${value.graphemes[i]}`);
          }
          const category_field: string = `${cat_field.join(", ")}`;
 

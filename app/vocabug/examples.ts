@@ -138,19 +138,17 @@ y -> ^ / sh_ / j_ / ch_
 Vʀ -> V: ; Get long vowels.
 
 note:
-  This gives a very Japanese-like words, however:
-  * The pitch accent is not represented here.
-  * /ɢn/ and /ɴV/ sequences are overrepresented.
-  * Where light syllable is (C)V, and heavy is (C){VF,Vʀ(F)}
-  the final two syllables should be least likely to be light + heavy
-  * And of course there is the nature of morphology and loanwords
-  that may complicate things
-  `,
+  This gives very Japanese-like words, however:
+  * The pitch accent is not represented here
+  * /ɢn/ and /ɴV/ sequences are possibly overrepresented
+  * Where light syllable is (C)V, and heavy is (C){VF,Vʀ(F)},
+    in Japanese, the final two syllables of a word
+    are least likely to be light followed by heavy`,
   australian: 
 `note:
-  This does not represent a single Australian language, it does something
-  Australian looking. The glottal stop and lack of retroflex stops make it
-  not an 'average' Australian language word list, but not unusual.
+  This does not represent a single Australian language,
+  nor does it represent the average Australian language,
+  it creates Australian looking words.
 
   CONSONANTS:
   p  t  ṭ  č  k
@@ -160,31 +158,31 @@ note:
 
   VOWELS:
   i ii    u uu
-  e
   a aa ai
 
-  Words begin with <a> or <k, p, m, w, ŋ>
+  Words begin with <a> or a consonant that is not <r, ṛ, l, ḷ, ṇ>.
   No monosyllabic words. Disylabic words DON'T begin with <a>
   Medial Singleton consonants are unrestricted.
-  There are intervocalic clusters.
-  Words end with <a, i, u> or <n, l, r, ṛ>
+  There are intervocalic consonant clusters.
+  Any vowel or <ai> occurs bettween any two consonants.
+  Words end in <a, i, u> or <n, l, r, ṛ, t>
 
 categories:
 ; Initials:
-  I = k p m w ŋ
+  I = k p m w ŋ y n t č ň ṭ
 ; Clusters
   X = {mp nt ṇṭ nč ňč ŋk nk} {rp rč rk rm lk lp} {rm rň} {ḷp ḷṭ ḷk} {nm nň nŋ np}
 ; Medials
-  C = k m ṛ l r w y n t č p ŋ ḷ ṭ ň X {g b d ṇ}
+  C = k m ṛ l r w y n t č p ŋ ḷ ṭ ň X {d ṇ}
 ; Finals
-  F = n l r ṛ 
+  F = n l r ṛ t
 ; Vowels
-  V = a i u {aa*1 ii {uu e}} 
-  W = a i u e
+  V = a i u {aa*1 ii {uu e ai}} 
+  W = a i u
 
 units:
-  First = {IW*12, a}
-  Di-first = IW
+  First = {IV*18, a}
+  Di-first = IV
   Medial = CV
   Last = C{W*11,VF}
 
@@ -194,32 +192,22 @@ words:
   <First><Medial><Medial><Medial><Medial><Last>
 
 graphemes:
-  t̪ č n̪ ň ṛ aa uu ii
+  č ň ṛ aa uu ii
 
 stage:
-  wu, yi -> u, i / #_
+  i -> ^ / a_{y,ň,č,w} ; <ai> becomes <a> before palatals or <w>
 
-  {a,u}w{a,u,e}, {i,e}y{i,e} → u:, i: / C_C
-
-  <  a  e  i  u
-  iy aa ii ii uu  
-  ey aa aa ai uu
-  >
-
-  e -> a / _# / #_
+  e -> a / _#
   <@chance = 70%
-    e → i / _(C)i
     e → u / _(C)u
   >
   <@chance = 70%
-    e -> u / j_
-    e -> a / w_
+    e → i / _(C)i
   >
+  e -> a
 
-  d -> ṛ / u_ / _u
-  b d g -> w t y
-
-  V?[3,] -> V:`,
+  d -> ṛ / u_
+  d -> t`,
 romance:
 `; This gives somewhat Spanish looking words 
 ; Let's name this language "Espamogus"
