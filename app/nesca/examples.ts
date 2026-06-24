@@ -1,8 +1,7 @@
 const examples: { [key: string]: {file:string, input_words:string} } = {
 default: {
 file:
-`
-Note:
+`note:
   Nesca is a powerful Sound Change Applier.
   It applies transformation rules to words to change them.
   It can be used for historical or fictional sound changes,
