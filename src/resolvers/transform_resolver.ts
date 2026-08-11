@@ -41,7 +41,7 @@ class Transform_Resolver {
    constructor(
       logger: Logger,
       output_mode: Output_Mode,
-      nesca_grmmar_stream: Nesca_Grammar_Stream,
+      nesca_grammar_stream: Nesca_Grammar_Stream,
       categories: Map<string, { graphemes: string[]; weights: number[] }>,
 
       stages_pending: {
@@ -59,7 +59,7 @@ class Transform_Resolver {
       this.logger = logger;
       this.output_mode = output_mode;
 
-      this.nesca_grammar_stream = nesca_grmmar_stream;
+      this.nesca_grammar_stream = nesca_grammar_stream;
       this.categories = categories;
 
       this.stages_pending = stages_pending;
@@ -69,8 +69,7 @@ class Transform_Resolver {
       this.substages = [];
 
       this.features = features;
-      this.syllable_boundaries =
-         syllable_boundaries.length === 0 ? ["."] : syllable_boundaries;
+      this.syllable_boundaries = syllable_boundaries;
       this.line_num = 0;
 
       this.resolve_stages();
@@ -134,13 +133,14 @@ class Transform_Resolver {
 
          const target = transform_pending[i].target; // string
 
-         // Replace category keys with category graphemes, must be item, or alone
-         const target_with_cat = this.categories_into_transform(target);
          // Replace feature matrix keys with feature matrix graphemes
-         const target_with_fea = this.features_into_transform(target_with_cat);
+         const target_with_fea = this.features_into_transform(target);
+         // Replace category keys with category graphemes, must be item, or alone
+         const target_with_cat =
+            this.categories_into_transform(target_with_fea);
          // Resolve alternators or optionalators as array of arrays
          const target_altors: string[][] =
-            this.resolve_alt_opt(target_with_fea);
+            this.resolve_alt_opt(target_with_cat);
 
          let tokenised_target_array: Token[][] = [];
          let tokenised_result_array: Token[][] = [];
@@ -171,8 +171,8 @@ class Transform_Resolver {
          for (let j = 0; j < transform_pending[i].conditions.length; j++) {
             // CONDITIONS
             let my_condition = transform_pending[i].conditions[j];
-            my_condition = this.categories_into_transform(my_condition);
             my_condition = this.features_into_transform(my_condition);
+            my_condition = this.categories_into_transform(my_condition);
             // Validate brackets
             if (!this.valid_transform_brackets(my_condition)) {
                this.logger.validation_error(
@@ -270,12 +270,13 @@ class Transform_Resolver {
       result: string,
       target_altors: string[][],
    ): [Token[][], Token[][]] {
-      // Replace category keys with category graphemes, must be item, or alone
-      const result_with_cat = this.categories_into_transform(result);
       // Replace feature matrix keys with feature matrix graphemes
-      const result_with_fea = this.features_into_transform(result_with_cat);
+      const result_with_fea = this.features_into_transform(result);
+      // Replace category keys with category graphemes, must be item, or alone
+      const result_with_cat = this.categories_into_transform(result_with_fea);
+
       // Resolve alternators or optionalators as array of arrays
-      const result_altors: string[][] = this.resolve_alt_opt(result_with_fea);
+      const result_altors: string[][] = this.resolve_alt_opt(result_with_cat);
 
       // Make sure lengths are good, and get merging change / sets
       const { result_array, target_array } = this.normalise_transform_length(
@@ -540,7 +541,7 @@ class Transform_Resolver {
          const char = input[i];
 
          // Preserve <T, <M, etc.
-         if (char === "<" && /^[A-Z]$/.test(input[i + 1])) {
+         if (char === "&" && /^[A-Z]$/.test(input[i + 1])) {
             output += char + input[i + 1];
             i += 1;
             continue;
@@ -577,38 +578,23 @@ class Transform_Resolver {
    }
 
    features_into_transform(stream: string): string {
-      const length = stream.length;
       const output: string[] = [];
       let feature_mode = false;
       let feature_matrix = "";
-      let sq_start_index = 0;
 
-      for (let i = 0; i < length; i++) {
+      for (let i = 0; i < stream.length; i++) {
          const char = stream[i];
 
+         // Inside a feature matrix
          if (feature_mode) {
             if (char === "]") {
+               // End of feature matrix
                feature_mode = false;
 
-               if (feature_matrix.length !== 0) {
-                  const resolved =
-                     this.get_graphemes_from_matrix(feature_matrix);
+               const resolved = this.get_graphemes_from_matrix(feature_matrix);
+               output.push(`{${resolved}}`);
 
-                  const isParenWrapped = this.check_bracket_context(
-                     stream,
-                     sq_start_index,
-                     i,
-                     "feature",
-                  );
-
-                  if (isParenWrapped) {
-                     output.push(`${resolved}`);
-                     continue;
-                  }
-                  output.push(`{${resolved}}`);
-                  continue;
-               }
-               feature_matrix = "";
+               feature_matrix = ""; // ⭐ ALWAYS RESET
                continue;
             }
 
@@ -616,16 +602,11 @@ class Transform_Resolver {
             continue;
          }
 
-         if (char === "[") {
-            sq_start_index = i; // RECORD START INDEX HERE
-
-            const next = stream[i + 1];
-
-            // Feature matrix only if [+...] or [-...]
-            if (next === "+" || next === "-") {
-               feature_mode = true;
-               continue;
-            }
+         // Detect start of feature matrix: [+...] or [-...]
+         if (char === "[" && (stream[i + 1] === "+" || stream[i + 1] === "-")) {
+            feature_mode = true;
+            feature_matrix = ""; // ⭐ RESET BEFORE CAPTURE
+            continue;
          }
 
          // Normal passthrough
@@ -921,7 +902,7 @@ class Transform_Resolver {
       // Formatting for making the record
       return seq
          .map((t) => {
-            let s = t.base;
+            let s = t.mask;
 
             if (t.type === "anythings-mark") {
                if ("consume" in t && t.consume) {
@@ -938,9 +919,6 @@ class Transform_Resolver {
                }
             }
 
-            if ("escaped" in t && t.escaped) {
-               s = "\\" + s;
-            }
             if ("min" in t && t.min === 1 && t.max === Infinity) {
                s += `+`;
             } else if ("min" in t && t.max === Infinity) {
@@ -1061,7 +1039,7 @@ class Transform_Resolver {
 
       const info: string =
          `Graphemes { ` +
-         this.nesca_grammar_stream.graphemes.join(", ") +
+         this.nesca_grammar_stream.graphemorphs.join(", ") +
          `\n}\nSyllable Boundaries { ` +
          this.syllable_boundaries.join(", ") +
          `\n}\nAssociatemes { \n` +

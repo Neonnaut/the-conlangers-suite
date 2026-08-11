@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/// <reference types="node" />
 import fs from 'fs';
 import yargs from 'yargs/yargs';
 
@@ -18,6 +19,7 @@ type CLI_Args = Arguments<{
    force_word_limit: boolean;
    sort_words: boolean;
    output_divider: string;
+   wordclass_choices: string;
    encoding: BufferEncoding;
 }> & {
    _: string[]; // positional args
@@ -83,6 +85,12 @@ const argv = yargs(hideBin(process.argv))
       type: 'string',
       default: ' '
    })
+   .option('wordclass_choices', {
+      alias: 'wc',
+      describe: 'Comma-separated list of word classes to generate (e.g., "noun,verb")',
+      type: 'string',
+      default: ''
+   })
    .option('encoding', {
       alias:       'e',
       choices:     encodings,
@@ -122,6 +130,11 @@ try {
    const file_text = fs.readFileSync(filePath, argv.encoding);
    normal_text(`Generating words with Vocabug version ${VERSION}. This may take up to 30 seconds...`);
 
+   const parsed_choices: string[] = argv.wordclass_choices
+      .split(",")
+      .map((choice) => choice.trim())
+      .filter((choice) => choice.length > 0);
+
    const run = vocabug({
       file: file_text,
       num_of_words: argv.num_of_words,
@@ -129,7 +142,8 @@ try {
       remove_duplicates: argv.remove_duplicates,
       force_word_limit: argv.force_word_limit,
       sort_words: argv.sort_words,
-      output_divider: argv.output_divider
+      output_divider: argv.output_divider,
+      wordclass_choices: parsed_choices
    });
 
    for (const warning of run.warnings) {

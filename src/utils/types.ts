@@ -29,29 +29,30 @@ export type Word_Step = {
 export type Token =
    | {
         type: "pending";
+        mask: string;
         base: string;
         min: number;
         max: number | typeof Infinity;
      }
    | {
         type: "grapheme"; // ch, a, \*
+        mask: string;
         base: string;
         min: number;
         max: number | typeof Infinity;
-        escaped?: boolean;
         named_reference_bind?: string;
         association?: Association;
      }
    | {
         type: "wildcard"; // *
-        base: "*";
+        mask: "*";
         min: number;
         max: number | typeof Infinity;
         named_reference_bind?: string;
      }
    | {
         type: "anythings-mark"; // &
-        base: "%";
+        mask: "%";
         min: number;
         max: number | typeof Infinity;
         consume?: string[][];
@@ -59,66 +60,68 @@ export type Token =
      }
    | {
         type: "deletion"; // ^
-        base: "^";
+        mask: "^";
      }
    | {
         type: "insertion"; // ^
-        base: "^";
+        mask: "^";
      }
    | {
         type: "reject"; // 0
-        base: "0";
+        mask: "0";
      }
    | {
         type: "word-boundary"; // #
-        base: "#";
+        mask: "#";
         min: number;
         max: number | typeof Infinity;
      }
    | {
         type: "syllable-boundary"; // #
-        base: "$";
+        mask: "$";
         min: number;
         max: number | typeof Infinity;
      }
    | {
         type: "routine"; // @routine
+        mask: string;
         base: string;
         routine: string;
         // the routine
      }
    | {
         type: "target-mark";
-        base: "&T";
+        mask: "&T";
         min: number;
         max: number | typeof Infinity;
      }
    | {
         type: "metathesis-mark";
-        base: "&M";
+        mask: "&M";
         min: number;
         max: number | typeof Infinity;
      }
    | {
         type: "empty-mark";
-        base: "&E";
+        mask: "&E";
         min: number;
         max: number | typeof Infinity;
      }
    | {
         type: "based-mark";
-        base: "~";
+        mask: "~";
         min: number;
         max: number | typeof Infinity;
      }
    | {
         type: "reference-start-capture";
-        base: "&=";
+        mask: "&=";
         min: number;
         max: number | typeof Infinity;
      }
    | {
         type: "reference-capture";
+        mask: string;
         base: string;
         key: string;
         min: number;
@@ -126,6 +129,7 @@ export type Token =
      }
    | {
         type: "reference-mark";
+        mask: string;
         base: string;
         key: string;
         min: number;
@@ -133,13 +137,12 @@ export type Token =
      }
    | {
         type: "recast-category";
+        mask: string;
         base: string;
         graphemes: string[];
         weights: number[];
-
         min: number;
         max: number | typeof Infinity;
-        escaped?: boolean;
         named_reference_bind?: string;
         association?: Association;
      };
@@ -196,7 +199,7 @@ export type Directive =
    | "note"
    | "none";
 
-export const directive_check = [
+export const Directive_List = [
    "categories",
    "words",
    "units",
@@ -209,6 +212,21 @@ export const directive_check = [
    "stage",
    "letter-case-field",
    "schema",
+   "note",
+];
+
+export const Directive_Using_Escape = [
+   "categories",
+   "words",
+   "units",
+   "alphabet",
+   "invisible",
+   "graphemes",
+   "syllable-boundaries",
+   "features",
+   "feature-field",
+   "stage",
+   "letter-case-field",
 ];
 
 export type Routine =
@@ -231,20 +249,19 @@ export type Routine =
 export const SYNTAX_CHARS = [
    "<",
    ">",
-   "@",
-   "⇒",
-   "→",
-   "->",
-   ">>",
-   "_",
    "{",
    "}",
    "[",
    "]",
    "(",
    ")",
+   "@",
+   "⇒",
+   "→",
+   "->",
+   ">>",
+   "_",
    "0",
-   "/",
    "!",
    "#",
    "$",
@@ -268,7 +285,18 @@ export const SYNTAX_CHARS = [
    "9",
 ];
 
+export const SYNTAX_BRACKETS = ["<", ">", "{", "}", "[", "]", "(", ")"];
+
 export const SYNTAX_CHARS_AND_CARET: string[] = [...SYNTAX_CHARS, "^"];
+
+export const SYNTAX_CHARS_CAT_KEY: string[] = [...SYNTAX_CHARS, "^", ",", "\\"];
+
+export type Pre_Grapheme_Unit = {
+   parsed: string;
+   raw_len: number;
+   raw: string;
+   mask: string;
+};
 
 export type Carryover_Associations = {
    entry_id: number;

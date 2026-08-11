@@ -103,3 +103,35 @@
 ### Added
 
 - Added recast transforms
+
+## [1.0.10] - 2026-AUG-11
+
+### Modified
+
+- The syntax highlighting for the light theme has been greatly improved
+- Categories can now be line wrapped
+- There was an oversight where if a line wrapped rule-transform was not completed before the end of a file or directive change, the rule was ignored. Now the program gives the expectant error message
+- Transform rules can now use a simple `>`! Example: `s > z / V_V`
+- The maximum amount of words to generate has been increased from 100,000 to 900,000
+- Fixed an oversight where `&T`, `&E`, `&M` would break from category expansion
+- Removed the "Romance-like" Vocabug example
+- Fixed weights attached to categories-in-categories from giving a syntax error
+- The Latin-to-hangul routine mapping has been improved
+- Made syntax escaping fully dependent on the `&[n]` system instead of using PUA characters
+- An error in parsing adjacent feature matrices was fixed
+- Fixed an issue where a row in a clusterfield that only contained plus signs, "passes", would produce a transform with empty targets and results
+- Category keys can be any character that is not a syntax character
+- Multigraph syllable boundary characters are respected now
+- Word boundaries respect syllable boundary characters. i.e: `a -> x / #_# ; .a. ==> .x.`
+- Fixed an oversight where toUpperCase was used instead of toLowerCase for the decapitalise routine
+- Some of the named escapes now have aliases, such as `TildeAbove` can also be `Tilde`.
+- Multiple feature-fields were not parsing correctly. That is fixed now.
+- Supra-set weights now must follow a pipe and can be of any length.
+
+### Added 
+
+- Optional sets in word creation now have optional local optional-weights. It's an optional local optional-weight for optional-sets
+- Word-classes
+- The API for vocabug can now access individual word-classes
+- The CLI can now access individual word-classes
+- Added "Advanced" Vocabug example

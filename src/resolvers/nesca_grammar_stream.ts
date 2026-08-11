@@ -8,25 +8,31 @@ import Logger from "../logger.js";
 import Escape_Mapper from "../escape_mapper.js";
 import type { Token } from "../utils/types.js";
 import { SYNTAX_CHARS_AND_CARET } from "../utils/types.js";
-import type { Token_Stream_Mode, Associateme_Mapper } from "../utils/types.js";
+import type {
+   Token_Stream_Mode,
+   Associateme_Mapper,
+   Pre_Grapheme_Unit,
+} from "../utils/types.js";
 import { graphemosis } from "../utils/utilities.js";
 
 class Nesca_Grammar_Stream {
    public logger: Logger;
-   public graphemes: string[];
+   public graphemorphs: string[];
    public associateme_mapper: Associateme_Mapper;
    private escape_mapper: Escape_Mapper;
 
    constructor(
       logger: Logger,
-      graphemes: string[],
+      graphemorphs: string[],
       associateme_mapper: Associateme_Mapper,
       escape_mapper: Escape_Mapper,
    ) {
       this.logger = logger;
-      this.graphemes = graphemes;
+      this.graphemorphs = graphemorphs;
       this.associateme_mapper = associateme_mapper;
       this.escape_mapper = escape_mapper;
+
+      this.graphemorphs.sort((a, b) => b.length - a.length);
    }
 
    main_parser(
@@ -39,12 +45,14 @@ class Nesca_Grammar_Stream {
 
       if (stream.startsWith("@routine")) {
          const routine = stream.slice(8);
-         return [{ type: "routine", base: routine, routine: routine }];
+         return [
+            { type: "routine", base: routine, mask: routine, routine: routine },
+         ];
       } else if (stream === "^") {
          if (mode === "RESULT") {
-            return [{ type: "deletion", base: "^" }];
+            return [{ type: "deletion", mask: "^" }];
          } else if (mode === "TARGET") {
-            return [{ type: "insertion", base: "^" }];
+            return [{ type: "insertion", mask: "^" }];
          } else {
             this.logger.validation_error(
                `Unexpected character "${stream}" in mode ${mode}`,
@@ -58,11 +66,17 @@ class Nesca_Grammar_Stream {
                line_num,
             );
          }
-         return [{ type: "reject", base: "0" }];
+         return [{ type: "reject", mask: "0" }];
       }
 
       while (i < stream.length) {
-         let new_token: Token = { type: "pending", base: "", min: 1, max: 1 };
+         let new_token: Token = {
+            type: "pending",
+            base: "",
+            mask: "",
+            min: 1,
+            max: 1,
+         };
          const char = stream[i];
 
          if (/\s/.test(char)) {
@@ -81,7 +95,7 @@ class Nesca_Grammar_Stream {
 
             new_token = {
                type: "anythings-mark",
-               base: "%",
+               mask: "%",
                min: 1,
                max: Infinity,
             };
@@ -118,7 +132,7 @@ class Nesca_Grammar_Stream {
 
                if (parts.length > 2) {
                   throw new Error(
-                     "Invalid garde_stream: more than one '|' found",
+                     "Invalid anythings syntax: more than one '|' found",
                   );
                }
 
@@ -132,9 +146,12 @@ class Nesca_Grammar_Stream {
                      .filter(Boolean);
 
                   for (const group of consume_groups) {
-                     const graphemes = graphemosis(group, this.graphemes)
-                        .map((g) => this.escape_mapper.restore_escaped_chars(g))
-                        .filter(Boolean);
+                     const restored_group =
+                        this.escape_mapper.get_escaped_chars(group);
+                     const graphemes = graphemosis(
+                        restored_group,
+                        this.graphemorphs,
+                     ).filter(Boolean);
 
                      if (graphemes.length > 0) {
                         consume.push(graphemes);
@@ -150,9 +167,12 @@ class Nesca_Grammar_Stream {
                      .filter(Boolean);
 
                   for (const group of blocked_groups) {
-                     const graphemes = graphemosis(group, this.graphemes)
-                        .map((g) => this.escape_mapper.restore_escaped_chars(g))
-                        .filter(Boolean);
+                     const restored_group =
+                        this.escape_mapper.get_escaped_chars(group);
+                     const graphemes = graphemosis(
+                        restored_group,
+                        this.graphemorphs,
+                     ).filter(Boolean);
 
                      if (graphemes.length > 0) {
                         blocked_by.push(graphemes);
@@ -177,7 +197,7 @@ class Nesca_Grammar_Stream {
                   line_num,
                );
             }
-            new_token = { type: "wildcard", base: "*", min: 1, max: 1 };
+            new_token = { type: "wildcard", mask: "*", min: 1, max: 1 };
             i++;
          } else if (char == "#") {
             if (mode !== "BEFORE" && mode !== "AFTER") {
@@ -192,7 +212,7 @@ class Nesca_Grammar_Stream {
                   line_num,
                );
             }
-            new_token = { type: "word-boundary", base: "#", min: 1, max: 1 };
+            new_token = { type: "word-boundary", mask: "#", min: 1, max: 1 };
             tokens.push(new_token);
             i++;
             continue; // No modifiers allowed
@@ -205,14 +225,14 @@ class Nesca_Grammar_Stream {
             }
             new_token = {
                type: "syllable-boundary",
-               base: "$",
+               mask: "$",
                min: 1,
                max: 1,
             };
             tokens.push(new_token);
             i++;
             continue; // No modifiers allowed
-         } else if (char == "&") {
+         } else if (char === "&") {
             const look_ahead = i + 1;
             if (stream[look_ahead] === "T") {
                if (mode === "TARGET") {
@@ -221,7 +241,7 @@ class Nesca_Grammar_Stream {
                      line_num,
                   );
                }
-               new_token = { type: "target-mark", base: "&T", min: 1, max: 1 };
+               new_token = { type: "target-mark", mask: "&T", min: 1, max: 1 };
                i = look_ahead;
             } else if (stream[look_ahead] === "M") {
                if (mode === "TARGET") {
@@ -232,7 +252,7 @@ class Nesca_Grammar_Stream {
                }
                new_token = {
                   type: "metathesis-mark",
-                  base: "&M",
+                  mask: "&M",
                   min: 1,
                   max: 1,
                };
@@ -244,13 +264,13 @@ class Nesca_Grammar_Stream {
                      line_num,
                   );
                }
-               new_token = { type: "empty-mark", base: "&E", min: 1, max: 1 };
+               new_token = { type: "empty-mark", mask: "&E", min: 1, max: 1 };
                i = look_ahead;
             } else if (stream[look_ahead] === "=") {
                // Begins a reference capture of sequenced graphemes
                new_token = {
                   type: "reference-start-capture",
-                  base: "&=",
+                  mask: "&=",
                   min: 1,
                   max: 1,
                };
@@ -273,6 +293,7 @@ class Nesca_Grammar_Stream {
                new_token = {
                   type: "reference-capture",
                   base: `=${digit}`,
+                  mask: `=${digit}`,
                   key: digit,
                   min: 1,
                   max: 1,
@@ -298,6 +319,7 @@ class Nesca_Grammar_Stream {
             new_token = {
                type: "reference-mark",
                base: char,
+               mask: char,
                key: char,
                min: 1,
                max: 1,
@@ -314,37 +336,46 @@ class Nesca_Grammar_Stream {
                `Unexpected syntax character "${char}" in ${mode}`,
                line_num,
             );
-
-            // GRAPHEME match
          } else {
-            const escaped_stream =
-               this.escape_mapper.restore_escaped_chars(stream);
-            let is_escaped = false;
-            if (escaped_stream[i] !== stream[i]) {
-               is_escaped = true;
-            }
+            // GRAPHEME match
+            const units = this.escape_mapper.get_escaped_stream(
+               stream.slice(i),
+            );
+            const unit = units[0];
             let matched = false;
-            for (const g of this.graphemes.sort(
-               (a, b) => b.length - a.length,
-            )) {
-               if (escaped_stream.startsWith(g, i)) {
-                  new_token = { type: "grapheme", base: g, min: 1, max: 1 };
-                  i += g.length;
+
+            for (const g of this.graphemorphs) {
+               if (this.match_units(units, 0, g)) {
+                  new_token = {
+                     type: "grapheme",
+                     mask: g,
+                     base: g,
+                     min: 1,
+                     max: 1,
+                  };
                   matched = true;
+
+                  // raw advancement
+                  let advance = 0;
+                  for (let k = 0; k < g.length; k++) {
+                     advance += units[k].raw_len;
+                  }
+
+                  i += advance;
                   break;
                }
             }
+
             if (!matched) {
                new_token = {
                   type: "grapheme",
-                  base: escaped_stream[i],
+                  base: unit.parsed,
+                  mask: unit.parsed,
                   min: 1,
                   max: 1,
                };
-               i++;
-            }
-            if (is_escaped && new_token.type === "grapheme") {
-               new_token.escaped = true; // Mark as escaped
+
+               i += unit.raw_len;
             }
          }
 
@@ -362,6 +393,14 @@ class Nesca_Grammar_Stream {
          i = modded.next_i;
       }
       return tokens;
+   }
+
+   match_units(units: Pre_Grapheme_Unit[], ui: number, g: string): boolean {
+      for (let k = 0; k < g.length; k++) {
+         if (!units[ui + k]) return false;
+         if (units[ui + k].parsed !== g[k]) return false;
+      }
+      return true;
    }
 
    parse_modifiers(
@@ -395,7 +434,7 @@ class Nesca_Grammar_Stream {
          if (char === "+") {
             if (mode === "RESULT") {
                this.logger.validation_error(
-                  `Quantifier not allowed in ${mode}`,
+                  `Unbounded quantifier not allowed in ${mode}`,
                   line_num,
                );
             }
@@ -457,7 +496,7 @@ class Nesca_Grammar_Stream {
                }
                if (max === Infinity && mode === "RESULT") {
                   this.logger.validation_error(
-                     `In ${mode}, "${token.base}" cannot be reproduced an infinite amount of times`,
+                     `In ${mode}, "${token.mask}" cannot be reproduced an infinite amount of times`,
                      line_num,
                   );
                }
@@ -528,7 +567,7 @@ class Nesca_Grammar_Stream {
 
       if (stream === "^") {
          if (mode === "RESULT") {
-            return [{ type: "deletion", base: "^" }];
+            return [{ type: "deletion", mask: "^" }];
          } else {
             this.logger.validation_error(
                `Unexpected character "${stream}" in ${mode}`,
@@ -542,11 +581,17 @@ class Nesca_Grammar_Stream {
                line_num,
             );
          }
-         return [{ type: "reject", base: "0" }];
+         return [{ type: "reject", mask: "0" }];
       }
 
       while (i < stream.length) {
-         let new_token: Token = { type: "pending", base: "", min: 1, max: 1 };
+         let new_token: Token = {
+            type: "pending",
+            mask: "",
+            base: "",
+            min: 1,
+            max: 1,
+         };
          const char = stream[i];
 
          if (/\s/.test(char)) {
@@ -562,16 +607,17 @@ class Nesca_Grammar_Stream {
          }
 
          // GRAPHEME match
-         const escaped_stream =
-            this.escape_mapper.restore_escaped_chars(stream);
-         let is_escaped = false;
-         if (escaped_stream[i] !== stream[i]) {
-            is_escaped = true;
-         }
+         const escaped_stream = this.escape_mapper.get_escaped_chars(stream);
          let matched = false;
-         for (const g of this.graphemes.sort((a, b) => b.length - a.length)) {
+         for (const g of this.graphemorphs) {
             if (escaped_stream.startsWith(g, i)) {
-               new_token = { type: "grapheme", base: g, min: 1, max: 1 };
+               new_token = {
+                  type: "grapheme",
+                  base: g,
+                  mask: g,
+                  min: 1,
+                  max: 1,
+               };
                i += g.length;
                matched = true;
                break;
@@ -581,13 +627,11 @@ class Nesca_Grammar_Stream {
             new_token = {
                type: "grapheme",
                base: escaped_stream[i],
+               mask: escaped_stream[i],
                min: 1,
                max: 1,
             };
             i++;
-         }
-         if (is_escaped && new_token.type === "grapheme") {
-            new_token.escaped = true; // Mark as escaped
          }
 
          if (new_token.type !== "pending") {
@@ -607,6 +651,7 @@ class Nesca_Grammar_Stream {
       const new_token: Token = {
          type: "recast-category",
          base: base,
+         mask: base,
          graphemes: graphemes,
          weights: weights,
          min: 1,

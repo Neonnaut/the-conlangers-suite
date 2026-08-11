@@ -21,6 +21,10 @@ class Text_Builder {
 
    public terminated: boolean;
    private words: Word[];
+   private wordclasses: {
+      name: string | null;
+      words: Word[];
+   }[];
 
    private num_of_duplicates: number;
    private num_of_rejects: number;
@@ -62,6 +66,8 @@ class Text_Builder {
       this.terminated = false;
       this.words = [];
 
+      this.wordclasses = [];
+
       this.num_of_duplicates = 0;
       this.num_of_rejects = 0;
       this.num_of_duds = 0;
@@ -73,6 +79,17 @@ class Text_Builder {
       if (this.output_mode === "debug") {
          this.show_debug();
       }
+   }
+
+   reset_for_wordclass(name: string | null) {
+      this.wordclasses.push({ name: name, words: this.words });
+
+      this.words = [];
+      this.num_of_duplicates = 0;
+      this.num_of_rejects = 0;
+      this.num_of_duds = 0;
+
+      this.terminated = false;
    }
 
    add_word(word: Word) {
@@ -138,59 +155,99 @@ class Text_Builder {
    }
 
    create_record() {
-      // Send some good info about the generation results
       const ms = Date.now() - this.build_start;
       const seconds = Math.ceil(ms / 100) / 10;
       const s = seconds.toFixed(seconds % 1 === 0 ? 0 : 1);
       const display = s === "1" ? `${s} second` : `${s} seconds`;
 
-      const records: string[] = [];
+      const only_one_unnamed =
+         this.wordclasses.length === 1 && this.wordclasses[0].name === null;
 
-      if (this.words.length == 1) {
-         records.push(`1 word generated`);
-      } else if (this.words.length > 1) {
-         records.push(`${this.words.length} words generated`);
-      } else if (this.words.length == 0) {
-         records.push(`Zero words generated`); // How did that happen?
+      for (const w_class of this.wordclasses) {
+         const count = w_class.words.length;
+
+         // --- unified suffix logic ---
+         const class_suffix = only_one_unnamed
+            ? "" // original behaviour
+            : ` in word-class "${w_class.name ?? "default"}"`;
+
+         const records: string[] = [];
+
+         // --- word count ---
+         if (count === 1) {
+            records.push(`1 word generated${class_suffix}`);
+         } else if (count > 1) {
+            records.push(`${count} words generated${class_suffix}`);
+         } else {
+            records.push(`Zero words generated${class_suffix}`);
+         }
+
+         // --- duplicates ---
+         if (this.num_of_duplicates === 1) {
+            records.push(`1 duplicate word removed${class_suffix}`);
+         } else if (this.num_of_duplicates > 1) {
+            records.push(
+               `${this.num_of_duplicates} duplicate words removed${class_suffix}`,
+            );
+         }
+
+         // --- rejects ---
+         if (this.num_of_rejects === 1) {
+            records.push(`1 word rejected${class_suffix}`);
+         } else if (this.num_of_rejects > 1) {
+            records.push(
+               `${this.num_of_rejects} words rejected${class_suffix}`,
+            );
+         }
+
+         this.logger.info(`${final_sentence(records)}`);
       }
-
-      if (this.num_of_duplicates == 1) {
-         records.push(`1 duplicate word removed`);
-      } else if (this.num_of_duplicates > 1) {
-         records.push(`${this.num_of_duplicates} duplicate words removed`);
-      }
-
-      if (this.num_of_rejects == 1) {
-         records.push(`1 word rejected`);
-      } else if (this.num_of_rejects > 1) {
-         records.push(`${this.num_of_rejects} words rejected`);
-      }
-
-      this.logger.info(`${final_sentence(records)} -- in ${display}`);
+      this.logger.info(`Completed in ${display}`);
    }
 
-   make_text() {
+   make_text(): string {
       this.create_record();
 
-      if (this.sort_words) {
-         this.words = collate_words_by_current_form(
-            this.logger,
-            this.words,
-            this.alphabet,
-            this.invisible,
-         );
+      const blocks: string[] = [];
+
+      const only_one_unnamed =
+         this.wordclasses.length === 1 && this.wordclasses[0].name === null;
+
+      for (const w_class of this.wordclasses) {
+         // --- Sort words if sort words ---
+         let my_words = w_class.words;
+
+         if (this.sort_words) {
+            my_words = collate_words_by_current_form(
+               this.logger,
+               my_words,
+               this.alphabet,
+               this.invisible,
+            );
+         }
+
+         // Convert Word objects to strings
+         const word_list = my_words.map((w) => w.get_word());
+
+         let my_class_output: string = "";
+         if (this.output_mode === "paragraph") {
+            my_class_output = this.paragraphify(word_list);
+         } else {
+            my_class_output = word_list.join(this.output_divider);
+         }
+
+         let my_header: string = "";
+         if (!only_one_unnamed) {
+            my_header = w_class.name ?? "default";
+            my_header += ":\n\n";
+         } else {
+            my_header = "";
+         }
+
+         blocks.push(my_header + my_class_output);
       }
 
-      const word_list: string[] = [];
-      for (let i = 0; i < this.words.length; i++) {
-         word_list.push(this.words[i].get_word());
-      }
-
-      if (this.output_mode === "paragraph") {
-         return this.paragraphify(word_list);
-      }
-
-      return word_list.join(this.output_divider);
+      return blocks.join("\n\n");
    }
 
    paragraphify(words: string[]): string {
@@ -238,38 +295,52 @@ class Text_Builder {
 
    random_end_punctuation(): string {
       const roll = Math.random();
-      if (roll < 0.005) return "..."; // 0.4% chance of exclamation
+      if (roll < 0.005) return "..."; // 0.4% chance of ellipsis
       if (roll < 0.03) return "!"; // 2% chance of exclamation
       if (roll < 0.08) return "?"; // 5% chance of question
       return "."; // 93% chance of full stop
    }
 
    show_debug(): void {
+      // Options
       const option_info: string =
          `Options {` +
-         `\n  Number of words: ` +
-         this.num_of_words +
-         `\n  Output mode: ` +
-         this.output_mode +
-         `\n  Remove duplicates: ` +
-         this.remove_duplicates +
-         `\n  Force word limit: ` +
-         this.force_word_limit +
-         `\n  Sort words: ` +
-         this.sort_words +
-         `\n  Output divider: "` +
+         `\n  Number of words: ${this.num_of_words}` +
+         `\n  Output mode: ${this.output_mode}` +
+         `\n  Remove duplicates: ${this.remove_duplicates}` +
+         `\n  Force word limit: ${this.force_word_limit}` +
+         `\n  Sort words: ${this.sort_words}` +
+         `\n  Output divider: "${this.output_divider}"` +
          `\n}`;
 
       this.logger.diagnostic(option_info);
 
+      // Collator info
       const sort_info: string =
          `Collator {` +
-         `\n  Alphabet: ` +
-         this.alphabet.join(", ") +
-         `\n  Invisible: ` +
-         this.invisible.join(", ");
-      `\n}`;
+         `\n  Alphabet: ${this.alphabet.join(", ")}` +
+         `\n  Invisible: ${this.invisible.join(", ")}` +
+         `\n}`;
+
       this.logger.diagnostic(sort_info);
+
+      // Word‑classes
+      const class_blocks: string[] = [];
+
+      for (let i = 0; i < this.wordclasses.length; i++) {
+         const w_class = this.wordclasses[i];
+         const name = w_class.name ?? "default";
+
+         const words = w_class.words.length
+            ? w_class.words.join(", ")
+            : "(none)";
+
+         class_blocks.push(
+            `Word-class "${name}" {` + `\n  Words: ${words}` + `\n}`,
+         );
+      }
+
+      this.logger.diagnostic(class_blocks.join("\n\n"));
    }
 }
 

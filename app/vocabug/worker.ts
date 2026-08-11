@@ -10,7 +10,8 @@ onmessage = function (event) {
       force_word_limit: event.data.force_word_limit,
 
       sort_words: event.data.sort_words,
-      output_divider: event.data.output_divider
+      output_divider: event.data.output_divider,
+      wordclass_choices: []
    });
 
    postMessage({

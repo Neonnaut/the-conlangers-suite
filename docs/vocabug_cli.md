@@ -21,9 +21,9 @@ vocabug <path> [options]
 
 Options:
 
-- `--help` or `?`
+- `--help` or `-?`
 Show help
-- `--version` or `v`
+- `--version` or `-v`
 Show version number
 - `--num_of_words` or `-n` and `<number>`
 Number of words to generate. `<number>` must be in range 1 to 100,000 -- the default is 100
@@ -35,7 +35,9 @@ Remove duplicate words. Default is true
 Force word limit. Default is false
 - `--sort_words` or `-s`
 Sort generated words alphabetically. Default is true
-- `--output_divider` or `-od` and `<string>` 
+- `--output_divider` or `--od` and `<string>` 
 Divider or "delimeter" between words. Default of `<string>` in a space
+- `--wordclass_choices` or `--wc` and `<string>`
+A list of comma delimited word-classes to choose from. If empty, all word-classes are used
 - `--encoding` or `-e` and  `<encoding>`
 File encoding to use. `<encoding>` must be `ascii`, `binary`, `latin1`, `ucs-2`, `ucs2`, `utf8`, `utf-8`, `utf16le`, `utf-16le` -- default is `utf8`

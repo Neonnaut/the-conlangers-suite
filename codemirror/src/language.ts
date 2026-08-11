@@ -6,6 +6,7 @@ import { StreamParser } from '@codemirror/language';
  * Syntax highlighting *
  ***********************/
 
+/*
 const cappa = "[A-Z" +
    // Latin acute
    "\u00C1\u0106\u00C9\u01F4\u00CD\u1E30\u0139\u1E3E\u0143\u00D3\u1E54\u0154\u015A\u00DA\u1E82\u00DD\u0179" +
@@ -21,14 +22,15 @@ const cappa = "[A-Z" +
 
    // Γ Δ Θ Λ Ξ Π Σ Φ Ψ Ω
    "\u0393\u0394\u0398\u039B\u039E\u03A0\u03A3\u03A6\u03A8\u03A9]";
+*/
 
-const escapeRegex = /\\[^\s]|&\[(?:Space|Tab|Newline|Acute|DoubleAcute|Grave|DoubleGrave|Circumflex|Caron|Breve|InvertedBreve|TildeAbove|TildeBelow|Macron|Dot|DotBelow|Diaeresis|DiaeresisBelow|Ring|RingBelow|Horn|Hook|CommaAbove|CommaBelow|Cedilla|Ogonek|VerticalLineBelow|VerticalLineAbove|DoubleVerticalLineBelow|PlusSignBelow|PlusSignStandalone|uptackBelow|UpTackStandalone|LeftTackBelow|rightTackBelow|DownTackBelow|DownTackStandalone|BreveBelow|InvertedBreveBelow|MacronBelow|MacronBelowStandalone|BridgeBelow|BridgeAbove|InvertedBridgeBelow|SquareBelow|SeagullBelow|LeftBracketBelow)\]/;
+const escapeRegex = /\\[^\s]|&\[(?:Space|Tab|Newline|Acute|DoubleAcute|Grave|DoubleGrave|Circumflex|Caron|Breve|InvertedBreve|TildeAbove|Tilde|TildeBelow|Macron|Dot|DotBelow|Diaeresis|DiaeresisBelow|Ring|RingBelow|Horn|Hook|CommaAbove|Comma|CommaBelow|Cedilla|Ogonek|VerticalLineBelow|VerticalLineAbove|VerticalLine|DoubleVerticalLineBelow|PlusSignBelow|PlusSignStandalone|uptackBelow|UpTackStandalone|LeftTackBelow|rightTackBelow|DownTackBelow|DownTackStandalone|BreveBelow|InvertedBreveBelow|MacronBelow|MacronBelowStandalone|BridgeBelow|BridgeAbove|Bridge|InvertedBridgeBelow|SquareBelow|SeagullBelow|LeftBracketBelow)\]/;
 
 const routineRules = [
    {
       token: "attributeName", regex: /(compose|decompose|capitalise|decapitalise|capitalize|decapitalize|to-uppercase|to-lowercase|xsampa-to-ipa|ipa-to-xsampa|latin-to-hangul|latin-to-hangeul|hangul-to-latin|hangeul-to-latin|greek-to-latin|latin-to-greek|cyrillic-to-latin|latin-to-cyrillic|reverse)/
    },
-   { token: "link", regex: /=/ },
+   { token: "link", regex: /=/},
    { token: "meta", regex: />/}
 ];
 
@@ -46,13 +48,13 @@ const listRules = [
 
 const decoratorRulesVocabug = [
    { token: "link", regex: /\.|=/ },
-   { token: "meta", regex: /categories|words|units|alphabet|invisible|graphemes|syllable-boundaries|features|feature-field|stage|letter-case-field|distribution|optionals-weight|disabled|name/ },
-   { token: "attributeName", regex: /flat|zipfian|gusein-zade|shallow|\d{1,2}%/ }
+   { token: "name", regex: /categories|words|units|alphabet|invisible|graphemes|syllable-boundaries|features|feature-field|stage|letter-case-field|distribution|optionals-weight|disabled|name/ },
+   { token: "attributeName", regex: /word-class|flat|zipfian|gusein-zade|shallow|\d{1,2}%/ }
 ];
 
 const decoratorRulesNesca = [
    { token: "link", regex: /\.|=/ },
-   { token: "meta", regex: /categories|alphabet|invisible|graphemes|syllable-boundaries|features|feature-field|stage|letter-case-field|schema|distribution|optionals-weight|disabled/ },
+   { token: "name", regex: /categories|alphabet|invisible|graphemes|syllable-boundaries|features|feature-field|stage|letter-case-field|schemadistribution|optionals-weight|disabled/ },
    { token: "attributeName", regex: /flat|zipfian|gusein-zade|shallow|\d{1,2}%/ }
 ];
 
@@ -97,9 +99,10 @@ const schemaRules = [
 
 const transformRules = [
    { token: "escape",   regex: escapeRegex },
-   { token: "link",     regex: />>|->|=>|⇒|→|\/|!|,|_|<recast-as>/ },
+   { token: "link",     regex: />|>>|->|=>|⇒|→|\/|!|,|_|<recast-as>/ },
    { token: "operator", regex: /0|\^/ }, 
-   { token: "regexp",   regex: /&=|=[1-9]|\]|\(|\)|\{|\}|#|\$|\+|\?\[|\*|:|%\[|~|\|/ },
+   { token: "regexp",   regex: /&=|=[1-9]|\]|\(|\)|\{|\}|#|\$|\+|\?\[|\*|:|%\[|~/ },
+   { token: "processingInstruction", regex: /\|/ },
    { token: "tagName",  regex: /1|2|3|4|5|6|7|8|9|&T|&M|&E/ }
 ];
 
@@ -113,7 +116,7 @@ const featureFieldRules = [
    { token: "escape",   regex: escapeRegex },
    { token: "link",     regex: /\./ },
    { token: "attributeName", regex: /\+/ },
-   { token: "processingInstruction",   regex: /-/ }
+   { token: "punctuation",   regex: /-/ }
 ];
 
 type State = {
@@ -130,6 +133,8 @@ type State = {
    we_on_newline: boolean;
    header_for_feature_field: number;
    insideUnit: boolean;
+
+   pendingOptionalWeight: boolean;
 };
 
 function parser(app: string): StreamParser<State> {
@@ -145,7 +150,8 @@ function parser(app: string): StreamParser<State> {
          featureList: [],
          we_on_newline: true,
          header_for_feature_field: 0,
-         insideUnit: false
+         insideUnit: false,
+         pendingOptionalWeight: false,
       }},
       token: function (stream, state) {
          // Comments
@@ -273,32 +279,32 @@ function parser(app: string): StreamParser<State> {
                stream.match(/\s*/);
 
                // A new Category
-               const catRegex = new RegExp(`(${cappa})(?=\\s*=)`, "u");
+               const catRegex = /^([^<>@⇒→_{}\[\]()\/\\!#$+?^:*&%|~=,\d])(?=\s*=)/u;
+               state.we_on_newline = false;
                let match = stream.match(catRegex) as RegExpMatchArray;
                if (match) {
                   state.catList.push(match[1]);
-                  state.we_on_newline = false;
+                  
                   return "tagName";
                }
-            } else {
-               if (app === "vocabug"){
-                  for (const rule of categoryRulesVocabug) {
-                     if (stream.match(rule.regex)) {
-                        return rule.token;
-                     }
-                  }
-               } else {
-                  for (const rule of categoryRules) {
-                     if (stream.match(rule.regex)) {
-                        return rule.token;
-                     }
+            }
+            if (app === "vocabug"){
+               for (const rule of categoryRulesVocabug) {
+                  if (stream.match(rule.regex)) {
+                     return rule.token;
                   }
                }
-
-               for (const cato of state.catList) {
-                  if (stream.match(cato)) {
-                     return "tagName";
+            } else {
+               for (const rule of categoryRules) {
+                  if (stream.match(rule.regex)) {
+                     return rule.token;
                   }
+               }
+            }
+
+            for (const cato of state.catList) {
+               if (stream.match(cato)) {
+                  return "tagName";
                }
             }
          }
@@ -325,6 +331,23 @@ function parser(app: string): StreamParser<State> {
                   }
                }
 
+               if (state.pendingOptionalWeight) {
+                  if (stream.match(/\s*(\d+)%/)) {
+                     state.pendingOptionalWeight = false;
+                     return "strong"; // highlight the weight
+                  }
+               }
+
+               // Optional-set weight pipe: |10%)
+               if (stream.match(/\|\s*(?=\d+%\))/)) {
+                  state.pendingOptionalWeight = true;
+                  return "name";   // highlight the pipe
+               }
+               // Supra-set weight: |*10]
+               if (stream.match(/\|\s*(?=\*\d+\])/)) {
+                  return "name";   // highlight the pipe
+               }
+
                for (const rule of wordRules) {
                   if (stream.match(rule.regex)) {
                      return rule.token;
@@ -347,6 +370,25 @@ function parser(app: string): StreamParser<State> {
                      return "tagName";
                }
             } else {
+
+               if (state.pendingOptionalWeight) {
+                  if (stream.match(/\s*(\d+)%/)) {
+                     state.pendingOptionalWeight = false;
+                     return "strong"; // highlight the weight
+                  }
+               }
+
+               // Optional-set weight pipe: |10%)
+               if (stream.match(/\|\s*(?=\d+%\))/)) {
+                  state.pendingOptionalWeight = true;
+                  return "name";   // highlight the pipe
+               }
+
+               // Supra-set weight: |*10]
+               if (stream.match(/\|\s*(?=\*\d+\])/)) {
+                  return "name";   // highlight the pipe
+               }
+
                for (const rule of wordRules) {
                   if (stream.match(rule.regex)) {
                      return rule.token;
@@ -514,14 +556,14 @@ function parser(app: string): StreamParser<State> {
                if (stream.match(/< /)) {
                   state.sub_directive = 'cluster-block';
                   state.we_on_newline = false;
-                  return "meta";
+                  return "name";
                }
 
                // End of clusterfield
                if (state.sub_directive == 'cluster-block') {
                   if (stream.match(/>(?=\s*($|;))/)) {
                      state.sub_directive = 'none';
-                     return "meta";
+                     return "name";
                   }
                }
 
@@ -529,19 +571,23 @@ function parser(app: string): StreamParser<State> {
                if (stream.match(/<routine/)) {
                   state.sub_directive = 'routine';
                   state.we_on_newline = false;
-                  return "meta";
+                  return "name";
                }
 
                // chance
                if (stream.match(/<@chance/)) {
                   state.sub_directive = 'chance';
                   state.we_on_newline = false;
-                  return "meta";                        
+                  return "name";                        
                }
 
                if (stream.match(/>/)) {
                   if (state.we_on_newline) {
-                     return "meta";
+                     // If > by itself on a line, it's the end of a chance or routine block
+                     const rest = stream.string.slice(stream.pos);
+                     if (/^\s*$/.test(rest)) {
+                        return "name";   // > is alone on its line
+                     }
                   };
                }
             }

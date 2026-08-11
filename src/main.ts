@@ -14,7 +14,7 @@ import Category_Resolver from "./resolvers/category_resolver";
 import Trans_Category_Resolver from "./resolvers/trans_category_resolver";
 import Generation_Resolver from "./resolvers/generation_resolver";
 import Feature_Resolver from "./resolvers/feature_resolver";
-import Canon_Graphemes_Resolver from "./resolvers/canon_graphemes_resolver";
+import Graphemes_Resolver from "./resolvers/graphemes_resolver";
 
 import Word_Bank from "./word_bank";
 
@@ -33,6 +33,7 @@ type Vocabug_Options = {
    force_word_limit?: boolean;
    sort_words?: boolean;
    output_divider?: string;
+   wordclass_choices?: string[];
 };
 type Nesca_Options = {
    file: string;
@@ -51,6 +52,7 @@ export function vocabug({
    force_word_limit = false,
    sort_words = true,
    output_divider = " ",
+   wordclass_choices = [],
 }: Vocabug_Options): Log {
    const logger = new Logger();
    const app = "vocabug" as App;
@@ -93,16 +95,16 @@ export function vocabug({
          logger,
          p.output_mode,
          supra_builder,
-         p.wordshape_distribution,
          p.units,
-         p.wordshape_pending,
-         p.optionals_weight,
+         p.wordshape_classes_pending,
+         wordclass_choices,
       );
 
-      const canon_graphemes_resolver = new Canon_Graphemes_Resolver(
+      const graphemes_resolver = new Graphemes_Resolver(
          logger,
          escape_mapper,
-         p.graphemes_pending,
+         p.graphemorphs_pending,
+         p.syllable_boundaries_pending,
       );
 
       const feature_resolver = new Feature_Resolver(
@@ -110,13 +112,13 @@ export function vocabug({
          p.output_mode,
          escape_mapper,
          p.feature_pending,
-         canon_graphemes_resolver.graphemes,
+         graphemes_resolver.graphemorphs,
       );
 
       const nesca_grammar_stream = new Nesca_Grammar_Stream(
          logger,
-         canon_graphemes_resolver.graphemes,
-         canon_graphemes_resolver.associateme_mapper,
+         graphemes_resolver.graphemorphs,
+         graphemes_resolver.associateme_mapper,
          escape_mapper,
       );
 
@@ -128,7 +130,7 @@ export function vocabug({
          p.stages_pending,
          p.substages_pending,
          feature_resolver.features,
-         p.syllable_boundaries,
+         graphemes_resolver.syllable_boundaries,
       );
 
       // Phew! done resolving things
@@ -137,22 +139,23 @@ export function vocabug({
          escape_mapper,
          supra_builder,
          category_resolver.categories,
-         generation_resolver.wordshapes,
          category_resolver.category_distribution,
-         generation_resolver.optionals_weight,
+
+         generation_resolver.wordshape_classes,
+
          p.output_mode,
       );
 
       const transformer = new Transformer(
          logger,
-         canon_graphemes_resolver.graphemes,
+         graphemes_resolver.graphemorphs,
          p.lettercase_mapper,
          p.chance_mapper,
          transform_resolver.syllable_boundaries,
          transform_resolver.stages,
          transform_resolver.substages,
          p.output_mode,
-         canon_graphemes_resolver.associateme_mapper,
+         graphemes_resolver.associateme_mapper,
       );
 
       const text_builder = new Text_Builder(
@@ -174,11 +177,21 @@ export function vocabug({
 
       // Yo! this is where we generate da words !!
       // Wow. Such words
-      while (!text_builder.terminated) {
-         let word = word_builder.make_word();
-         word = transformer.do_stages(word);
-         text_builder.add_word(word);
+
+      // Go through all the wordshape classes in order,
+      for (let i = 0; i < word_builder.get_wordshape_class_length(); i++) {
+         while (!text_builder.terminated) {
+            let word = word_builder.make_word();
+            word = transformer.do_stages(word);
+            text_builder.add_word(word);
+         }
+         text_builder.terminated = false;
+         text_builder.reset_for_wordclass(
+            word_builder.get_current_wordshape_class_name(),
+         );
+         word_builder.next_wordshape_class();
       }
+
       logger.set_payload(text_builder.make_text());
    } catch (e: unknown) {
       if (!(e instanceof logger.Validation_Error)) {
@@ -227,10 +240,11 @@ export function nesca({
          p.category_pending,
       );
 
-      const canon_graphemes_resolver = new Canon_Graphemes_Resolver(
+      const graphemes_resolver = new Graphemes_Resolver(
          logger,
          escape_mapper,
-         p.graphemes_pending,
+         p.graphemorphs_pending,
+         p.syllable_boundaries_pending,
       );
 
       const feature_resolver = new Feature_Resolver(
@@ -238,13 +252,13 @@ export function nesca({
          p.output_mode,
          escape_mapper,
          p.feature_pending,
-         canon_graphemes_resolver.graphemes,
+         graphemes_resolver.graphemorphs,
       );
 
       const nesca_grammar_stream = new Nesca_Grammar_Stream(
          logger,
-         canon_graphemes_resolver.graphemes,
-         canon_graphemes_resolver.associateme_mapper,
+         graphemes_resolver.graphemorphs,
+         graphemes_resolver.associateme_mapper,
          escape_mapper,
       );
 
@@ -258,21 +272,21 @@ export function nesca({
          p.stages_pending,
          p.substages_pending,
          feature_resolver.features,
-         p.syllable_boundaries,
+         graphemes_resolver.syllable_boundaries,
       );
 
       // Phew! done resolving things
 
       const transformer = new Transformer(
          logger,
-         canon_graphemes_resolver.graphemes,
+         graphemes_resolver.graphemorphs,
          p.lettercase_mapper,
          p.chance_mapper,
          transform_resolver.syllable_boundaries,
          transform_resolver.stages,
          transform_resolver.substages,
          p.output_mode,
-         canon_graphemes_resolver.associateme_mapper,
+         graphemes_resolver.associateme_mapper,
       );
 
       const b = new Word_Bank(

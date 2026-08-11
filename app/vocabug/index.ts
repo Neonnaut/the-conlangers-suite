@@ -341,8 +341,6 @@ window.addEventListener("load", () => {
       mode_buttons();
    });
 
-   
-
    // Load file button
    const load_button = document.getElementById("load-file") as HTMLButtonElement | null;
 

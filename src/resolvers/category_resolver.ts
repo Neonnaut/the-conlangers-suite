@@ -95,10 +95,11 @@ class Category_Resolver {
          // Escape special chars in graphemes
          for (let i = 0; i < new_category_field.graphemes.length; i++) {
             new_category_field.graphemes[i] =
-               this.escape_mapper.escape_special_chars(
+               this.escape_mapper.set_special_char_escape(
                   new_category_field.graphemes[i],
                );
          }
+
          this.categories.set(key, new_category_field);
       }
    }
@@ -120,18 +121,21 @@ class Category_Resolver {
 
    private valid_category_weights(str: string): boolean {
       // Rule 1: asterisk must be followed by a number (integer or decimal)
-      const asterisk_without_number = /\*(?!\d+(\.\d+)?)/g;
+      // * -> 0 ! _N
+      const asterisk_without_number = /\*(?!\d+(?:\.\d+)?)/g;
 
       // Rule 2: asterisk must not appear at the start
+      // * -> 0 / #_
       const asterisk_at_start = /^\*/; // Returns false if follows rule
 
       // Rule 3: asterisk must not be preceded by space or comma
-      const asterisk_after_space_or_comma = /[ ,{}]\*/g; // Returns false if follows rule
+      // " *"  ",*"  "{*"  "}*"
+      const asterisk_after_space_or_comma = /[ ,{]\*/g; // Returns false if follows rule
 
       // Rule 4: asterisk-number (int or decimal) pair
-      // must be followed by space, comma, ], or end of string
+      // must be followed by space, comma, }, or end of string
       const asterisk_number_bad_suffix =
-         /\*(\d+\.\d+|\d+)(?=[^.\d]|$)(?![ ,\]\n]|$)/g;
+         /\*(\d+\.\d+|\d+)(?=[^.\d]|$)(?![ ,}\n]|$)/g;
 
       // If any are true return false
       if (
@@ -266,7 +270,7 @@ class Category_Resolver {
       const evaluated = evaluate(input);
       const keys = evaluated.map((e) => e.key);
       const weights = evaluated.map((e) => e.weight);
-      // console.log(`Final result → Graphemes: ${keys.join(", ")} | Weights: ${weights.map(w => w.toFixed(4)).join(", ")}`);
+      // console.log(`Final result > Graphemes: ${keys.join(", ")} | Weights: ${weights.map(w => w.toFixed(4)).join(", ")}`);
       return { graphemes: keys, weights: weights };
    }
 

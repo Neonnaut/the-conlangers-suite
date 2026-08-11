@@ -10,80 +10,152 @@ class Generation_Resolver {
    public supra_builder: Supra_Builder;
    private output_mode: Output_Mode;
 
-   public optionals_weight: number;
    public units: Map<string, { content: string; line_num: number }>;
-   public wordshape_distribution: string;
 
-   private wordshape_pending: { content: string; line_num: number };
-   public wordshapes: { items: string[]; weights: number[] };
+   private wordshape_classes_pending: {
+      content: string;
+
+      optionals_weight: number;
+      wordshape_distribution: Distribution;
+
+      name: string | null;
+      line_num: number;
+   }[];
+   public wordshape_classes: {
+      wordshapes: { items: string[]; masks: string[]; weights: number[] };
+
+      optionals_weight: number;
+      wordshape_distribution: Distribution;
+
+      name: string | null;
+      line_num: number;
+   }[];
+   private word_class_choices: string[];
 
    constructor(
       logger: Logger,
       output_mode: Output_Mode,
       supra_builder: Supra_Builder,
-      wordshape_distribution: Distribution,
       units: Map<string, { content: string; line_num: number }>,
-      wordshape_pending: { content: string; line_num: number },
-      optionals_weight: number,
+      wordshape_classes_pending: {
+         content: string;
+         wordshape_distribution: Distribution;
+         optionals_weight: number;
+         line_num: number;
+         name: string | null;
+      }[],
+      word_class_choices: string[],
    ) {
       this.logger = logger;
       this.output_mode = output_mode;
 
       this.supra_builder = supra_builder;
-      this.optionals_weight = optionals_weight;
 
       this.units = units;
-      this.wordshape_distribution = wordshape_distribution;
 
-      this.wordshape_pending = wordshape_pending;
-      this.wordshapes = { items: [], weights: [] };
+      this.wordshape_classes_pending = wordshape_classes_pending;
+      this.wordshape_classes = [];
+      this.word_class_choices = word_class_choices;
 
       this.expand_units();
       this.expand_wordshape_units();
-      this.set_wordshapes();
+      this.set_wordshape_classes();
       if (this.output_mode === "debug") {
          this.show_debug();
       }
    }
 
-   private set_wordshapes() {
-      const result = [];
+   private set_wordshape_classes() {
+      this.wordshape_classes = [];
+
+      if (this.wordshape_classes_pending.length === 0) {
+         this.logger.validation_error(
+            "No words directives to choose word-shapes from",
+            null,
+         );
+      }
+
+      if (this.word_class_choices.length > 0) {
+         let matched_any = false;
+
+         for (const pending of this.wordshape_classes_pending) {
+            if (!pending.name) {
+               continue;
+            }
+            if (this.word_class_choices.includes(pending.name)) {
+               matched_any = true;
+               const parsed = this.set_wordshapes(pending);
+               this.wordshape_classes.push(parsed);
+            }
+         }
+
+         if (!matched_any) {
+            this.logger.validation_error(
+               `No word-shape classes matched any of the choices: ${this.word_class_choices.join(", ")}`,
+               null,
+            );
+         }
+
+         return;
+      } else {
+         for (const pending of this.wordshape_classes_pending) {
+            const parsed = this.set_wordshapes(pending);
+            this.wordshape_classes.push(parsed);
+         }
+      }
+   }
+
+   private set_wordshapes(pending: {
+      content: string;
+      line_num: number;
+      name: string | null;
+      optionals_weight: number;
+      wordshape_distribution: Distribution;
+   }) {
+      const result: string[] = [];
       let buffer = "";
       let inside_brackets = 0;
 
-      if (this.wordshape_pending.content.length == 0) {
+      const masks: string[] = [];
+
+      // If no word shapes at all
+      if (pending.content.trim().length === 0) {
+         const name_display = pending.name
+            ? ` in word-class "${pending.name}"`
+            : "";
          this.logger.validation_error(
-            `No word-shapes to choose from -- expected a "words" directive with word-shapes'`,
-            this.wordshape_pending.line_num,
+            `No word-shapes to choose from${name_display}`,
+            pending.line_num,
          );
       }
 
-      this.wordshape_pending.content = this.supra_builder.process_string(
-         this.wordshape_pending.content,
-         this.wordshape_pending.line_num,
+      // Stage 1: supra-builder processing
+      const processed = this.supra_builder.process_string(
+         pending.content,
+         pending.line_num,
       );
 
-      if (!this.valid_words_brackets(this.wordshape_pending.content)) {
+      // Stage 2: validations
+      if (!this.valid_words_brackets(processed)) {
          this.logger.validation_error(
-            `Word-shapes had missmatched brackets`,
-            this.wordshape_pending.line_num,
-         );
-      }
-      if (!this.valid_words_weights(this.wordshape_pending.content)) {
-         this.logger.validation_error(
-            `Word-shapes had invalid weights -- expected weights to follow an item and look like "*NUMBER" followed by either "," a bracket, or " ", or end of string`,
-            this.wordshape_pending.line_num,
+            `Word-shapes had mismatched brackets in word-class "${pending.name}"`,
+            pending.line_num,
          );
       }
 
-      for (let i = 0; i < this.wordshape_pending.content.length; i++) {
-         const char = this.wordshape_pending.content[i];
+      if (!this.valid_words_weights(processed)) {
+         this.logger.validation_error(
+            `Word-shapes had invalid weights in word-class "${pending.name}"`,
+            pending.line_num,
+         );
+      }
 
-         if (char === "{" || char === "(") {
-            inside_brackets++;
-         } else if (char === "}" || char === ")") {
-            inside_brackets--;
-         }
+      // Stage 3: tokenize respecting bracket depth
+      for (let i = 0; i < processed.length; i++) {
+         const char = processed[i];
+
+         if (char === "{" || char === "(") inside_brackets++;
+         else if (char === "}" || char === ")") inside_brackets--;
 
          if ((char === " " || char === ",") && inside_brackets === 0) {
             if (buffer.length > 0) {
@@ -99,14 +171,26 @@ class Generation_Resolver {
          result.push(buffer);
       }
 
-      const [result_str, result_num] = this.extract_wordshape_value_and_weight(
+      // Stage 4: extract values + weights
+      const [items, weights] = this.extract_wordshape_value_and_weight(
          result,
-         this.wordshape_distribution,
+         pending.wordshape_distribution,
       );
-      for (let i = 0; i < result_str.length; i++) {
-         this.wordshapes.items.push(result_str[i]);
-         this.wordshapes.weights.push(result_num[i]);
+
+      // Create wordshape masks
+      for (const j of items) {
+         masks.push(this.supra_builder.replace_for_mask(j));
       }
+      console.log(masks);
+
+      // Stage 5: return a fully-formed class object
+      return {
+         wordshapes: { items, masks, weights },
+         optionals_weight: pending.optionals_weight,
+         wordshape_distribution: pending.wordshape_distribution,
+         name: pending.name,
+         line_num: pending.line_num,
+      };
    }
 
    private valid_words_brackets(str: string): boolean {
@@ -237,18 +321,20 @@ class Generation_Resolver {
    }
 
    private expand_wordshape_units() {
-      this.wordshape_pending.content = recursive_expansion(
-         this.wordshape_pending.content,
-         this.units,
-      );
+      for (let i = 0; i < this.wordshape_classes_pending.length; i++) {
+         const w_class = this.wordshape_classes_pending[i];
 
-      // Remove dud units
-      const match = this.wordshape_pending.content.match(/<[A-Za-z+$-]+>/);
-      if (match) {
-         this.logger.validation_error(
-            `Nonexistent unit detected: "${match[0]}"`,
-            this.wordshape_pending.line_num,
-         );
+         // Expand units inside the raw wordshape content
+         w_class.content = recursive_expansion(w_class.content, this.units);
+
+         // Detect dud units in the expanded content
+         const match = w_class.content.match(/<[A-Za-z+$-]+>/);
+         if (match) {
+            this.logger.validation_error(
+               `Nonexistent unit detected in word-class "${w_class.name}": "${match[0]}"`,
+               w_class.line_num,
+            );
+         }
       }
    }
 
@@ -266,29 +352,39 @@ class Generation_Resolver {
    }
 
    show_debug(): void {
-      const units = [];
+      // --- Units ---
+      const units: string[] = [];
       for (const [key, value] of this.units) {
          units.push(`  ${key.slice(1, -1)} = ${value.content}`);
       }
 
-      const wordshapes = [];
-      for (let i = 0; i < this.wordshapes.items.length; i++) {
-         wordshapes.push(
-            `  ${this.wordshapes.items[i]}*${this.wordshapes.weights[i]}`,
+      // --- Wordshape classes ---
+      const classes: string[] = [];
+
+      for (let i = 0; i < this.wordshape_classes.length; i++) {
+         const w_class = this.wordshape_classes[i];
+
+         const shapes: string[] = [];
+         for (let j = 0; j < w_class.wordshapes.items.length; j++) {
+            shapes.push(
+               `    ${w_class.wordshapes.masks[j]}*${w_class.wordshapes.weights[j]}`,
+            );
+         }
+
+         classes.push(
+            `Word-class ${i} "${w_class.name}" {\n` +
+               `  Distribution: ${w_class.wordshape_distribution}\n` +
+               `  Optionals-weight: ${w_class.optionals_weight}\n` +
+               `  Wordshapes:\n` +
+               shapes.join("\n") +
+               `\n}`,
          );
       }
 
+      // --- Final diagnostic output ---
       const info: string =
-         `Wordshape-distribution: ` +
-         this.wordshape_distribution +
-         `\nOptionals-weight: ` +
-         this.optionals_weight +
-         `\nUnits {\n` +
-         units.join("\n") +
-         `\n}` +
-         `\nWordshapes {\n` +
-         wordshapes.join("\n") +
-         `\n}`;
+         `Units {\n` + units.join("\n") + `\n}\n` + classes.join("\n\n");
+
       this.logger.diagnostic(info);
    }
 }

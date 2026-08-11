@@ -1,4 +1,7 @@
-function weighted_random_pick(items: string[], weights: number[]): string {
+export function weighted_random_pick(
+   items: string[],
+   weights: number[],
+): string {
    const total_weight = weights.reduce((acc, w) => acc + w, 0);
    let random_value = Math.random() * total_weight;
 
@@ -11,7 +14,23 @@ function weighted_random_pick(items: string[], weights: number[]): string {
    return "";
 }
 
-function supra_weighted_random_pick(
+export function weighted_random_pick_and_id(
+   items: string[],
+   weights: number[],
+): [string, number] {
+   const total_weight = weights.reduce((acc, w) => acc + w, 0);
+   let random_value = Math.random() * total_weight;
+
+   for (let i = 0; i < items.length; i++) {
+      if (random_value < weights[i]) {
+         return [items[i], i];
+      }
+      random_value -= weights[i];
+   }
+   return ["", 0];
+}
+
+export function supra_weighted_random_pick(
    items: string[],
    weights: (number | "s")[],
 ): string {
@@ -84,7 +103,10 @@ function normalise(weights: number[]): number[] {
 }
 */
 
-function get_distribution(n: number, default_distribution: string): number[] {
+export function get_distribution(
+   n: number,
+   default_distribution: string,
+): number[] {
    // Essentially get weights for a distribution based on the number of items
    if (n == 1) return [1]; // Special case of 1 item, avoids 0/0 error
    if (default_distribution === "zipfian") return zipfian_distribution(n);
@@ -94,5 +116,3 @@ function get_distribution(n: number, default_distribution: string): number[] {
 
    return flat_distribution(n);
 }
-
-export { weighted_random_pick, get_distribution, supra_weighted_random_pick };

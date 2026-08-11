@@ -31,7 +31,7 @@
             <img src="./img/vocabug_logo.svg" alt="Logo of letter V with bug antennae" style="float: left;">
 
             <h1 style="margin-bottom: 10px;">Vocabug<br>docs</h1>
-            <b>Version <a class="VERSION">1.0.9</a></b>
+            <b>Version <a class="VERSION">1.0.10</a></b>
          </div>
          <br>
 
@@ -77,13 +77,18 @@
 
             <li><a href="#chapBuildingWords">Building words</a>
             <ol class="nice-list">
-               <li><a href="#chapWords">Words</a></li>
+               <li><a href="#chapWords">Words</a>
+               <ol class="nice-list">
+                  <li><a href="#chapWordclasses">Word-classes</a></li>
+               </ol>
+               </li>
             
                <li><a href="#chapUnits">Units</a></li>
                <li><a href="#chapPickOne">Pick-one-set</a></li>
                <li><a href="#chapOptional">Optional-set</a>
                <ol class="nice-list">
                   <li><a href="#chapOptionalsWeight">Optional weight</a></li>
+                  <li><a href="#chapLocalOptionalsWeight">Local optional weight</a></li>
                </ol>
                </li>
                <li><a href="#chapSupraSet">Supra-set</a>
@@ -199,7 +204,7 @@
          </ol>
 
          <h2 id="chapAbout"><a class="head-num">1</a>About Vocabug</h2>
-         <p>This is the complete documentation for <a href="./vocabug.html">Vocabug</a>, version <a class="VERSION">1.0.9</a>. Vocabug randomly generates vocabulary from a given definition of graphemes and word patterns. It can be used to generate words for a fictional language, original nicknames or passwords, or just for fun.</p>
+         <p>This is the complete documentation for <a href="./vocabug.html">Vocabug</a>, version <a class="VERSION">1.0.10</a>. Vocabug randomly generates vocabulary from a given definition of graphemes and word patterns. It can be used to generate words for a fictional language, original nicknames or passwords, or just for fun.</p>
 
          <p>This word generator is designed to be a successor to the Williams' <a href="https://github.com/bbrk24/lexifer-ts">Lexifer</a> and to the legendary <a href="https://github.com/nai888/awkwords">Awkwords</a>. Vocabug is one of the applications belonging to <a href="https://github.com/Neonnaut/the-conlangers-suite">The Conlangers Suite</a>. You can also install Vocabug to be used in your own projects or as a command-line-interface <a href="https://www.npmjs.com/package/the-conlangers-suite">here</a>. If you would prefer a more typical user interface with simple syntax, please check out <a href="https://neonnaut.neocities.org/vocabug-lite">Vocabug-lite</a>.</p>
 
@@ -383,7 +388,7 @@
                   <td>Named escape</td>
                </tr>
                <tr>
-                  <td><code class="example">&gt;&gt;</code>, <code class="example">-&gt;</code>, <code class="example">=&gt;</code>, <code class="example">⇒</code> or <code class="example">→</code></td>
+                  <td><code class="example">&gt;</code>, <code class="example">&gt;&gt;</code>, <code class="example">-&gt;</code>, <code class="example">=&gt;</code>, <code class="example">⇒</code> or <code class="example">→</code></td>
                   <td>Indicates <a href="#chapTheChange">change</a></td>
                </tr>
                <tr>
@@ -709,8 +714,11 @@
          <p>These graphemes are separated by commas, however an alternative is to use spaces: <code class="example">C = t n k m ch l ꞌ s r d h w b y p g</code>.</p>
 
          <p>By default, the graphemes' frequencies decrease as they go to the right, according to the Gusein-Zade distribution. You can change this distribution with a decorator on the words directive, read how to do this <a href="#chapDistributions">here</a>. In the above example, when Vocabug needs to choose a <code class="example">V</code>, it will choose <code class="example">a</code> the most at 43%, <code class="example">i</code> the second-most at 26%, <code class="example">e</code> the third-most at 17%, <code class="example">u</code> the fourth-most at 10%, and <code class="example">o</code> the fifth most at 4%.</p>
+
+         <p>Categories can be lined wrapped, for example: <code class="example">C = t n k m ch l ꞌ s r d h w b y p g</code> can be written as:</p>
+        <div class="prog-pre"><span class="catkey">C</span> <span class="link">=</span> t<span class="link">,</span> n<span class="link">,</span> k<span class="link">,</span> m<span class="link">,</span> ch<span class="link">,</span> l<span class="link">,</span> ꞌ<span class="link">,</span> s<span class="link">,</span> r<span class="link">,</span><br><span class="catfea">  </span>d<span class="link">,</span> h<span class="link">,</span> w<span class="link">,</span> b<span class="link">,</span> y<span class="link">,</span> p<span class="link">,</span> g</div>
          
-         <p>Need more than 26 categories? The following additional characters can be used as the key of a category: <code class="example">Á Ć É Ǵ Í Ḱ Ĺ Ḿ Ń Ó Ṕ Ŕ Ś Ú Ẃ Ý Ź À È Ì Ǹ Ò Ù Ẁ Ỳ Ǎ Č Ď Ě Ǧ Ȟ Ǐ Ǩ Ľ Ň Ǒ Ř Š Ť Ǔ Ž Ä Ë Ḧ Ï Ö Ü Ẅ Ẍ Ÿ Γ Δ Θ Λ Ξ Π Σ Φ Ψ Ω</code></p>
+         <p>Need more than 26 categories? You can use any non-syntax character as the key of a category.</p>
             
          <h3 id="chapCategoryinCategory"><a class="head-num">4.1</a>Categories inside categories and category-sets</h3>
          <p>You can use categories inside categories, as long as the referenced category has previously been defined. For example:</p>
@@ -743,6 +751,16 @@
 <span class="directive">words</span><code class="link">:</code>
   <span class="catkey">CV</span><code class="link">,</code><br>  <span class="catkey">CVCV</span><code class="link">,</code> <span class="catkey">CVCVCV</span><code class="link">,</code>
 <span class="comment">; This is a comment</span><br>  <span class="catkey">V</span></div>
+
+         <h3 id="chapWordclasses"><a class="head-num">5.1.1</a>Word-classes</h3>
+         <p>Word-classes are a way to have multiple words directive, that are all named via decorators.</p>
+         <p>For example, you could have a word-class called <code class="example">nouns</code> and another called <code class="example">verbs</code>. For example:</p>
+         <div class="prog-pre"><code class="link">@</code><span class="directive">words</span><code class="link">.</code><code class="directive">word-class</code> <code class="link">=</code> nouns
+<span class="directive">words</span><code class="link">:</code>
+   <span class="catkey">CV</span><code class="link">,</code> <span class="catkey">CVCV</span><code class="link">,</code> <span class="catkey">CVCVCV</span><code class="link">,</code> <span class="catkey">V</span>
+<span class="directive">words</span><code class="link">.</code><code class="directive">word-class</code> <code class="link">=</code> verbs
+<span class="directive">words</span><code class="link">:</code>
+   <span class="catkey">CVC</span><code class="link">,</code> <span class="catkey">CVCCV</span><code class="link">,</code> <span class="catkey">CVCCVCV</span><code class="link">,</code> <span class="catkey">V</span></div>
 
          <h3 id="chapUnits"><a class="head-num">5.2</a>Units</h3>
          <p>Units are a system that provides an abbreviation of parts of a <a href="#chapWords">word-shape</a>. Typically you use it to define the shape of a syllable. Units are defined similarly to categories, but with several important differences:</p>
@@ -784,8 +802,13 @@
 
          <h4 id="chapOptionalsWeight"><a class="head-num">5.4.1</a>Optionals weight</h4>
          <p>By default, an optional-set has a 10% chance of being included in the word. You can change this probability globally with a decorator.</p>
+         <div class="prog-pre"><code class="link">@</code><code class="directive">words</code><code class="link">.</code><code class="directive">optionals-weight</code> <code class="link">=</code> <code class="attribute">10%</code><br><code class="directive">words</code><code class="link">:</code>
+  ta<span class="regexp">(</span>n<span class="link">,</span> t<span class="link">,</span> l<span class="regexp">)</span></div>
 
-        <div class="prog-pre"><code class="link">@</code><code class="directive">words</code><code class="link">.</code><code class="directive">optionals-weight</code> <code class="link">=</code> <code class="attribute">10%</code><br><code class="directive">words</code><code class="link">:</code><br>  example</div>
+         <h4 id="chapLocalOptionalsWeight"><a class="head-num">5.4.2</a>Local optionals weight</h4>
+         <p>You can also set the weight of an optional-set locally, like so:</p>
+        <div class="prog-pre"><span class="directive">words</span><code class="link">:</code>
+  ta<span class="regexp">(</span>n<span class="link">,</span> t<span class="link">,</span> l<span class="regexp"><span class="directive">|</span><span class="weight">5%</span>)</span></div>
 
          <h3 id="chapSupraSet"><a class="head-num">5.5</a>Supra-set</h3>
          <p>A "supra-set", is applied over the entire word, and there can only be one supra set. Square brackets <code class="example">[</code> and <code class="example">]</code>, denote each item in the supra-set and their location in the word. The items of a supra-set can only be a category, or the null grapheme <code class="example">^</code>. Only one item in the supra-set will be picked for that generated word.</p>
@@ -799,13 +822,17 @@
          <h4 id="chapSupraSetWeight"><a class="head-num">5.5.1</a>Supra-set weight</h4> 
          <p>You can set the weights of supra-set items like so:</p>
         <div class="prog-pre"><code class="directive">categories</code><code class="link">:</code>
-  <span class="catkey">T</span> <span class="link">=</span> ˦<span class="link">,</span> ˩˧
-<code class="directive">units</code><code class="link">:</code>
-  <span class="catkey">X</span> <span class="link">=</span> ga<span class="regexp">[</span><span class="catkey">R</span><span class="weight">*8</span><span class="regexp">]</span><br>  <span class="catkey">Y</span> <span class="link">=</span> ga<span class="regexp">[</span><span class="catkey">R</span><span class="weight">*2</span><span class="regexp">]</span>
-<span class="directive">words</span><code class="link">:</code>
-  <code class="regexp">&lt;</code><span class="catkey">X</span><code class="regexp">&gt;</code><code class="regexp">&lt;</code><span class="catkey">Y</span><code class="regexp">&gt;</code></div>
+    <span class="catkey">T</span> <span class="link">=</span> ˦<span class="link">,</span> ˩˧
+
+  <code class="directive">units</code><code class="link">:</code>
+  <span class="catkey">X</span> <span class="link">=</span> ga<span class="regexp">[</span><span class="catkey">R</span><span class="directive">|</span><span class="weight">*8</span><span class="regexp">]</span>
+  <span class="catkey">Y</span> <span class="link">=</span> ga<span class="regexp">[</span><span class="catkey">R</span><span class="directive">|</span><span class="weight">*2</span><span class="regexp">]</span>
+
+  <span class="directive">words</span><code class="link">:</code>
+    <code class="regexp">&lt;</code><span class="catkey">X</span><code class="regexp">&gt;</code><code class="regexp">&lt;</code><span class="catkey">Y</span><code class="regexp">&gt;</code>
+</div>
          <p>The above example has an 80% chance of generating either <code class="example">ga˦ga</code> or <code class="example">ga˩˧ga</code> but a 20% chance of generating either <code class="example">gaga˦</code> or <code class="example">gaga˩˧</code>.</p>
-         <p>Supra-set item weights support a sentinel value -- a "super-heavy" value <code class="example">s</code>. This <code class="example">s</code> will ensure the supra-set item attached to this weight is always chosen over others. For example: <code class="example">[V*s]</code></p>
+         <p>Supra-set item weights support a sentinel value -- a "super-heavy" value <code class="example">s</code>. This <code class="example">s</code> will ensure the supra-set item attached to this weight is always chosen over others. For example: <code class="example">[V|*s]</code></p>
 
          <h3 id="chapDistributions"><a class="head-num">5.6</a>Default distributions</h3>
          <p><b>The ordering of items matters</b> in <a href="#chapCategories">categories</a>, <a href="#chapUnits">units</a> and <a href="#chapWords">word-shapes</a>. The first item will be chosen the most often, the second grapheme the second most often, and so on.</p>
@@ -854,6 +881,8 @@
 
          <p>Which graphemes are "associatemes" of their "bases" are declared in the graphemes directive. Read more about this in <a href="#chapAssociatemes">this section of the documentation</a>.</p>
 
+         <p>The graphemes directive also </p>
+
          <h2 id="chapStage"><a class="head-num">9</a>The stage directive</h2>
          <p>Once words are generated, you might want to modify them to prevent certain sequences, outright reject certain words, or simulate historical sound changes. This is the purpose of transforms, which are all declared in the stage directive:</p>
         <div class="prog-pre"><span class="directive">stage</span><code class="link">:</code>
@@ -885,7 +914,7 @@ ch <span class="link">/</span>
          <p>The format of a rule's <code class="example">CHANGE</code> can be expressed as <code class="example">TARGET -> REPLACEMENT</code>.</p>
          <ul class="paragraphian">
             <li><code class="example">TARGET</code> specifies which part of the word is being changed</li>
-            <li>Then followed by a hyphen and greater-than-sign <code class="example">-&gt;</code>. <code class="example">-&gt;</code> can be swapped with either <code class="example">&gt;></code>, <code class="example">=&gt;</code>, <code class="example">⇒</code> or <code class="example">→</code> if you prefer</li>
+            <li>Then followed by a hyphen and greater-than-sign <code class="example">-&gt;</code>. <code class="example">-&gt;</code> can be swapped with either <code class="example">&gt;</code>, <code class="example">&gt;&gt;</code>, <code class="example">=&gt;</code>, <code class="example">⇒</code> or <code class="example">→</code> if you prefer</li>
             <li><code class="example">REPLACEMENT</code> is what <code class="example">TARGET</code> is changing into, or in other words, replacing</li>
          </ul>
          <p>Let's look at a simple unconditional rule:</p>
@@ -1562,7 +1591,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
         <div class="prog-pre"><span class="comment">; The &lt;r&gt; of a plosive + &lt;r&gt; cluster is moved</span>
 <span class="comment">; between a word initial plosive and a vowel</span>
   <span class="catkey">&E</span><span class="regexp">{</span>a<span class="link">,</span>e<span class="link">,</span>i<span class="link">,</span>o<span class="link">,</span>u<span class="regexp">}</span><span class="regexp">%[<span class="operator">|</span></span><span class="regexp">{</span>p<span class="link">,</span>t<span class="link">,</span>k<span class="regexp">}</span>r<span class="regexp">]</span><span class="regexp">{</span>p<span class="link">,</span>t<span class="link">,</span>k<span class="regexp">}</span>r <span class="link">-></span> <span class="catkey">&M</span> <span class="link">/</span> <span class="regexp">#</span><span class="regexp">{</span>p<span class="link">,</span>t<span class="link">,</span>k<span class="regexp">}</span><span class="link">_</span>
-<span class="comment">; kotatros -> krotatos</span></div>
+<span class="comment">; kotatros ==> krotatos</span></div>
 
          <h3 id="chapReference"><a class="head-num">19.5</a>Reference</h3>
          <p>Sometimes graphemes must be copied or asserted to be a certain grapheme between other graphemes. This is the purpose of "reference". Reference is fairly straightforward, but there is a lot of jargon and different behaviour between fields to explain.</p>
@@ -1659,7 +1688,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
 </div>
 
          <h3 id="chapRecasts"><a class="head-num">19.8</a>Recasts</h3>
-         <p>Recasts, introduced in version 1.0.9, behave like rules but the <code class="example">RESULT</code> is regenerated from a category according to its distribution.</p>
+         <p>Recasts behave like rules, but the <code class="example">RESULT</code> is regenerated from a category according to its distribution.</p>
          <p>This is one way to ensure that certain combinations of graphemes are not generated in the word generation process, and to ensure that certain combinations of graphemes are generated. Recasts do not reproduce a natural linguistic phenomenon, they are shortcut to achieve your phonotactic constraints.</p>
          <p>To create recasts, you write it in the same way as rules, only the arrow is replaced with <code class="example">&lt;recast-as&gt;</code> and the <code class="example">RESULT</code> is a single category with optional modifiers such as quantifiers.</p>
          <p>Let's look at an example:</p>

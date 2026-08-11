@@ -4,51 +4,82 @@ import Escape_Mapper from "../escape_mapper";
 import Supra_Builder from "./supra_builder";
 import {
    weighted_random_pick,
+   weighted_random_pick_and_id,
    supra_weighted_random_pick,
    get_distribution,
 } from "../utils/picker_utilities";
-import type { Output_Mode } from "../utils/types";
+import type { Output_Mode, Distribution } from "../utils/types";
 
 class Word_Builder {
    private escape_mapper: Escape_Mapper;
    private supra_builder: Supra_Builder;
    private categories: Map<string, { graphemes: string[]; weights: number[] }>;
-   private wordshapes: { items: string[]; weights: number[] };
    private category_distribution: string;
-   private optionals_weight: number;
+
+   private wordshape_classes: {
+      name: string | null;
+      wordshapes: { items: string[]; masks: string[]; weights: number[] };
+      optionals_weight: number;
+      wordshape_distribution: string;
+      line_num: number;
+   }[];
+
+   private cwc_index: number = 0;
 
    constructor(
       escape_mapper: Escape_Mapper,
       supra_builder: Supra_Builder,
       categories: Map<string, { graphemes: string[]; weights: number[] }>,
-      wordshapes: { items: string[]; weights: number[] },
       category_distribution: string,
-      optionals_weight: number,
+      wordshape_classes: {
+         name: string | null;
+         wordshapes: { items: string[]; masks: string[]; weights: number[] };
+         optionals_weight: number;
+         wordshape_distribution: Distribution;
+         line_num: number;
+      }[],
       output_mode: Output_Mode,
    ) {
       this.escape_mapper = escape_mapper;
       this.supra_builder = supra_builder;
       this.categories = categories;
-      this.wordshapes = wordshapes;
-
       this.category_distribution = category_distribution;
-      this.optionals_weight = optionals_weight;
+
+      this.wordshape_classes = wordshape_classes;
+      this.cwc_index = 0;
 
       Word.output_mode = output_mode;
    }
 
+   next_wordshape_class(): void {
+      this.cwc_index++;
+      if (this.cwc_index >= this.wordshape_classes.length) {
+         this.cwc_index = 0;
+      }
+   }
+   get_wordshape_class_length(): number {
+      return this.wordshape_classes.length;
+   }
+   get_current_wordshape_class_name(): string | null {
+      return this.wordshape_classes[this.cwc_index].name;
+   }
+
    make_word(): Word {
       // Stage one looks like `CV(@, !)CVF{@, !}`
-      let stage_one: string = weighted_random_pick(
-         this.wordshapes.items,
-         this.wordshapes.weights,
+      const [stage_one, wordshape_id] = weighted_random_pick_and_id(
+         this.wordshape_classes[this.cwc_index].wordshapes.items,
+         this.wordshape_classes[this.cwc_index].wordshapes.weights,
       );
+
+      let mask: string =
+         this.wordshape_classes[this.cwc_index].wordshapes.masks[wordshape_id];
+      mask = this.escape_mapper.get_mask_stream(mask);
 
       // Stage two looks like `CVCVF!`
       const stage_two: string = this.resolve_wordshape_sets(
          stage_one,
          this.category_distribution,
-         this.optionals_weight,
+         this.wordshape_classes[this.cwc_index].optionals_weight,
       );
 
       // Stage three, resolved supra-set
@@ -56,7 +87,7 @@ class Word_Builder {
       if (this.supra_builder.id_counter != 1) {
          // Is 1 if no supra-set
          const [ids, weights] =
-            this.supra_builder.extract_letters_and_weights(stage_two);
+            this.supra_builder.extract_content_and_weights(stage_two);
          const chosen_id = supra_weighted_random_pick(ids, weights);
          stage_three = this.supra_builder.replace_letter_and_clean(
             stage_two,
@@ -89,11 +120,10 @@ class Word_Builder {
       let stage_five = stage_four.replace(/\^/g, "");
 
       if (this.escape_mapper.counter != 0) {
-         stage_one = this.escape_mapper.restore_escaped_chars(stage_one);
-         stage_five = this.escape_mapper.restore_escaped_chars(stage_five);
+         stage_five = this.escape_mapper.get_escaped_chars(stage_five);
       }
 
-      return new Word(stage_one, { word: stage_five });
+      return new Word(mask, { word: stage_five });
    }
 
    resolve_wordshape_sets(
@@ -112,34 +142,38 @@ class Word_Builder {
 
       // Resolve optional sets in round brackets based on weight
       while ((matches = input_list.match(round_pattern)) !== null) {
-         const group = matches[matches.length - 1];
-         const candidates = group
-            .slice(1, -1)
-            .split(/[,\s]+/)
-            .filter(Boolean);
+         const group = matches[matches.length - 1]; // "(a, b, c|10%)"
+         const inner = group.slice(1, -1); // "a, b, c|10%"
 
-         // console.log(`Found optional group: (${candidates.join(", ")})`);
+         // --- 1. Detect trailing optional weight -------------------------
+         let local_weight = optionals_weight; // default global weight
+         let cleaned_inner = inner;
 
-         const include = Math.random() * 100 < optionals_weight;
-         // console.log(`🔸 Include group? ${include ? "Yes ✅" : "No ❌"} (weight=${optionals_weight}%)`);
+         const weight_match = inner.match(/\|\s*(\d+)%\s*$/);
+         if (weight_match) {
+            local_weight = Number(weight_match[1]); // override with local weight
+            cleaned_inner = inner.replace(/\|\s*\d+%\s*$/, "");
+         }
+
+         // --- 2. Extract candidates --------------------------------------
+         const candidates = cleaned_inner.split(/[,\s]+/).filter(Boolean);
+
+         // --- 3. Roll optionality ----------------------------------------
+         const include = Math.random() * 100 < local_weight;
 
          if (include && candidates.length > 0) {
             const uses_explicit_weights = candidates.some((c) =>
                c.includes("*"),
             );
             const dist_type = uses_explicit_weights ? "flat" : distribution;
-            // console.log(`Resolving with distribution: ${dist_type}`);
 
             outputs = this.extract_value_and_weight(candidates, dist_type);
             const selected = weighted_random_pick(outputs[0], outputs[1]);
-            // console.log(`Selected from optional: ${selected}`);
+
             input_list = input_list.replace(group, selected);
          } else {
             input_list = input_list.replace(group, "");
-            // console.log(`Group excluded`);
          }
-
-         // console.log(`Updated input: "${input_list}"`);
       }
 
       // Resolve nested sets in square brackets

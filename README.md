@@ -19,7 +19,7 @@ Vocabug randomly generates vocabulary from a given definition of graphemes, freq
 
 - **Sets**: There are two kinds of sets used when creating words. **Pick‑one** set chooses exactly one option from the set. **Optional** set gives Vocabug a default 10% chance of selecting an option from that set.
 
-- **Supra-set**: Suppose you have a suprasegmental feature, like stress, that appears only once per word but in several possible positions. Every other word generator will force you to create a separate word‑shape for every potential stress position. Supra‑set lets you define all allowable stress positions _within a single_ word‑shape, and you can even assign weights to those positions.
+- **Supra-set**: Suppose you have a suprasegmental feature, like stress, that appears only once per word but in several possible positions. Supra‑set lets you define all allowable stress positions _within a single_ word‑shape, and you can even assign weights to those positions.
 
 - **An advanced weighting system**: The ordering of items matters for categories, units and word-shapes. The first item will be chosen the most often, the second item the second most often, and so on. You can change the default distributions to be flat, Zipfian, Gusein-Zade, or your own distribution through weights.
 

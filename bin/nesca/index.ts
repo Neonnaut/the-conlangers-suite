@@ -150,9 +150,9 @@ const argv = yargs(hideBin(process.argv))
    if (err.code === "ENOENT") {
       red_text(`Error: File not found with path "` + err.path +`"`);
    } else if (err.code === "EISDIR") {
-      red_text(`Error: You passed a directory where a file was required with path "` + err.path +`"`);
+      red_text(`Error: Path was a directory where a file was required, with path "` + err.path +`"`);
    } else if (err.code === "EACCES" || err.code === "EPERM") {
-      red_text(`Error: You do not have permission to read or write this file, with path "` + err.path +`"`);
+      red_text(`Error: Denied permission to read or write this file, with path "` + err.path +`"`);
    } else {
       red_text("Error: " + err.message);
    }

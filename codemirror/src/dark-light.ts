@@ -6,6 +6,32 @@ import { tags as t } from "@lezer/highlight";
 import { createTheme, type CreateThemeOptions } from "@uiw/codemirror-themes";
 import { EditorView } from "codemirror";
 
+const colour = {
+
+   darkthemetext: "#eeeeeeff",
+   lightthemetext: "#000000",
+   warmthemetext: "#181e20ff;",
+
+   red: "#ff7a7a", // dark; directive and flaggy
+   orange: "#f8a561", // dark; cat-fea
+   yellow: "#ffee90", // dark; escape
+   blue: "#a6d3f7", // dark; link
+   greygreen: "#b0b7b1", // dark; comment
+   pink: "#e799fa", // dark; regexp
+   cyan: "#44ebd0ff", // dark; operator
+   green: "#8eea7eff", // dark; weight, plussign, value
+
+   royal: "#230682", // Light; directive and flaggy
+   brown: "#998500", // Light; cat-fea
+   darkred: "#c8302d", // Light; escape
+   darkblue: "#0066b9ff", // Light; Link
+   darkgreen: "#2a8b23", // Light; comment
+   darkpink: "#b800b2", // Light; Regexp
+   darkcyan: "#3690a0", // Light; operator, weight, plussign, value
+};
+
+
+
 export const defaultSettingsXcodeDark: CreateThemeOptions["settings"] = {
    background: "#23272e",
    foreground: "#23272e",
@@ -19,7 +45,7 @@ export const defaultSettingsXcodeDark: CreateThemeOptions["settings"] = {
 const Darky = EditorView.theme({
    "&": {
       fontSize: "11pt",
-      color: "#eeeeeeff",
+      color: colour.darkthemetext,
       font:"'JetBrains Mono', monospace"
    },
    ".cm-gutters": {
@@ -56,40 +82,43 @@ const Darky = EditorView.theme({
 }, { dark: true });
 
 export const xcodeDarkStyle: CreateThemeOptions["styles"] = [
-   { tag: t.variableName, color: "#eeeeff" },
+   { tag: t.variableName, color: colour.darkthemetext },
 
    // Comment / GREEN / #
-   { tag: t.comment, color: "#b6ababff" },
+   { tag: t.comment, color: colour.greygreen },
 
-   // Escape char / CREAM ON BLACK
-   { tag: t.escape, color: "#eeeeff", fontStyle: "italic" }, 
+   // Escape char / YELLOW
+   { tag: t.escape, color: colour.yellow }, 
 
    // Directive / RED / words: alphabet: etc.
-   { tag: [t.meta, t.name], color: "#ff7a7a" },
+   { tag: t.meta, color: colour.red, fontWeight: "bold" },
+
+   // ...
+   { tag: t.name, color: colour.red },
 
    // LIGHT BLUE / commas, equals sign, colon
-   { tag: t.link, color: "#a6d3f7" , fontWeight: "bold" },
+   { tag: t.link, color: colour.blue , fontWeight: "bold" },
    
    // CYAN / 0, ->, +, -
-   { tag: t.operator, color: "#44ebd0ff" , fontWeight: "bold" },
+   { tag: t.operator, color: colour.cyan },
 
    // PINK / #, +, *, (, {, [
-   { tag: t.regexp, color: "#eb8af0ff" },
+   { tag: t.regexp, color: colour.pink },
 
    // ORANGE / Categories
-   { tag: t.tagName, color: "#f6be85ff" },
+   { tag: t.tagName, color: colour.orange },
 
    // Weights
-   { tag: t.strong, color: "#bee79d", fontStyle: "italic" },
+   { tag: t.strong, color: colour.green, fontStyle: "italic" },
 
    // distribution etc
-   { tag: t.attributeName, color: "#bee79d" },
+   { tag: t.attributeName, color: colour.green },
 
    // + sign
-   { tag: t.bitwiseOperator, color: "#8eea7eff", fontstyle: "bold" },
+   { tag: t.bitwiseOperator, color: colour.green, fontweight: "bold" },
 
    // - sign
-   { tag: t.processingInstruction, color: "#ea7eb9ff", fontstyle: "bold" }
+   { tag: t.punctuation, color: colour.pink, fontweight: "bold" }
 ];
 
 export const xcodeDarkInit = (options?: Partial<CreateThemeOptions>) => {
@@ -154,37 +183,40 @@ export const xcodeLightStyle: CreateThemeOptions["styles"] = [
    { tag: t.variableName, color: "#000000" },
 
    // Comment / GREEN / #
-   { tag: t.comment, color: "#7e7474ff"},
+   { tag: t.comment, color: colour.darkgreen},
 
-   // Escape char / CREAM ON BLACK
-   { tag: t.escape, color: "#000000", backgroundColor:"#e8d9cc"}, 
+   // Escape char / YELLOW / 
+   { tag: t.escape, color: colour.brown},
 
    // Directive / RED / words: alphabet: etc.
-   { tag: [t.meta, t.name], color: "#a11c08ff" },
+   { tag: t.meta, color: colour.royal, fontWeight: "bold" },
+
+   // things...: etc.
+   { tag: t.name, color: colour.royal },
 
    // LIGHT BLUE / commas, equals sign, colon
-   { tag: t.link, color: "#0066b9ff" , fontWeight: "bold" }, 
+   { tag: t.link, color: colour.darkblue , fontWeight: "bold" }, 
 
    // CYAN / 0, ^
-   { tag: t.operator, color: "#16657fff", fontWeight: "bold"}, 
+   { tag: t.operator, color: colour.royal}, 
 
    // PINK / #, +, *, (, {, [
-   { tag: t.regexp, color: "#8400b8ff" },
+   { tag: t.regexp, color: colour.darkpink },
 
-   // ORANGE / Categories
-   { tag: t.tagName, color: "#7f5700ff" },
+   // Red / Categories
+   { tag: t.tagName, color: colour.darkred },
 
    // Weights
-   { tag: t.strong, color: "#12770aff", fontStyle: "italic" },
+   { tag: t.strong, color: colour.darkcyan, fontStyle: "italic" },
 
    // distribution etc
-   { tag: t.attributeName, color: "#12770aff" },
+   { tag: t.attributeName, color: colour.darkcyan },
 
    // + sign
-   { tag: t.bitwiseOperator, color: "#12770aff", fontstyle: "bold" },
+   { tag: t.bitwiseOperator, color: colour.darkgreen, fontweight: "bold" },
 
    // - sign
-   { tag: t.processingInstruction, color: "#bb0067ff", fontstyle: "bold" }
+   { tag: t.punctuation, color: colour.darkpink, fontweight: "bold" }
 
 ];
 
@@ -252,40 +284,43 @@ const Warmy = EditorView.theme({
 });
 
 export const xcodeWarmStyle: CreateThemeOptions["styles"] = [
-   { tag: t.variableName, color: "#000000" },
+   { tag: t.variableName, color: colour.warmthemetext },
 
    // Comment / GREEN / #
-   { tag: t.comment, color: "#7e7474ff"},
+   { tag: t.comment, color: colour.darkgreen},
 
-   // Escape char / CREAM ON BLACK
-   { tag: t.escape, color: "#000000", fontStyle: "italic" }, 
+   // Escape char / YELLOW / 
+   { tag: t.escape, color: colour.brown},
 
    // Directive / RED / words: alphabet: etc.
-   { tag: [t.meta, t.name], color: "#a11c08ff" },
+   { tag: t.meta, color: colour.royal, fontWeight: "bold" },
+
+   // things...: etc.
+   { tag: t.name, color: colour.royal },
 
    // LIGHT BLUE / commas, equals sign, colon
-   { tag: t.link, color: "#0066b9ff" , fontWeight: "bold" }, 
+   { tag: t.link, color: colour.darkblue , fontWeight: "bold" }, 
 
-   // CYAN / 0, ->, +, -
-   { tag: t.operator, color: "#16657fff", fontWeight: "bold"}, 
+   // CYAN / 0, ^
+   { tag: t.operator, color: colour.royal}, 
 
    // PINK / #, +, *, (, {, [
-   { tag: t.regexp, color: "#8400b8ff" },
+   { tag: t.regexp, color: colour.darkpink },
 
    // ORANGE / Categories
-   { tag: t.tagName, color: "#b07c0bff" },
+   { tag: t.tagName, color: colour.darkred },
 
    // Weights
-   { tag: t.strong, color: "#338f2cff", fontStyle: "italic" },
+   { tag: t.strong, color: colour.darkcyan, fontStyle: "italic" },
 
    // distribution etc
-   { tag: t.attributeName, color: "#338f2cff" },
+   { tag: t.attributeName, color: colour.darkcyan },
 
    // + sign
-   { tag: t.bitwiseOperator, color: "#338f2cff", fontstyle: "bold" },
+   { tag: t.bitwiseOperator, color: colour.darkgreen, fontweight: "bold" },
 
    // - sign
-   { tag: t.processingInstruction, color: "#bb0067ff", fontstyle: "bold" }
+   { tag: t.punctuation, color: colour.darkpink, fontweight: "bold" }
 ];
 
 export function xcodeWarmInit(options?: Partial<CreateThemeOptions>) {

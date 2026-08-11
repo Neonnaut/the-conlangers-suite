@@ -220,7 +220,8 @@ class Word_Bank {
       } else if (this.num_of_rejects > 1) {
          records.push(`${this.num_of_rejects} words rejected`);
       }
-      this.logger.info(`${final_sentence(records)} -- in ${display}`);
+      this.logger.info(`${final_sentence(records)}`);
+      this.logger.info(`Completed in ${display}`);
    }
 
    show_debug(): void {

@@ -47,7 +47,7 @@ class Transformer {
    ];
    public substages: { transforms: Transform[]; name: string }[] = [];
 
-   public graphemes: string[];
+   public graphemorphs: string[];
 
    public lettercase_mapper: Lettercase_Mapper;
 
@@ -62,7 +62,7 @@ class Transformer {
    constructor(
       logger: Logger,
 
-      graphemes: string[],
+      graphemorphs: string[],
       lettercase_mapper: Lettercase_Mapper,
       chance_mapper: Chance_Mapper,
       syllable_boundaries: string[],
@@ -74,7 +74,7 @@ class Transformer {
       associateme_mapper: Associateme_Mapper,
    ) {
       this.logger = logger;
-      this.graphemes = graphemes;
+      this.graphemorphs = graphemorphs;
       this.lettercase_mapper = lettercase_mapper;
       this.chance_mapper = chance_mapper;
       this.syllable_boundaries = syllable_boundaries;
@@ -150,7 +150,7 @@ class Transformer {
          modified_word,
          line_num,
       );
-      return graphemosis(modified_word, this.graphemes);
+      return graphemosis(modified_word, this.graphemorphs);
    }
 
    target_to_word_match(
@@ -183,7 +183,7 @@ class Transformer {
    ): string[] {
       const replacement_stream: string[] = [];
       for (let j = 0; j < raw_result.length; j++) {
-         let my_result_token: Token = raw_result[j];
+         const my_result_token: Token = raw_result[j];
 
          if (my_result_token.type === "recast-category") {
             // It's a recast category
@@ -505,16 +505,35 @@ class Transformer {
                // syllable-boundary in pattern represents a word boundary
                // doesn't consume stream characters, just validates position
                if (min > 1) return null;
-               matched.push("$"); // symbolic trace marker (optional)
+               matched.push("$");
                // no increment to i
             } else {
                return null; // neither '.' nor word boundary
             }
          } else if (token.type === "word-boundary") {
-            if (i === 0 || i === stream.length) {
-               // valid word boundary position
+            if (this.syllable_boundaries.includes(stream[i])) {
+               // Oh my gah, theres a syllable-boundary symbol here, but is
+               // it at the beginning or end of the stream?
+               const spech = i + stream[i].length - 1;
+               if (i === 0 || spech === stream.length) {
+                  // syllable-boundary symbol is at beginning or end of the stream
+                  let count = 0;
+                  while (
+                     count < max_available &&
+                     stream[i + count] === stream[i]
+                  ) {
+                     count++;
+                  }
+                  if (count < min) {
+                     return null;
+                  }
+                  matched.push(...stream.slice(i, i + count));
+                  i += count;
+               }
+            } else if (i === 0 || i === stream.length) {
+               // word-boundary represents the end or start of a stream
                if (min > 1) return null;
-               matched.push("#"); // symbolic trace marker (optional)
+               matched.push("#");
                // no increment to i
             } else {
                return null; // not a word boundary
@@ -772,8 +791,8 @@ class Transformer {
       if (applied_targets.length > 0) {
          let my_exceptions = "";
          for (const e of exceptions) {
-            const my_before = e.before.map((t) => t.base).join("");
-            const my_after = e.after.map((t) => t.base).join("");
+            const my_before = e.before.map((t) => t.mask).join("");
+            const my_after = e.after.map((t) => t.mask).join("");
             my_exceptions += ` ! ${my_before}_${my_after}`;
          }
 
@@ -1055,7 +1074,7 @@ class Transformer {
          return word;
       } // No transforms
 
-      let tokens = graphemosis(word.get_last_form(), this.graphemes);
+      let tokens = graphemosis(word.get_last_form(), this.graphemorphs);
 
       for (const t of transforms) {
          if (word.rejected) {

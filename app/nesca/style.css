@@ -65,16 +65,15 @@ html {
    --pale-blue: #ffedf8;
 
    --prog-variable: #eeeeff;
-   --prog-comment: #b6ababff;
-   --prog-escape: #f0f0f0;
-   --prog-escape-background: #584747;
+   --prog-comment: #b0b7b1;
+   --prog-escape: #fbd701;
    --prog-directive: #ff7a7a;
    --prog-link: #a6d3f7;
-   --prog-operator: #44ebd0;
-   --prog-regexp: #e687e4;
-   --prog-catkey: #ffcd90;
+   --prog-operator: #44ebd0ff;
+   --prog-regexp: #e799fa;
+   --prog-catkey: #ffb67a;
    --prog-weight: #bee79d;
-   --prog-attribute: #bee79d;
+   --prog-attribute: #8eea7eff;
    --prog: #ffffff;
    --prog-background: #080808;
 }
@@ -108,6 +107,9 @@ html {
    --toolbar-bg: #e1e1e1;
    --nav-arrow: #000;
    /* CODE & BUTTON & TEXTBOX */
+   --code-bg: #eedfdf;
+   --code-text: #000;
+
    --button-bg: #5d5dbe;
    --button-text: #fff;
    --select-border: #4c4c80;
@@ -140,16 +142,16 @@ html {
    --pale-blue: #c9f3ffbb;
 
    --prog-variable: #000000;
-   --prog-comment: #74747eff;
-   --prog-escape: #000000;
-   --prog-escape-background: #e8d9cc;
-   --prog-directive: #a11c08ff;
+   --prog-comment: #2a8b23;
+   --prog-escape: #998500;
+
+   --prog-directive: #230682;
    --prog-link: #0066b9ff;
-   --prog-operator: #024bba;
-   --prog-regexp: #990085ff;
-   --prog-catkey: #7f5700ff;
+   --prog-operator: #3690a0;
+   --prog-regexp: #b800b2;
+   --prog-catkey: #c8302d;
    --prog-weight: #277022;
-   --prog-attribute: #277022;
+   --prog-attribute: #3690a0;
    --prog: #000;
    --prog-background: #eeeded;
 }
@@ -216,19 +218,19 @@ html {
    --pale-brown: #edebeb;
    --pale-blue: #c9f3ffbb;
 
-   --prog-variable: #eeeeff;
-   --prog-comment: #74747eff;
-   --prog-escape: #f0f0f0;
-   --prog-escape-background: #584747;
-   --prog-directive: #ff7a7a;
-   --prog-link: #a6d3f7;
-   --prog-operator: #44ebd0;
-   --prog-regexp: #e687e4;
-   --prog-catkey: #ffcd90;
-   --prog-weight: #bee79d;
-   --prog-attribute: #bee79d;
-   --prog: #ffffff;
-   --prog-background: #333333;
+   --prog-variable: #000000;
+   --prog-comment: #2a8b23;
+   --prog-escape: #998500;
+
+   --prog-directive: #230682;
+   --prog-link: #0066b9ff;
+   --prog-operator: #3690a0;
+   --prog-regexp: #b800b2;
+   --prog-catkey: #c8302d;
+   --prog-weight: #277022;
+   --prog-attribute: #3690a0;
+   --prog: #000;
+   --prog-background: #eeeded;
 }
 
 body {
@@ -494,7 +496,6 @@ pre.example {
 }
 .prog-pre .escape {
    color:var(--prog-escape);
-   background: var(--prog-escape-background);
 }
 .prog-pre .directive {
    color:var(--prog-directive);
@@ -808,6 +809,7 @@ div .gll {
 }
 #voc-output-words-field, #GMGOutput{
    font-family: monospace;
+   resize: vertical;
 }
 #out {
    margin: 10px 0;
@@ -1271,6 +1273,12 @@ details>summary::marker {
 
 .nesca-pane textarea {
   width: 100%;
+}
+
+.nesca-pane-label {
+   font-size: 1.7em;
+   margin: 10px 0;
+   user-select: none;
 }
 
 @media only screen and (min-width: 600px) {

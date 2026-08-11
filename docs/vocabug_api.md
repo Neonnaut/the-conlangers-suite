@@ -32,6 +32,7 @@ type vocabug_options = {
     force_word_limit?: boolean = false;
     sort_words?: boolean = true; // Sort generated words alphabetically.
     output_divider?: string = " "; // Divider or "delimeter" between words
+    wordclass_choices?: string[] = []; // A list of word-classes to choose from. If empty, all word-classes are used.
 };
 ```
 

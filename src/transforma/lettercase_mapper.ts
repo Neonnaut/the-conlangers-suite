@@ -2,6 +2,9 @@ class lettercase_mapper {
    private map: Map<string, string>;
    private reverse_map: Map<string, string>;
 
+   public custom_lowercase_row: string[] = [];
+   public custom_uppercase_row: string[] = [];
+
    constructor() {
       this.map = new Map();
       this.reverse_map = new Map();
@@ -73,7 +76,7 @@ class lettercase_mapper {
 
       const cap =
          this.reverse_map.get(first) ??
-         (first ? first[0].toUpperCase() + first.slice(1) : "");
+         (first ? first[0].toLowerCase() + first.slice(1) : "");
 
       return cap + tokens.slice(1).join("");
    }

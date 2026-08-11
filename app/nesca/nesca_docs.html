@@ -32,7 +32,7 @@
             <img src="img/nesca.svg" alt="Logo of astronaut" style="float: left;">
 
             <h1 style="margin-bottom: 10px;">Nesca<br>documentation</h1>
-            <b>Version <a class="VERSION">1.0.9</a></b>
+            <b>Version <a class="VERSION">1.0.10</a></b>
          </div>
          <br>
 
@@ -164,7 +164,7 @@
             </li>
 
          <h2 id="chapAbout"><a class="head-num">1</a>About Nesca</h2>
-         <p>This is the complete documentation for <a href="./nesca.html">Nesca</a> version <a class="VERSION">1.0.9</a></p>
+         <p>This is the complete documentation for <a href="./nesca.html">Nesca</a> version <a class="VERSION">1.0.10</a></p>
          <p>Nesca is a Sound Change Applier. It applies transformation rules to words to change them. It can be used for historical or fictional sound changes, to spell words differently, or to convert words to other alphabets. Nesca is an easy to use but powerful tool for conlangers and linguists.</p>
 
          <p>Nesca is one of the applications belonging to <a href="https://github.com/Neonnaut/the-conlangers-suite">The Conlangers Suite</a>. You can install Nesca to be used in your own projects or as a command-line-interface <a href="https://www.npmjs.com/package/the-conlangers-suite">here</a>.</p>
@@ -608,7 +608,10 @@
          <p>This creates two groups of graphemes. <code class="example">C</code> is the group of all consonants and <code class="example">V</code> is the group of all vowels.</p>
          <p>These graphemes are separated by commas, however an alternative is to use spaces: <code class="example">C = t n k m ch l ꞌ s r d h w b y p g</code>.</p>
          
-         <p>Need more than 26 categories? Nesca supports the following additional characters as the key of a category or <a href="#vocUnits">unit</a>: <code class="example">Á Ć É Ǵ Í Ḱ Ĺ Ḿ Ń Ó Ṕ Ŕ Ś Ú Ẃ Ý Ź À È Ì Ǹ Ò Ù Ẁ Ỳ Ǎ Č Ď Ě Ǧ Ȟ Ǐ Ǩ Ľ Ň Ǒ Ř Š Ť Ǔ Ž Ä Ë Ḧ Ï Ö Ü Ẅ Ẍ Ÿ Γ Δ Θ Λ Ξ Π Σ Φ Ψ Ω</code></p>
+         <p>Categories can be lined wrapped, for example: <code class="example">C = t n k m ch l ꞌ s r d h w b y p g</code> can be written as:</p>
+         <div class="prog-pre"><span class="catkey">C</span> <span class="link">=</span> t<span class="link">,</span> n<span class="link">,</span> k<span class="link">,</span> m<span class="link">,</span> ch<span class="link">,</span> l<span class="link">,</span> ꞌ<span class="link">,</span> s<span class="link">,</span> r<span class="link">,</span><br><span class="catfea">  </span>d<span class="link">,</span> h<span class="link">,</span> w<span class="link">,</span> b<span class="link">,</span> y<span class="link">,</span> p<span class="link">,</span> g</div>
+
+         <p>Need more than 26 categories? You can use any non-syntax character as the key of a category.</p>
 
          <p>You can use categories inside categories, as long as the referenced category has previously been defined. For example:</p>
          <div class="prog-pre"><span class="directive">categories</span><code class="link">:</code>
@@ -1360,7 +1363,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
         <div class="prog-pre"><span class="comment">; The &lt;r&gt; of a plosive + &lt;r&gt; cluster is moved</span>
 <span class="comment">; between a word initial plosive and a vowel</span>
   <span class="catkey">&E</span><span class="regexp">{</span>a<span class="link">,</span>e<span class="link">,</span>i<span class="link">,</span>o<span class="link">,</span>u<span class="regexp">}</span><span class="regexp">%[<span class="operator">|</span></span><span class="regexp">{</span>p<span class="link">,</span>t<span class="link">,</span>k<span class="regexp">}</span>r<span class="regexp">]</span><span class="regexp">{</span>p<span class="link">,</span>t<span class="link">,</span>k<span class="regexp">}</span>r <span class="link">-></span> <span class="catkey">&M</span> <span class="link">/</span> <span class="regexp">#</span><span class="regexp">{</span>p<span class="link">,</span>t<span class="link">,</span>k<span class="regexp">}</span><span class="link">_</span>
-<span class="comment">; kotatros -> krotatos</span></div>
+<span class="comment">; kotatros ==> krotatos</span></div>
 
          <h3 id="chapReference"><a class="head-num">19.5</a>Reference</h3>
          <p>Sometimes graphemes must be copied or asserted to be a certain grapheme between other graphemes. This is the purpose of "reference". Reference is fairly straightforward, but there is a lot of jargon and different behaviour between fields to explain.</p>
@@ -1457,7 +1460,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
 </div>
 
          <h3 id="chapRecasts"><a class="head-num">19.8</a>Recasts</h3>
-         <p>Recasts, introduced in version 1.0.9, behave like rules but the <code class="example">RESULT</code> is regenerated from a category according to its distribution.</p>
+         <p>Recasts behave like rules, but the <code class="example">RESULT</code> is regenerated from a category according to its distribution.</p>
          <p>This is one way to ensure that certain combinations of graphemes are not generated in the word generation process, and to ensure that certain combinations of graphemes are generated. Recasts do not reproduce a natural linguistic phenomenon, they are shortcut to achieve your phonotactic constraints.</p>
          <p>To create recasts, you write it in the same way as rules, only the arrow is replaced with <code class="example">&lt;recast-as&gt;</code> and the <code class="example">RESULT</code> is a single category with optional modifiers such as quantifiers.</p>
          <p>Let's look at an example:</p>

@@ -12,20 +12,20 @@ class Feature_Resolver {
    public feature_pending: Map<string, { content: string; line_num: number }>;
    public features: Map<string, { graphemes: string[] }>;
 
-   public graphemes: string[];
+   public graphemorphs: string[];
 
    constructor(
       logger: Logger,
       output_mode: Output_Mode,
       escape_mapper: Escape_Mapper,
       feature_pending: Map<string, { content: string; line_num: number }>,
-      graphemes: string[],
+      graphemorphs: string[],
    ) {
       this.logger = logger;
       this.output_mode = output_mode;
       this.escape_mapper = escape_mapper;
 
-      this.graphemes = graphemes;
+      this.graphemorphs = graphemorphs;
       this.feature_pending = feature_pending;
 
       this.features = new Map();
@@ -43,7 +43,7 @@ class Feature_Resolver {
             this.feature_pending.delete(key);
             const to_delete = value.content.split(",").map((str) => "^" + str);
             const anti_graphemes =
-               to_delete.join(",") + this.graphemes.join(",");
+               to_delete.join(",") + this.graphemorphs.join(",");
 
             this.feature_pending.set(key.replace(">", "-"), {
                content: anti_graphemes,
@@ -111,7 +111,7 @@ class Feature_Resolver {
 
          // Escape special chars in graphemes
          for (let i = 0; i < x_filtered.length; i++) {
-            x_filtered[i] = this.escape_mapper.escape_special_chars(
+            x_filtered[i] = this.escape_mapper.set_special_char_escape(
                x_filtered[i],
             );
          }

@@ -6,7 +6,6 @@ import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
 
 // src/utils/utilities.ts
-var cappa = "[A-Z\xC1\u0106\xC9\u01F4\xCD\u1E30\u0139\u1E3E\u0143\xD3\u1E54\u0154\u015A\xDA\u1E82\xDD\u0179\xC4\xCB\u1E26\xCF\xD6\xDC\u1E84\u1E8C\u0178\u01CD\u010C\u010E\u011A\u01E6\u021E\u01CF\u01E8\u013D\u0147\u01D1\u0158\u0160\u0164\u01D3\u017D\xC0\xC8\xCC\u01F8\xD2\xD9\u1E80\u1EF2\u0393\u0394\u0398\u039B\u039E\u03A0\u03A3\u03A6\u03A8\u03A9]";
 var get_last = (arr) => (
   // This thing fetches the last item of an array
   arr?.[arr.length - 1]
@@ -93,7 +92,7 @@ function graphemosis(input, canon_graphemes) {
 }
 
 // src/utils/types.ts
-var directive_check = [
+var Directive_List = [
   "categories",
   "words",
   "units",
@@ -105,25 +104,38 @@ var directive_check = [
   "feature-field",
   "stage",
   "letter-case-field",
-  "schema"
+  "schema",
+  "note"
+];
+var Directive_Using_Escape = [
+  "categories",
+  "words",
+  "units",
+  "alphabet",
+  "invisible",
+  "graphemes",
+  "syllable-boundaries",
+  "features",
+  "feature-field",
+  "stage",
+  "letter-case-field"
 ];
 var SYNTAX_CHARS = [
   "<",
   ">",
-  "@",
-  "\u21D2",
-  "\u2192",
-  "->",
-  ">>",
-  "_",
   "{",
   "}",
   "[",
   "]",
   "(",
   ")",
+  "@",
+  "\u21D2",
+  "\u2192",
+  "->",
+  ">>",
+  "_",
   "0",
-  "/",
   "!",
   "#",
   "$",
@@ -147,6 +159,7 @@ var SYNTAX_CHARS = [
   "9"
 ];
 var SYNTAX_CHARS_AND_CARET = [...SYNTAX_CHARS, "^"];
+var SYNTAX_CHARS_CAT_KEY = [...SYNTAX_CHARS, "^", ",", "\\"];
 
 // src/parser.ts
 var Parser = class {
@@ -169,20 +182,20 @@ var Parser = class {
   units;
   optionals_weight;
   wordshape_distribution;
-  wordshape_pending;
+  wordshape_classes_pending;
   feature_pending;
   schema_input;
   schema_output;
   stages_pending = [];
   substages_pending = [];
-  graphemes;
-  syllable_boundaries;
-  graphemes_pending = "";
+  syllable_boundaries_pending;
+  graphemorphs_pending = "";
   alphabet;
   invisible;
   file_line_num = 0;
   app;
   current_stage_name;
+  current_wordclass_name;
   constructor(logger, app, escape_mapper, lettercase_mapper2, chance_mapper, num_of_words_string, output_mode, sort_words, remove_duplicates, force_word_limit, input_divider, output_divider) {
     this.logger = logger;
     this.app = app;
@@ -204,9 +217,9 @@ var Parser = class {
       );
       num_of_words = Math.ceil(num_of_words);
     }
-    if (num_of_words > 1e5 || num_of_words < 1) {
+    if (num_of_words > 9e5 || num_of_words < 1) {
       this.logger.warn(
-        `Number of words '${num_of_words}' was not between 1 and 100,000. Genearating 100 words instead`
+        `Number of words '${num_of_words}' was not between 1 and 900,000. Genearating 100 words instead`
       );
       num_of_words = 100;
     }
@@ -245,31 +258,46 @@ var Parser = class {
     this.optionals_weight = 10;
     this.units = /* @__PURE__ */ new Map();
     this.wordshape_distribution = "zipfian";
-    this.wordshape_pending = { content: "", line_num: 0 };
+    this.wordshape_classes_pending = [];
     this.stages_pending = [];
     this.substages_pending = [];
     this.feature_pending = /* @__PURE__ */ new Map();
     this.alphabet = [];
     this.invisible = [];
-    this.graphemes_pending = "";
-    this.graphemes = [];
-    this.syllable_boundaries = [];
+    this.graphemorphs_pending = "";
+    this.syllable_boundaries_pending = "";
     this.disable_directive = false;
     this.directive_name = "";
     this.current_stage_name = "";
+    this.current_wordclass_name = null;
     this.schema_input = { fields: [], delimiters: [] };
     this.schema_output = { fields: [], delimiters: [] };
   }
   get_line(file_array) {
     let line = file_array[this.file_line_num];
-    line = this.escape_mapper.escape_backslash_pairs(line);
-    line = line.replace(/;.*/u, "").trim();
-    line = this.escape_mapper.escape_named_escape(line);
-    if (line.includes("&[")) {
+    line = line.replace(/(?<!\\);.*/u, "").trim();
+    line = this.escape_mapper.set_backslash_escape(line);
+    line = this.escape_mapper.get_named_escape(line);
+    const stray_check = this.escape_mapper.has_stray_escape(line);
+    if (stray_check) {
       this.logger.validation_error(
         `Invalid named escape`,
         this.file_line_num
       );
+    }
+    return line;
+  }
+  main_escaper(line, directive) {
+    if (Directive_Using_Escape.includes(directive)) {
+      line = this.escape_mapper.set_backslash_escape(line);
+      line = this.escape_mapper.get_named_escape(line);
+      const stray_check = this.escape_mapper.has_stray_escape(line);
+      if (stray_check) {
+        this.logger.validation_error(
+          `Invalid named escape`,
+          this.file_line_num
+        );
+      }
     }
     return line;
   }
@@ -316,6 +344,32 @@ var Parser = class {
           this.current_stage_name = "";
           this.stages_pending.push(stage);
         }
+        if (my_directive === "words") {
+          if (this.current_wordclass_name === "") {
+            this.logger.validation_error(
+              `Multiple words directive used without using a word-class decorator`,
+              this.file_line_num
+            );
+          }
+          const wordshape_class = {
+            content: "",
+            line_num: this.file_line_num,
+            name: this.current_wordclass_name,
+            optionals_weight: this.optionals_weight,
+            wordshape_distribution: this.wordshape_distribution
+          };
+          this.wordshape_classes_pending.push(wordshape_class);
+          this.current_wordclass_name = "";
+        }
+        if (my_wrapped_rule.length > 0) {
+          this.logger.validation_error(
+            `Wrapped rule was not completed before directive change`,
+            this.file_line_num
+          );
+        }
+        if (my_directive === "feature-field") {
+          my_header = [];
+        }
         continue;
       }
       if (this.disable_directive) {
@@ -330,18 +384,126 @@ var Parser = class {
       if (my_directive === "notes") {
         continue;
       }
-      if (my_directive === "categories") {
-        const [key, field, valid] = this.get_cat_seg_fea(line, "category");
-        if (!valid) {
+      if (my_directive === "stage") {
+        if (my_subdirective === "clusterfield") {
+          if (line.startsWith(">")) {
+            for (const transform of my_clusterfield_transform) {
+              this.push_transform_to_stage(transform);
+            }
+            my_subdirective = "none";
+            my_header = [];
+            my_clusterfield_transform = [];
+            continue;
+          }
+          my_clusterfield_transform = this.parse_clusterfield(
+            line,
+            my_header,
+            my_clusterfield_transform
+          );
+          continue;
+        } else if (line === "<") {
           this.logger.validation_error(
-            `"${line}" is not a category declaration`,
+            `Feature-field header was empty`,
             this.file_line_num
           );
+        } else if (line.startsWith("< ")) {
+          if (my_wrapped_rule.length != 0) {
+            this.logger.validation_error(
+              `Wrapped rule was not completed before starting cluster-field`,
+              this.file_line_num
+            );
+          }
+          if (my_clusterfield_transform) {
+            my_clusterfield_transform.push({
+              t_type: "cluster-field",
+              target: "",
+              result: "",
+              conditions: [],
+              exceptions: [],
+              chance: this.chance_mapper.get_last_chance(),
+              line_num: this.file_line_num
+            });
+          }
+          line = line.substring(2).trim();
+          const top_row = line.split(/[\s]+/).filter(Boolean);
+          if (top_row.length < 2) {
+            this.logger.validation_error(
+              `Feature-field header too short`,
+              this.file_line_num
+            );
+          }
+          my_subdirective = "clusterfield";
+          my_header = top_row;
+          continue;
+        } else if (line.startsWith("<routine") || line.startsWith("<recasts")) {
+          if (my_wrapped_rule.length != 0) {
+            this.logger.validation_error(
+              `Wrapped rule was not completed before starting routine`,
+              this.file_line_num
+            );
+          }
+          const my_routine = this.parse_routine(line);
+          this.push_transform_to_stage({
+            t_type: my_routine,
+            target: "\\",
+            result: "\\",
+            conditions: [],
+            exceptions: [],
+            chance: this.chance_mapper.get_last_chance(),
+            line_num: this.file_line_num
+          });
+          continue;
+        } else if (line.startsWith("<@chance")) {
+          const match = line.match(/^<@chance\s*=\s*(\d+(?:\.\d+)?)%$/);
+          if (this.chance_mapper.check_parsing) {
+            this.logger.validation_error(
+              `Cannot start a new chance while another chance is being parsed`,
+              this.file_line_num
+            );
+          }
+          if (match) {
+            const percent = match[1];
+            this.chance_mapper.add_chance(Number(percent));
+            this.chance_mapper.check_parsing = true;
+          } else {
+            this.logger.validation_error(
+              `Invalid chance syntax`,
+              this.file_line_num
+            );
+          }
+          continue;
+        } else if (line === ">") {
+          if (!this.chance_mapper.check_parsing) {
+            this.logger.validation_error(
+              `Block ending found without a corresponding start`,
+              this.file_line_num
+            );
+          }
+          this.chance_mapper.check_parsing = false;
+        } else {
+          const continuation_regex = /(>|->|=>|>>|⇒|→|\/|!)$/;
+          if (continuation_regex.test(line)) {
+            my_wrapped_rule += " " + line;
+            continue;
+          }
+          line = my_wrapped_rule + " " + line;
+          my_wrapped_rule = "";
+          const [target, result, conditions, exceptions, is_recast] = this.get_transform(line);
+          let t_type = "rule";
+          if (is_recast) {
+            t_type = "recast";
+          }
+          this.push_transform_to_stage({
+            t_type,
+            target,
+            result,
+            conditions,
+            exceptions,
+            chance: this.chance_mapper.get_last_chance(),
+            line_num: this.file_line_num
+          });
+          continue;
         }
-        this.category_pending.set(key, {
-          content: field,
-          line_num: this.file_line_num
-        });
       }
       if (my_directive === "words") {
         if (this.app !== "vocabug") {
@@ -358,8 +520,18 @@ var Parser = class {
             this.file_line_num
           );
         }
-        this.wordshape_pending.content += " " + line;
-        this.wordshape_pending.line_num = this.file_line_num;
+        let parabol = get_last(this.wordshape_classes_pending);
+        if (!parabol) {
+          parabol = {
+            content: "",
+            optionals_weight: this.optionals_weight,
+            wordshape_distribution: this.wordshape_distribution,
+            line_num: this.file_line_num,
+            name: this.current_wordclass_name
+          };
+          this.wordshape_classes_pending.push(parabol);
+        }
+        parabol.content += " " + line.trim();
         continue;
       }
       if (my_directive === "units") {
@@ -417,6 +589,32 @@ var Parser = class {
           this.schema_output = { fields, delimiters };
         }
       }
+      if (my_directive === "categories") {
+        const [key, field, valid] = this.get_cat_seg_fea(line, "category");
+        let effective_key = key;
+        let effective_content = field;
+        let effective_line_num = this.file_line_num;
+        if (!valid) {
+          const lastEntry = Array.from(this.category_pending.entries()).at(
+            -1
+          );
+          if (lastEntry) {
+            const [prevKey, prev] = lastEntry;
+            effective_key = prevKey;
+            effective_content = prev.content + ", " + line.trim();
+            effective_line_num = prev.line_num;
+          } else {
+            this.logger.validation_error(
+              `"${line}" is not a category declaration`,
+              this.file_line_num
+            );
+          }
+        }
+        this.category_pending.set(effective_key, {
+          content: effective_content,
+          line_num: effective_line_num
+        });
+      }
       if (my_directive === "features") {
         const [key, field, valid] = this.get_cat_seg_fea(line, "feature");
         if (!valid) {
@@ -452,164 +650,41 @@ var Parser = class {
           this.parse_featurefield(line, my_header);
         }
       }
-      if (my_directive === "letter-case-field") {
-        if (my_header.length === 0) {
-          const top_row = line.split(/[\s]+/).filter(Boolean);
-          if (top_row.length < 2) {
-            this.logger.validation_error(
-              `letter-case-field header too short`,
-              this.file_line_num
-            );
-          }
-          my_header = top_row;
-          continue;
-        } else {
-          this.parse_lettercasefield(line, my_header);
-        }
+      if (my_directive === "graphemes") {
+        this.graphemorphs_pending += " " + line;
+        continue;
+      }
+      if (my_directive === "syllable-boundaries") {
+        this.syllable_boundaries_pending += " " + line;
+        continue;
       }
       if (my_directive === "alphabet") {
         const alphabet = line.split(/[,\s]+/).filter(Boolean);
         for (let i = 0; i < alphabet.length; i++) {
-          alphabet[i] = this.escape_mapper.restore_escaped_chars(alphabet[i]).trim();
+          alphabet[i] = this.escape_mapper.get_escaped_chars(alphabet[i]).trim();
         }
         this.alphabet.push(...alphabet);
       }
       if (my_directive === "invisible") {
         const invisible = line.split(/[,\s]+/).filter(Boolean);
         for (let i = 0; i < invisible.length; i++) {
-          invisible[i] = this.escape_mapper.restore_escaped_chars(invisible[i]).trim();
+          invisible[i] = this.escape_mapper.get_escaped_chars(invisible[i]).trim();
         }
         this.invisible.push(...invisible);
       }
-      if (my_directive === "graphemes") {
-        this.graphemes_pending += " " + line;
-        continue;
-      }
-      if (my_directive === "syllable-boundaries") {
-        const sybo = line.split(/[,\s]+/).filter(Boolean);
-        for (let i = 0; i < sybo.length; i++) {
-          sybo[i] = this.escape_mapper.restore_escaped_chars(sybo[i]).trim();
-        }
-        this.syllable_boundaries.push(...sybo);
-      }
-      if (my_directive === "stage") {
-        if (my_subdirective === "clusterfield") {
-          if (line.startsWith(">")) {
-            for (const transform of my_clusterfield_transform) {
-              this.push_transform_to_stage(transform);
-            }
-            my_subdirective = "none";
-            my_header = [];
-            my_clusterfield_transform = [];
-            continue;
-          }
-          my_clusterfield_transform = this.parse_clusterfield(
-            line,
-            my_header,
-            my_clusterfield_transform
-          );
-          continue;
-        } else if (line === "<") {
-          this.logger.validation_error(
-            `Feature-field header was empty`,
-            this.file_line_num
-          );
-        } else if (line.startsWith("< ")) {
-          if (my_wrapped_rule.length != 0) {
-            this.logger.validation_error(
-              `Wrapped rule was not completed before starting cluster-field`,
-              this.file_line_num
-            );
-          }
-          my_clusterfield_transform.push({
-            t_type: "cluster-field",
-            target: "",
-            result: "",
-            conditions: [],
-            exceptions: [],
-            chance: this.chance_mapper.get_last_chance(),
-            line_num: this.file_line_num
-          });
-          line = line.substring(2).trim();
-          const top_row = line.split(/[\s]+/).filter(Boolean);
-          if (top_row.length < 2) {
-            this.logger.validation_error(
-              `Feature-field header too short`,
-              this.file_line_num
-            );
-          }
-          my_subdirective = "clusterfield";
-          my_header = top_row;
-          continue;
-        } else if (line.startsWith("<recasts")) {
-        } else if (line.startsWith("<routine")) {
-          if (my_wrapped_rule.length != 0) {
-            this.logger.validation_error(
-              `Wrapped rule was not completed before starting routine`,
-              this.file_line_num
-            );
-          }
-          const my_routine = this.parse_routine(line);
-          this.push_transform_to_stage({
-            t_type: my_routine,
-            target: "\\",
-            result: "\\",
-            conditions: [],
-            exceptions: [],
-            chance: this.chance_mapper.get_last_chance(),
-            line_num: this.file_line_num
-          });
-          continue;
-        } else if (line.startsWith("<@chance")) {
-          const match = line.match(/^<@chance\s*=\s*(\d+(?:\.\d+)?)%$/);
-          if (this.chance_mapper.check_parsing) {
-            this.logger.validation_error(
-              `Cannot start a new chance while another chance is being parsed`,
-              this.file_line_num
-            );
-          }
-          if (match) {
-            const percent = match[1];
-            this.chance_mapper.add_chance(Number(percent));
-            this.chance_mapper.check_parsing = true;
-          } else {
-            this.logger.validation_error(
-              `Invalid chance syntax`,
-              this.file_line_num
-            );
-          }
-          continue;
-        } else if (line.startsWith(">")) {
-          this.chance_mapper.check_parsing = false;
-        } else {
-          const continuationRe = /(->|=>|>>|⇒|→|\/|!)$/;
-          if (continuationRe.test(line)) {
-            my_wrapped_rule += " " + line;
-            continue;
-          }
-          line = my_wrapped_rule + " " + line;
-          my_wrapped_rule = "";
-          const [target, result, conditions, exceptions, is_recast] = this.get_transform(line);
-          let t_type = "rule";
-          if (is_recast) {
-            t_type = "recast";
-          }
-          this.push_transform_to_stage({
-            t_type,
-            target,
-            result,
-            conditions,
-            exceptions,
-            chance: this.chance_mapper.get_last_chance(),
-            line_num: this.file_line_num
-          });
-          continue;
-        }
+      if (my_directive === "letter-case-field") {
+        this.parse_lettercasefield(line);
       }
     }
     if (my_decorator != "none") {
       this.logger.validation_error(
         `Decorator "${my_decorator}" was not followed by a directive`,
+        this.file_line_num
+      );
+    }
+    if (my_wrapped_rule.length > 0) {
+      this.logger.validation_error(
+        `Wrapped rule was not completed before end of file`,
         this.file_line_num
       );
     }
@@ -636,12 +711,14 @@ var Parser = class {
     if (key === "" || field === "") {
       return [input, "", false];
     }
-    const categoryRegex = new RegExp(`^${cappa}$`);
+    const categoryRegex = new RegExp(`^.$`);
     const unitRegex = /^[A-Za-z+$-]+$/;
     const featureRegex = /^(\+|-|>)[a-zA-Z+-]+$/;
     if (mode === "category") {
       if (categoryRegex.test(key)) {
-        return [key, field, true];
+        if (!SYNTAX_CHARS_CAT_KEY.includes(key)) {
+          return [key, field, true];
+        }
       }
     } else if (mode === "unit") {
       if (unitRegex.test(key)) {
@@ -682,7 +759,6 @@ var Parser = class {
   parse_decorator(line, old_decorator) {
     let new_decorator = "none";
     line = line.substring(1);
-    line = this.escape_mapper.restore_preserve_escaped_chars(line);
     const dotCount = (line.match(/\./g) || []).length;
     const eqCount = (line.match(/=/g) || []).length;
     if (dotCount !== 1) {
@@ -696,18 +772,30 @@ var Parser = class {
       let [my_property, my_value] = my_thing.split("=");
       my_property = my_property.trim();
       my_value = my_value.trim();
+      my_value = this.escape_mapper.get_mask_stream(my_value);
       if (my_directive === "words") {
         if (my_property === "distribution") {
           this.wordshape_distribution = this.parse_distribution(my_value);
           new_decorator = "words";
-        } else if (my_property === "optionals-weight") {
-          if (!my_value.endsWith("%")) {
+        } else if (my_property === "word-class") {
+          const escaped_value = this.escape_mapper.get_mask_stream(my_value);
+          if (!/^[a-zA-Z0-9\-+ ]+$/.test(escaped_value)) {
             this.logger.validation_error(
-              `Invalid optionals-weight "${my_value}" -- expected a percentage value ending with "%"`,
+              `Invalid word-class name "${escaped_value}" -- expected a-z, A-Z, 0-9, -, +, or space`,
               this.file_line_num
             );
           }
-          my_value = my_value.slice(0, -1).trim();
+          this.current_wordclass_name = escaped_value;
+          new_decorator = "words";
+        } else if (my_property === "optionals-weight") {
+          let escaped_value = this.escape_mapper.get_mask_stream(my_value);
+          if (!my_value.endsWith("%")) {
+            this.logger.validation_error(
+              `Invalid optionals-weight "${escaped_value}" -- expected a percentage value ending with "%"`,
+              this.file_line_num
+            );
+          }
+          escaped_value = escaped_value.slice(0, -1).trim();
           const optionals_weight = make_percentage(my_value);
           if (optionals_weight == null) {
             this.logger.validation_error(
@@ -731,20 +819,8 @@ var Parser = class {
       }
     } else {
       if (my_thing === "disabled") {
-        if (directive_check.includes(my_directive)) {
-          new_decorator = my_directive;
-          this.disable_directive = "p";
-        } else {
-          this.logger.validation_error(
-            `Invalid directive name on decorator ${my_directive}`,
-            this.file_line_num
-          );
-        }
-      } else {
-        this.logger.validation_error(
-          `Invalid decorator format`,
-          this.file_line_num
-        );
+        new_decorator = my_directive;
+        this.disable_directive = "p";
       }
     }
     if (new_decorator === "none") {
@@ -759,32 +835,10 @@ var Parser = class {
   }
   parse_directive(line, current_decorator) {
     let temp_directive = "none";
-    if (line === "categories:") {
-      temp_directive = "categories";
-    } else if (line === "words:") {
-      temp_directive = "words";
-    } else if (line === "units:") {
-      temp_directive = "units";
-    } else if (line === "alphabet:") {
-      temp_directive = "alphabet";
-    } else if (line === "invisible:") {
-      temp_directive = "invisible";
-    } else if (line === "graphemes:") {
-      temp_directive = "graphemes";
-    } else if (line === "syllable-boundaries:") {
-      temp_directive = "syllable-boundaries";
-    } else if (line === "features:") {
-      temp_directive = "features";
-    } else if (line === "feature-field:") {
-      temp_directive = "feature-field";
-    } else if (line === "stage:") {
-      temp_directive = "stage";
-    } else if (line === "letter-case-field:") {
-      temp_directive = "letter-case-field";
-    } else if (line === "schema:") {
-      temp_directive = "schema";
-    } else if (line === "note:") {
-      temp_directive = "note";
+    for (const d of Directive_List) {
+      if (`${d}:` === line) {
+        temp_directive = d;
+      }
     }
     if (temp_directive === "none") {
       return "none";
@@ -823,8 +877,6 @@ var Parser = class {
       );
     }
     const my_transform = my_transforms[0];
-    my_transform.target += ", ";
-    my_transform.result += ", ";
     const my_row = line.split(/[\s]+/).filter(Boolean);
     const my_key = my_row.shift();
     if (my_row.length !== my_header.length || my_key === void 0) {
@@ -843,12 +895,15 @@ var Parser = class {
         my_result.push(my_row[i]);
       }
     }
-    my_transform.target += my_target.join(", ");
-    my_transform.result += my_result.join(", ");
+    if (my_result.length !== 0) {
+      if (my_transform.target.length > 0) my_transform.target += ", ";
+      if (my_transform.result.length > 0) my_transform.result += ", ";
+      my_transform.target += my_target.join(", ");
+      my_transform.result += my_result.join(", ");
+    }
     return [my_transform];
   }
   parse_routine(line) {
-    line = this.escape_mapper.restore_preserve_escaped_chars(line);
     const eqCount = (line.match(/=/g) || []).length;
     if (eqCount !== 1) {
       this.logger.validation_error(
@@ -868,6 +923,7 @@ var Parser = class {
     let [routine] = right.split(">");
     routine = routine.trim();
     routine = routine.replace(/\bcapitalize\b/g, "capitalise");
+    routine = routine.replace(/\bdecapitalize\b/g, "decapitalise");
     routine = routine.replace(/\blatin-to-hangeul\b/g, "latin-to-hangul");
     switch (routine) {
       case "reverse":
@@ -893,14 +949,14 @@ var Parser = class {
     );
   }
   // TRANSFORMS !!!
-  // This is run on parsing file. We then have to run resolve_transforms aftter parse file
+  // This is run on parsing file. We then have to run resolve_transforms after parse file
   get_transform(input) {
     if (input === "") {
       this.logger.validation_error(`No input`, this.file_line_num);
     }
     const is_recast = input.includes("<recast-as>");
     input = input.replace(/\/\//g, "!");
-    const divided = is_recast ? input.split("<recast-as>") : input.split(/>>|->|→|=>|⇒/);
+    const divided = is_recast ? input.split("<recast-as>") : input.split(/>|>>|->|→|=>|⇒/);
     if (divided.length === 1) {
       this.logger.validation_error(
         `No arrows in transform`,
@@ -987,7 +1043,7 @@ var Parser = class {
         while (end < n && pattern[end] !== ">") end++;
         if (end >= n) {
           this.logger.validation_error(
-            "unterminated field",
+            "Unterminated field",
             this.file_line_num
           );
         }
@@ -1005,6 +1061,12 @@ var Parser = class {
     }
     if (delimiters.length < fields.length + 1) {
       delimiters.push("");
+    }
+    for (let i2 = 0; i2 < delimiters.length; i2++) {
+      delimiters[i2] = this.escape_mapper.get_escaped_chars(delimiters[i2]);
+    }
+    for (let i2 = 0; i2 < fields.length; i2++) {
+      fields[i2] = this.escape_mapper.get_escaped_chars(fields[i2]);
     }
     return [key, fields, delimiters];
   }
@@ -1106,25 +1168,43 @@ var Parser = class {
       });
     }
   }
-  parse_lettercasefield(line, top_row) {
+  parse_lettercasefield(line) {
     const my_row = line.split(/[\s]+/).filter(Boolean);
+    if (my_row.length < 2) {
+      this.logger.validation_error(
+        `Letter-case-field row too short`,
+        this.file_line_num
+      );
+    }
     const my_key = my_row.shift();
-    if (my_key !== "uppercase") {
+    for (let i = 0; i < my_row.length; i++) {
+      my_row[i] = this.escape_mapper.get_escaped_chars(my_row[i]);
+    }
+    if (my_key === "uppercase") {
+      this.lettercase_mapper.custom_uppercase_row = my_row;
+    } else if (my_key === "lowercase") {
+      this.lettercase_mapper.custom_lowercase_row = my_row;
+    } else {
       this.logger.validation_error(
-        `Letter-case-field first column must be "uppercase"`,
+        `Invalid row key "${my_key}" in letter-case-field -- expected "uppercase" or "lowercase"`,
         this.file_line_num
       );
     }
-    if (my_row.length !== top_row.length || my_key === void 0) {
-      this.logger.validation_error(
-        `Feature-field row length mismatch with header length -- expected row length of ${top_row.length} but got length of ${my_row.length}`,
-        this.file_line_num
-      );
+    const lower = this.lettercase_mapper.custom_lowercase_row;
+    const upper = this.lettercase_mapper.custom_uppercase_row;
+    if (lower.length > 0 && upper.length > 0) {
+      if (lower.length !== upper.length) {
+        this.logger.validation_error(
+          `Letter-case-field row length mismatch -- expected both rows to have the same length but got lowercase row length of ${lower.length} and uppercase row length of ${upper.length}`,
+          this.file_line_num
+        );
+      } else if (lower.length === upper.length) {
+        const my_map = new Map(
+          lower.map((k, i) => [k, upper[i]])
+        );
+        this.lettercase_mapper.create_map(my_map);
+      }
     }
-    const my_map = new Map(
-      top_row.map((k, i) => [k, my_row[i]])
-    );
-    this.lettercase_mapper.create_map(my_map);
   }
   valid_transform_brackets(str) {
     const stack = [];
@@ -1276,6 +1356,17 @@ function weighted_random_pick(items, weights) {
   }
   return "";
 }
+function weighted_random_pick_and_id(items, weights) {
+  const total_weight = weights.reduce((acc, w) => acc + w, 0);
+  let random_value = Math.random() * total_weight;
+  for (let i = 0; i < items.length; i++) {
+    if (random_value < weights[i]) {
+      return [items[i], i];
+    }
+    random_value -= weights[i];
+  }
+  return ["", 0];
+}
 function supra_weighted_random_pick(items, weights) {
   for (let i = 0; i < items.length; i++) {
     if (weights[i] === "s") {
@@ -1341,31 +1432,45 @@ var Word_Builder = class {
   escape_mapper;
   supra_builder;
   categories;
-  wordshapes;
   category_distribution;
-  optionals_weight;
-  constructor(escape_mapper, supra_builder, categories, wordshapes, category_distribution, optionals_weight, output_mode) {
+  wordshape_classes;
+  cwc_index = 0;
+  constructor(escape_mapper, supra_builder, categories, category_distribution, wordshape_classes, output_mode) {
     this.escape_mapper = escape_mapper;
     this.supra_builder = supra_builder;
     this.categories = categories;
-    this.wordshapes = wordshapes;
     this.category_distribution = category_distribution;
-    this.optionals_weight = optionals_weight;
+    this.wordshape_classes = wordshape_classes;
+    this.cwc_index = 0;
     word_default.output_mode = output_mode;
   }
+  next_wordshape_class() {
+    this.cwc_index++;
+    if (this.cwc_index >= this.wordshape_classes.length) {
+      this.cwc_index = 0;
+    }
+  }
+  get_wordshape_class_length() {
+    return this.wordshape_classes.length;
+  }
+  get_current_wordshape_class_name() {
+    return this.wordshape_classes[this.cwc_index].name;
+  }
   make_word() {
-    let stage_one = weighted_random_pick(
-      this.wordshapes.items,
-      this.wordshapes.weights
+    const [stage_one, wordshape_id] = weighted_random_pick_and_id(
+      this.wordshape_classes[this.cwc_index].wordshapes.items,
+      this.wordshape_classes[this.cwc_index].wordshapes.weights
     );
+    let mask = this.wordshape_classes[this.cwc_index].wordshapes.masks[wordshape_id];
+    mask = this.escape_mapper.get_mask_stream(mask);
     const stage_two = this.resolve_wordshape_sets(
       stage_one,
       this.category_distribution,
-      this.optionals_weight
+      this.wordshape_classes[this.cwc_index].optionals_weight
     );
     let stage_three = stage_two;
     if (this.supra_builder.id_counter != 1) {
-      const [ids, weights] = this.supra_builder.extract_letters_and_weights(stage_two);
+      const [ids, weights] = this.supra_builder.extract_content_and_weights(stage_two);
       const chosen_id = supra_weighted_random_pick(ids, weights);
       stage_three = this.supra_builder.replace_letter_and_clean(
         stage_two,
@@ -1388,10 +1493,9 @@ var Word_Builder = class {
     }
     let stage_five = stage_four.replace(/\^/g, "");
     if (this.escape_mapper.counter != 0) {
-      stage_one = this.escape_mapper.restore_escaped_chars(stage_one);
-      stage_five = this.escape_mapper.restore_escaped_chars(stage_five);
+      stage_five = this.escape_mapper.get_escaped_chars(stage_five);
     }
-    return new word_default(stage_one, { word: stage_five });
+    return new word_default(mask, { word: stage_five });
   }
   resolve_wordshape_sets(input_list, distribution, optionals_weight) {
     const curly_pattern = /\{[^{}]*\}/g;
@@ -1401,8 +1505,16 @@ var Word_Builder = class {
     let outputs;
     while ((matches = input_list.match(round_pattern)) !== null) {
       const group = matches[matches.length - 1];
-      const candidates = group.slice(1, -1).split(/[,\s]+/).filter(Boolean);
-      const include = Math.random() * 100 < optionals_weight;
+      const inner = group.slice(1, -1);
+      let local_weight = optionals_weight;
+      let cleaned_inner = inner;
+      const weight_match = inner.match(/\|\s*(\d+)%\s*$/);
+      if (weight_match) {
+        local_weight = Number(weight_match[1]);
+        cleaned_inner = inner.replace(/\|\s*\d+%\s*$/, "");
+      }
+      const candidates = cleaned_inner.split(/[,\s]+/).filter(Boolean);
+      const include = Math.random() * 100 < local_weight;
       if (include && candidates.length > 0) {
         const uses_explicit_weights = candidates.some(
           (c) => c.includes("*")
@@ -2128,47 +2240,69 @@ function ipa_to_xsampa(ipa_in) {
 
 // src/transforma/hangul.ts
 var initials = {
-  gk: 1,
-  // ㄲ
-  dt: 4,
-  // ㄸ
-  bp: 8,
-  // ㅃ
-  ch: 13,
-  // ㅊ
-  kh: 14,
+  kh: 15,
   // ㅋ
-  th: 15,
+  th: 16,
   // ㅌ
   ph: 17,
   // ㅍ
-  k: 0,
-  // ㄱ
+  ch: 14,
+  // ㅊ
   n: 2,
   // ㄴ
-  t: 3,
-  // ㄷ
   r: 5,
   // ㄹ
   m: 6,
   // ㅁ
-  p: 7,
-  // ㅂ
   s: 9,
   // ㅅ
-  z: 10,
-  // ㅆ
+  h: 18,
+  // ㅎ
+  k: 0,
+  // ㄱ
+  t: 3,
+  // ㄷ
+  p: 7,
+  // ㅂ
   c: 12,
   // ㅈ
+  g: 1,
+  // ㄲ
+  d: 4,
+  // ㄸ
+  b: 8,
+  // ㅃ
   j: 13,
   // ㅉ
-  x: 18
-  // ㅎ
+  z: 10
+  // ㅆ
 };
 var finals = {
-  gk: 2,
-  // ㄲ
-  gn: 21,
+  // The funky final consonant clusters
+  rph: 14,
+  // ㄿ
+  ks: 3,
+  // ㄳ
+  nc: 5,
+  // ㄵ
+  nh: 6,
+  // ㄶ
+  rk: 9,
+  // ㄺ
+  rm: 10,
+  // ㄻ
+  rp: 11,
+  // ㄼ
+  rs: 12,
+  // ㄽ
+  rt: 13,
+  // ㄾ
+  rh: 15,
+  // ㅀ
+  ps: 18,
+  // ㅄ
+  // ng
+  ng: 21,
   // ㅇ
   ch: 23,
   // ㅊ
@@ -2178,26 +2312,28 @@ var finals = {
   // ㅌ
   ph: 26,
   // ㅍ
-  k: 1,
-  // ㄱ
   n: 4,
   // ㄴ
-  t: 7,
-  // ㄷ
   r: 8,
   // ㄹ
   m: 16,
   // ㅁ
-  p: 17,
-  // ㅂ
   s: 19,
   // ㅅ
-  z: 20,
-  // ㅆ
   c: 22,
   // ㅈ
-  x: 27
+  h: 27,
   // ㅎ
+  k: 1,
+  // ㄱ
+  t: 7,
+  // ㄷ
+  p: 17,
+  // ㅂ
+  z: 20,
+  // ㅆ
+  g: 2
+  // ㄲ
 };
 var medials = {
   eui: 19,
@@ -2578,15 +2714,15 @@ var Transformer = class {
     { transforms: [], name: "" }
   ];
   substages = [];
-  graphemes;
+  graphemorphs;
   lettercase_mapper;
   chance_mapper;
   syllable_boundaries;
   debug = false;
   associateme_mapper;
-  constructor(logger, graphemes, lettercase_mapper2, chance_mapper, syllable_boundaries, stages, substages, output_mode, associateme_mapper) {
+  constructor(logger, graphemorphs, lettercase_mapper2, chance_mapper, syllable_boundaries, stages, substages, output_mode, associateme_mapper) {
     this.logger = logger;
-    this.graphemes = graphemes;
+    this.graphemorphs = graphemorphs;
     this.lettercase_mapper = lettercase_mapper2;
     this.chance_mapper = chance_mapper;
     this.syllable_boundaries = syllable_boundaries;
@@ -2654,7 +2790,7 @@ var Transformer = class {
       modified_word,
       line_num
     );
-    return graphemosis(modified_word, this.graphemes);
+    return graphemosis(modified_word, this.graphemorphs);
   }
   target_to_word_match(word_tokens, raw_target, reference_mapper, carryover_associator) {
     for (let j = 0; j <= word_tokens.length; j++) {
@@ -2675,7 +2811,7 @@ var Transformer = class {
   result_former(raw_result, target_stream, reference_mapper, carryover_associator) {
     const replacement_stream = [];
     for (let j = 0; j < raw_result.length; j++) {
-      let my_result_token = raw_result[j];
+      const my_result_token = raw_result[j];
       if (my_result_token.type === "recast-category") {
         const generated = weighted_random_pick(
           my_result_token.graphemes,
@@ -2887,7 +3023,20 @@ var Transformer = class {
           return null;
         }
       } else if (token.type === "word-boundary") {
-        if (i === 0 || i === stream.length) {
+        if (this.syllable_boundaries.includes(stream[i])) {
+          const spech = i + stream[i].length - 1;
+          if (i === 0 || spech === stream.length) {
+            let count = 0;
+            while (count < max_available && stream[i + count] === stream[i]) {
+              count++;
+            }
+            if (count < min) {
+              return null;
+            }
+            matched.push(...stream.slice(i, i + count));
+            i += count;
+          }
+        } else if (i === 0 || i === stream.length) {
           if (min > 1) return null;
           matched.push("#");
         } else {
@@ -3059,8 +3208,8 @@ var Transformer = class {
     if (applied_targets.length > 0) {
       let my_exceptions = "";
       for (const e of exceptions) {
-        const my_before = e.before.map((t) => t.base).join("");
-        const my_after = e.after.map((t) => t.base).join("");
+        const my_before = e.before.map((t) => t.mask).join("");
+        const my_after = e.after.map((t) => t.mask).join("");
         my_exceptions += ` ! ${my_before}_${my_after}`;
       }
       let my_conditions = "";
@@ -3282,7 +3431,7 @@ var Transformer = class {
     if (transforms.length == 0) {
       return word;
     }
-    let tokens = graphemosis(word.get_last_form(), this.graphemes);
+    let tokens = graphemosis(word.get_last_form(), this.graphemorphs);
     for (const t of transforms) {
       if (word.rejected) {
         break;
@@ -3465,6 +3614,7 @@ var Text_Builder = class {
   invisible;
   terminated;
   words;
+  wordclasses;
   num_of_duplicates;
   num_of_rejects;
   num_of_duds;
@@ -3483,6 +3633,7 @@ var Text_Builder = class {
     this.invisible = invisible;
     this.terminated = false;
     this.words = [];
+    this.wordclasses = [];
     this.num_of_duplicates = 0;
     this.num_of_rejects = 0;
     this.num_of_duds = 0;
@@ -3493,6 +3644,14 @@ var Text_Builder = class {
     if (this.output_mode === "debug") {
       this.show_debug();
     }
+  }
+  reset_for_wordclass(name) {
+    this.wordclasses.push({ name, words: this.words });
+    this.words = [];
+    this.num_of_duplicates = 0;
+    this.num_of_rejects = 0;
+    this.num_of_duds = 0;
+    this.terminated = false;
   }
   add_word(word) {
     let do_it = false;
@@ -3551,44 +3710,67 @@ var Text_Builder = class {
     const seconds = Math.ceil(ms / 100) / 10;
     const s = seconds.toFixed(seconds % 1 === 0 ? 0 : 1);
     const display = s === "1" ? `${s} second` : `${s} seconds`;
-    const records = [];
-    if (this.words.length == 1) {
-      records.push(`1 word generated`);
-    } else if (this.words.length > 1) {
-      records.push(`${this.words.length} words generated`);
-    } else if (this.words.length == 0) {
-      records.push(`Zero words generated`);
+    const only_one_unnamed = this.wordclasses.length === 1 && this.wordclasses[0].name === null;
+    for (const w_class of this.wordclasses) {
+      const count = w_class.words.length;
+      const class_suffix = only_one_unnamed ? "" : ` in word-class "${w_class.name ?? "default"}"`;
+      const records = [];
+      if (count === 1) {
+        records.push(`1 word generated${class_suffix}`);
+      } else if (count > 1) {
+        records.push(`${count} words generated${class_suffix}`);
+      } else {
+        records.push(`Zero words generated${class_suffix}`);
+      }
+      if (this.num_of_duplicates === 1) {
+        records.push(`1 duplicate word removed${class_suffix}`);
+      } else if (this.num_of_duplicates > 1) {
+        records.push(
+          `${this.num_of_duplicates} duplicate words removed${class_suffix}`
+        );
+      }
+      if (this.num_of_rejects === 1) {
+        records.push(`1 word rejected${class_suffix}`);
+      } else if (this.num_of_rejects > 1) {
+        records.push(
+          `${this.num_of_rejects} words rejected${class_suffix}`
+        );
+      }
+      this.logger.info(`${final_sentence(records)}`);
     }
-    if (this.num_of_duplicates == 1) {
-      records.push(`1 duplicate word removed`);
-    } else if (this.num_of_duplicates > 1) {
-      records.push(`${this.num_of_duplicates} duplicate words removed`);
-    }
-    if (this.num_of_rejects == 1) {
-      records.push(`1 word rejected`);
-    } else if (this.num_of_rejects > 1) {
-      records.push(`${this.num_of_rejects} words rejected`);
-    }
-    this.logger.info(`${final_sentence(records)} -- in ${display}`);
+    this.logger.info(`Completed in ${display}`);
   }
   make_text() {
     this.create_record();
-    if (this.sort_words) {
-      this.words = collate_words_by_current_form(
-        this.logger,
-        this.words,
-        this.alphabet,
-        this.invisible
-      );
+    const blocks = [];
+    const only_one_unnamed = this.wordclasses.length === 1 && this.wordclasses[0].name === null;
+    for (const w_class of this.wordclasses) {
+      let my_words = w_class.words;
+      if (this.sort_words) {
+        my_words = collate_words_by_current_form(
+          this.logger,
+          my_words,
+          this.alphabet,
+          this.invisible
+        );
+      }
+      const word_list = my_words.map((w) => w.get_word());
+      let my_class_output = "";
+      if (this.output_mode === "paragraph") {
+        my_class_output = this.paragraphify(word_list);
+      } else {
+        my_class_output = word_list.join(this.output_divider);
+      }
+      let my_header = "";
+      if (!only_one_unnamed) {
+        my_header = w_class.name ?? "default";
+        my_header += ":\n\n";
+      } else {
+        my_header = "";
+      }
+      blocks.push(my_header + my_class_output);
     }
-    const word_list = [];
-    for (let i = 0; i < this.words.length; i++) {
-      word_list.push(this.words[i].get_word());
-    }
-    if (this.output_mode === "paragraph") {
-      return this.paragraphify(word_list);
-    }
-    return word_list.join(this.output_divider);
+    return blocks.join("\n\n");
   }
   paragraphify(words) {
     if (words.length === 0) return "";
@@ -3628,20 +3810,31 @@ var Text_Builder = class {
   }
   show_debug() {
     const option_info = `Options {
-  Number of words: ` + this.num_of_words + `
-  Output mode: ` + this.output_mode + `
-  Remove duplicates: ` + this.remove_duplicates + `
-  Force word limit: ` + this.force_word_limit + `
-  Sort words: ` + this.sort_words + `
-  Output divider: "
+  Number of words: ${this.num_of_words}
+  Output mode: ${this.output_mode}
+  Remove duplicates: ${this.remove_duplicates}
+  Force word limit: ${this.force_word_limit}
+  Sort words: ${this.sort_words}
+  Output divider: "${this.output_divider}"
 }`;
     this.logger.diagnostic(option_info);
     const sort_info = `Collator {
-  Alphabet: ` + this.alphabet.join(", ") + `
-  Invisible: ` + this.invisible.join(", ");
-    `
+  Alphabet: ${this.alphabet.join(", ")}
+  Invisible: ${this.invisible.join(", ")}
 }`;
     this.logger.diagnostic(sort_info);
+    const class_blocks = [];
+    for (let i = 0; i < this.wordclasses.length; i++) {
+      const w_class = this.wordclasses[i];
+      const name = w_class.name ?? "default";
+      const words = w_class.words.length ? w_class.words.join(", ") : "(none)";
+      class_blocks.push(
+        `Word-class "${name}" {
+  Words: ${words}
+}`
+      );
+    }
+    this.logger.diagnostic(class_blocks.join("\n\n"));
   }
 };
 var text_builder_default = Text_Builder;
@@ -3735,7 +3928,7 @@ var Logger = class {
 var logger_default = Logger;
 
 // src/escape_mapper.ts
-var escapeMap = {
+var named_escape_map = {
   "&[Space]": " ",
   "&[Tab]": "	",
   "&[Newline]": "\n",
@@ -3747,17 +3940,14 @@ var escapeMap = {
   "&[Caron]": "\u030C",
   "&[Breve]": "\u0306",
   "&[BreveBelow]": "\u032E",
-  // ◌̮
   "&[InvertedBreve]": "\u0311",
   "&[InvertedBreveBelow]": "\u032F",
-  // ◌̯
   "&[TildeAbove]": "\u0303",
+  "&[Tilde]": "\u0303",
   "&[TildeBelow]": "\u0330",
   "&[Macron]": "\u0304",
   "&[MacronBelow]": "\u0331",
-  // ◌̠
   "&[MacronBelowStandalone]": "\u02D7",
-  // ˗
   "&[Dot]": "\u0307",
   "&[DotBelow]": "\u0323",
   "&[Diaeresis]": "\u0308",
@@ -3767,96 +3957,168 @@ var escapeMap = {
   "&[Horn]": "\u031B",
   "&[Hook]": "\u0309",
   "&[CommaAbove]": "\u0313",
+  "&[Comma]": "\u0313",
   "&[CommaBelow]": "\u0326",
   "&[Cedilla]": "\u0327",
   "&[Ogonek]": "\u0328",
   "&[VerticalLineBelow]": "\u0329",
-  // ◌̩
+  "&[VerticalLine]": "\u0329",
   "&[VerticalLineAbove]": "\u030D",
-  // ◌̍
   "&[DoubleVerticalLineBelow]": "\u0348",
-  // ◌͈
   "&[PlusSignBelow]": "\u031F",
-  // ◌̟
   "&[PlusSignStandalone]": "\u02D6",
-  // ˖
   "&[uptackBelow]": "\u031D",
-  // ◌̝
   "&[UpTackStandalone]": "\u02D4",
-  // ˔
   "&[LeftTackBelow]": "\u0318",
-  // ◌̘
   "&[rightTackBelow]": "\u0319",
-  // ◌̙
   "&[DownTackBelow]": "\u031E",
-  // ◌̞
   "&[DownTackStandalone]": "\u02D5",
-  // ˕
   "&[BridgeBelow]": "\u032A",
-  // ◌̪
   "&[BridgeAbove]": "\u0346",
-  // ◌͆
+  "&[Bridge]": "\u0346",
   "&[InvertedBridgeBelow]": "\u033A",
-  // ◌̺
   "&[SquareBelow]": "\u033B",
-  // ◌̻
   "&[SeagullBelow]": "\u033C",
-  // ◌̼
   "&[LeftBracketBelow]": "\u0349"
-  // ◌͉
 };
 var Escape_Mapper = class {
   map;
   counter;
   constructor() {
     this.map = /* @__PURE__ */ new Map();
-    this.map.set(String.fromCharCode(917504), " ");
     this.counter = 1;
   }
-  escape_backslash_pairs(input) {
+  // ⟪ ⟫
+  make_placeholder(mask, content) {
+    const place = `;${this.counter};`;
+    this.map.set(place, { mask, content });
+    this.counter++;
+    return place;
+  }
+  // Escape \x  → &[n]
+  // mask = "\x"
+  // content = "x"
+  set_backslash_escape(input) {
     const reverse = /* @__PURE__ */ new Map();
-    const result = input.replace(/\\(.)/g, (_, char) => {
-      if (reverse.has(char)) {
-        return reverse.get(char);
-      }
-      const placeholder = String.fromCharCode(57344 + this.counter);
-      reverse.set(char, placeholder);
-      this.map.set(placeholder, char);
-      this.counter++;
-      return placeholder;
+    return input.replace(/\\(.)/g, (_, char) => {
+      const mask = `\\${char}`;
+      if (reverse.has(mask)) return reverse.get(mask);
+      const place = this.make_placeholder(mask, char);
+      reverse.set(mask, place);
+      return place;
     });
-    return result;
   }
-  escape_special_chars(input) {
-    const special_chars = new Set(SYNTAX_CHARS);
+  // Replace named escapes with named escape map
+  // mask = "&[Grave]"
+  // content = diacritic
+  get_named_escape(input) {
+    return input.replace(/&\[[A-Za-z]+\]/g, (m) => {
+      const content = named_escape_map[m];
+      if (!content) return m;
+      return this.make_placeholder(m, content);
+    });
+  }
+  // Escape syntax chars → &[n]
+  // mask = the literal char
+  // content = the literal char
+  set_special_char_escape(input) {
+    const special = new Set(SYNTAX_CHARS);
     const reverse = /* @__PURE__ */ new Map();
-    const result = input.split("").map((char) => {
-      if (special_chars.has(char)) {
-        if (reverse.has(char)) {
-          return reverse.get(char);
+    let out = "";
+    let i = 0;
+    while (i < input.length) {
+      if (input[i] === "&" && input[i + 1] === "[") {
+        const end = input.indexOf("]", i + 2);
+        if (end !== -1) {
+          const token = input.slice(i, end + 1);
+          if (this.map.has(token)) {
+            out += token;
+            i = end + 1;
+            continue;
+          }
         }
-        const placeholder = `&[${this.counter}]`;
-        reverse.set(char, placeholder);
-        this.map.set(placeholder, char);
-        this.counter++;
-        return placeholder;
       }
-      return char;
-    }).join("");
-    return result;
+      if (input[i] === ";") {
+        const end = input.indexOf(";", i + 1);
+        if (end !== -1) {
+          const inner = input.slice(i + 1, end);
+          if (/^\d+$/.test(inner)) {
+            out += input.slice(i, end + 1);
+            i = end + 1;
+            continue;
+          }
+        }
+      }
+      const char = input[i];
+      if (!special.has(char)) {
+        out += char;
+      } else {
+        if (reverse.has(char)) {
+          out += reverse.get(char);
+        } else {
+          const place = this.make_placeholder(char, char);
+          reverse.set(char, place);
+          out += place;
+        }
+      }
+      i++;
+    }
+    return out;
   }
-  escape_named_escape(input) {
-    return input.replace(
-      /&\[[A-Za-z]+\]/g,
-      (match) => escapeMap[match] ?? match
-    );
+  // Restore &[n] → content
+  get_escaped_chars(input) {
+    return input.replace(/;\d+;/g, (m) => {
+      const entry = this.map.get(m);
+      return entry ? entry.content : m;
+    });
   }
-  restore_escaped_chars(input) {
-    return input.split("").map((c) => this.map.has(c) ? this.map.get(c) : c).join("");
+  // Restore &[n] → mask
+  get_mask_stream(input) {
+    return input.replace(/;\d+;/g, (m) => {
+      const entry = this.map.get(m);
+      return entry ? entry.mask : m;
+    });
   }
-  // Restore but append a backslash before each character that was escaped
-  restore_preserve_escaped_chars(input) {
-    return input.split("").map((c) => this.map.has(c) ? "\\" + this.map.get(c) : c).join("");
+  has_stray_escape(input) {
+    const regex = /&\[[^\]]*\]?/g;
+    let match;
+    while ((match = regex.exec(input)) !== null) {
+      const token = match[0];
+      if (this.map.has(token)) continue;
+      return true;
+    }
+    return false;
+  }
+  get_escaped_stream(stream) {
+    const units = [];
+    let i = 0;
+    while (i < stream.length) {
+      if (stream[i] === ";") {
+        const end = stream.indexOf(";", i + 1);
+        if (end !== -1) {
+          const raw = stream.slice(i, end + 1);
+          const entry = this.map.get(raw);
+          const parsed = entry ? entry.content : raw;
+          const mask = entry ? entry.mask : raw;
+          units.push({
+            parsed,
+            raw_len: raw.length,
+            raw,
+            mask
+          });
+          i = end + 1;
+          continue;
+        }
+      }
+      units.push({
+        parsed: stream[i],
+        raw_len: 1,
+        raw: stream[i],
+        mask: stream[i]
+      });
+      i++;
+    }
+    return units;
   }
 };
 var escape_mapper_default = Escape_Mapper;
@@ -3865,6 +4127,8 @@ var escape_mapper_default = Escape_Mapper;
 var lettercase_mapper = class {
   map;
   reverse_map;
+  custom_lowercase_row = [];
+  custom_uppercase_row = [];
   constructor() {
     this.map = /* @__PURE__ */ new Map();
     this.reverse_map = /* @__PURE__ */ new Map();
@@ -3909,7 +4173,7 @@ var lettercase_mapper = class {
     if (!word) return word;
     const tokens = this.tokenise(word);
     const first = tokens[0] ?? "";
-    const cap = this.reverse_map.get(first) ?? (first ? first[0].toUpperCase() + first.slice(1) : "");
+    const cap = this.reverse_map.get(first) ?? (first ? first[0].toLowerCase() + first.slice(1) : "");
     return cap + tokens.slice(1).join("");
   }
   to_uppercase(word) {
@@ -3927,44 +4191,47 @@ var lettercase_mapper_default = lettercase_mapper;
 var Supra_Builder = class {
   logger;
   weights;
-  letters;
+  content;
   id_counter;
   constructor(logger) {
     this.logger = logger;
     this.weights = {};
-    this.letters = {};
+    this.content = {};
     this.id_counter = 1;
   }
   process_string(input, wordshape_line_num) {
-    const token_regex = /\[([^\]]*)\]/g;
-    const valid_content_regex = new RegExp(
-      `^(\\^|${cappa})(?:\\*((\\d+(?:\\.\\d+)?)|s))?$`
-    );
-    return input.replace(token_regex, (fullMatch, content) => {
-      const match = valid_content_regex.exec(content);
-      if (!match) {
+    const token_regex = /(?<!&)\[([^\]]*)\]/g;
+    return input.replace(token_regex, (full_match, content) => {
+      const pipe_match = content.match(/^(.*?)(?:\|\*(\d+(?:\.\d+)?|s))?$/);
+      if (!pipe_match) {
         this.logger.validation_error(
-          `Invalid supra-set item "${fullMatch}" -- expected all supra-set items to look like "[A]", "[^]" or "[A*2]"`,
+          `Invalid supra-set item "${full_match}" -- expected forms like "[...]" or "[...|*8]"`,
           wordshape_line_num
         );
       }
-      const letter = match[1];
-      const raw_weight = match[2];
+      const main_content = pipe_match[1];
+      const raw_weight = pipe_match[2];
+      if (SYNTAX_CHARS.some((char) => main_content.includes(char))) {
+        this.logger.validation_error(
+          `Invalid supra-set item "${full_match}" -- cannot use syntax characters as content`,
+          wordshape_line_num
+        );
+      }
       const weight = raw_weight === "s" ? "s" : raw_weight ? Number(raw_weight) : 1;
       const id = this.id_counter++;
       this.weights[id] = weight;
-      this.letters[id] = letter;
+      this.content[id] = main_content;
       return `[${id}]`;
     });
   }
-  extract_letters_and_weights(input) {
-    const id_regex = /\[(\d+)\]/g;
+  extract_content_and_weights(input) {
+    const id_regex = /(?<!&)\[(\d+)\]/g;
     const ids = [];
     const weights = [];
     let match;
     while ((match = id_regex.exec(input)) !== null) {
       const id = Number(match[1]);
-      if (!(id in this.letters) || !(id in this.weights)) {
+      if (!(id in this.content) || !(id in this.weights)) {
         this.logger.validation_error(`Missing data for ID "${id}"`, null);
       }
       ids.push(id.toString());
@@ -3973,23 +4240,38 @@ var Supra_Builder = class {
     return [ids, weights];
   }
   replace_letter_and_clean(input, target_ID) {
-    const id_regex = /\[(\d+)\]/g;
+    const id_regex = /(?<!&)\[(\d+)\]/g;
     return input.replace(id_regex, (_match, id_str) => {
       const id = Number(id_str);
-      if (!(id in this.letters)) {
+      if (!(id in this.content)) {
         this.logger.validation_error(
           `Unknown ID "${id}" found in input`,
           null
         );
       }
-      return id === target_ID ? `${this.letters[id]}` : "";
+      return id === target_ID ? `${this.content[id]}` : "";
+    });
+  }
+  replace_for_mask(input) {
+    const id_regex = /(?<!&)\[(\d+)\]/g;
+    return input.replace(id_regex, (_match, id_str) => {
+      const id = Number(id_str);
+      if (!(id in this.content) || !(id in this.weights)) {
+        this.logger.validation_error(
+          `Unknown ID "${id}" found in input`,
+          null
+        );
+      }
+      const content = this.content[id];
+      const weight = this.weights[id];
+      return `&[${content}|*${weight}]`;
     });
   }
   get_weights() {
     return this.weights;
   }
-  get_letters() {
-    return this.letters;
+  get_content() {
+    return this.content;
   }
 };
 var supra_builder_default = Supra_Builder;
@@ -4007,17 +4289,17 @@ var Transform_Resolver = class {
   syllable_boundaries;
   features = /* @__PURE__ */ new Map();
   line_num;
-  constructor(logger, output_mode, nesca_grmmar_stream, categories, stages_pending, substages_pending, features, syllable_boundaries) {
+  constructor(logger, output_mode, nesca_grammar_stream, categories, stages_pending, substages_pending, features, syllable_boundaries) {
     this.logger = logger;
     this.output_mode = output_mode;
-    this.nesca_grammar_stream = nesca_grmmar_stream;
+    this.nesca_grammar_stream = nesca_grammar_stream;
     this.categories = categories;
     this.stages_pending = stages_pending;
     this.substages_pending = substages_pending;
     this.stages = [];
     this.substages = [];
     this.features = features;
-    this.syllable_boundaries = syllable_boundaries.length === 0 ? ["."] : syllable_boundaries;
+    this.syllable_boundaries = syllable_boundaries;
     this.line_num = 0;
     this.resolve_stages();
     if (this.output_mode === "debug") {
@@ -4068,9 +4350,9 @@ var Transform_Resolver = class {
         continue;
       }
       const target = transform_pending[i].target;
-      const target_with_cat = this.categories_into_transform(target);
-      const target_with_fea = this.features_into_transform(target_with_cat);
-      const target_altors = this.resolve_alt_opt(target_with_fea);
+      const target_with_fea = this.features_into_transform(target);
+      const target_with_cat = this.categories_into_transform(target_with_fea);
+      const target_altors = this.resolve_alt_opt(target_with_cat);
       let tokenised_target_array = [];
       let tokenised_result_array = [];
       if (transform_pending[i].t_type === "recast") {
@@ -4089,8 +4371,8 @@ var Transform_Resolver = class {
       const new_exceptions = [];
       for (let j = 0; j < transform_pending[i].conditions.length; j++) {
         let my_condition = transform_pending[i].conditions[j];
-        my_condition = this.categories_into_transform(my_condition);
         my_condition = this.features_into_transform(my_condition);
+        my_condition = this.categories_into_transform(my_condition);
         if (!this.valid_transform_brackets(my_condition)) {
           this.logger.validation_error(
             `Invalid brackets in condition "${my_condition}"`,
@@ -4174,9 +4456,9 @@ var Transform_Resolver = class {
     return output_transforms;
   }
   formalise_rule_transform_target_result(result, target_altors) {
-    const result_with_cat = this.categories_into_transform(result);
-    const result_with_fea = this.features_into_transform(result_with_cat);
-    const result_altors = this.resolve_alt_opt(result_with_fea);
+    const result_with_fea = this.features_into_transform(result);
+    const result_with_cat = this.categories_into_transform(result_with_fea);
+    const result_altors = this.resolve_alt_opt(result_with_cat);
     const { result_array, target_array } = this.normalise_transform_length(
       target_altors,
       result_altors
@@ -4371,7 +4653,7 @@ var Transform_Resolver = class {
     const length = input.length;
     for (let i = 0; i < length; i++) {
       const char = input[i];
-      if (char === "<" && /^[A-Z]$/.test(input[i + 1])) {
+      if (char === "&" && /^[A-Z]$/.test(input[i + 1])) {
         output += char + input[i + 1];
         i += 1;
         continue;
@@ -4397,44 +4679,26 @@ var Transform_Resolver = class {
     return output;
   }
   features_into_transform(stream) {
-    const length = stream.length;
     const output = [];
     let feature_mode = false;
     let feature_matrix = "";
-    let sq_start_index = 0;
-    for (let i = 0; i < length; i++) {
+    for (let i = 0; i < stream.length; i++) {
       const char = stream[i];
       if (feature_mode) {
         if (char === "]") {
           feature_mode = false;
-          if (feature_matrix.length !== 0) {
-            const resolved = this.get_graphemes_from_matrix(feature_matrix);
-            const isParenWrapped = this.check_bracket_context(
-              stream,
-              sq_start_index,
-              i,
-              "feature"
-            );
-            if (isParenWrapped) {
-              output.push(`${resolved}`);
-              continue;
-            }
-            output.push(`{${resolved}}`);
-            continue;
-          }
+          const resolved = this.get_graphemes_from_matrix(feature_matrix);
+          output.push(`{${resolved}}`);
           feature_matrix = "";
           continue;
         }
         feature_matrix += char;
         continue;
       }
-      if (char === "[") {
-        sq_start_index = i;
-        const next = stream[i + 1];
-        if (next === "+" || next === "-") {
-          feature_mode = true;
-          continue;
-        }
+      if (char === "[" && (stream[i + 1] === "+" || stream[i + 1] === "-")) {
+        feature_mode = true;
+        feature_matrix = "";
+        continue;
       }
       output.push(char);
     }
@@ -4636,7 +4900,7 @@ var Transform_Resolver = class {
   }
   format_tokens(seq) {
     return seq.map((t) => {
-      let s = t.base;
+      let s = t.mask;
       if (t.type === "anythings-mark") {
         if ("consume" in t && t.consume) {
           const groups = t.consume.map((group) => group.join("")).join(", ");
@@ -4646,9 +4910,6 @@ var Transform_Resolver = class {
           const groups = t.blocked_by.map((group) => group.join("")).join(", ");
           s += `|[${groups}]`;
         }
-      }
-      if ("escaped" in t && t.escaped) {
-        s = "\\" + s;
       }
       if ("min" in t && t.min === 1 && t.max === Infinity) {
         s += `+`;
@@ -4735,7 +4996,7 @@ var Transform_Resolver = class {
       parts.push(chain);
     }
     const associatemes = parts.join("\n");
-    const info = `Graphemes { ` + this.nesca_grammar_stream.graphemes.join(", ") + `
+    const info = `Graphemes { ` + this.nesca_grammar_stream.graphemorphs.join(", ") + `
 }
 Syllable Boundaries { ` + this.syllable_boundaries.join(", ") + `
 }
@@ -4758,26 +5019,29 @@ var transform_resolver_default = Transform_Resolver;
 // src/resolvers/nesca_grammar_stream.ts
 var Nesca_Grammar_Stream = class {
   logger;
-  graphemes;
+  graphemorphs;
   associateme_mapper;
   escape_mapper;
-  constructor(logger, graphemes, associateme_mapper, escape_mapper) {
+  constructor(logger, graphemorphs, associateme_mapper, escape_mapper) {
     this.logger = logger;
-    this.graphemes = graphemes;
+    this.graphemorphs = graphemorphs;
     this.associateme_mapper = associateme_mapper;
     this.escape_mapper = escape_mapper;
+    this.graphemorphs.sort((a, b) => b.length - a.length);
   }
   main_parser(stream, mode, line_num) {
     let i = 0;
     const tokens = [];
     if (stream.startsWith("@routine")) {
       const routine = stream.slice(8);
-      return [{ type: "routine", base: routine, routine }];
+      return [
+        { type: "routine", base: routine, mask: routine, routine }
+      ];
     } else if (stream === "^") {
       if (mode === "RESULT") {
-        return [{ type: "deletion", base: "^" }];
+        return [{ type: "deletion", mask: "^" }];
       } else if (mode === "TARGET") {
-        return [{ type: "insertion", base: "^" }];
+        return [{ type: "insertion", mask: "^" }];
       } else {
         this.logger.validation_error(
           `Unexpected character "${stream}" in mode ${mode}`,
@@ -4791,10 +5055,16 @@ var Nesca_Grammar_Stream = class {
           line_num
         );
       }
-      return [{ type: "reject", base: "0" }];
+      return [{ type: "reject", mask: "0" }];
     }
     while (i < stream.length) {
-      let new_token = { type: "pending", base: "", min: 1, max: 1 };
+      let new_token = {
+        type: "pending",
+        base: "",
+        mask: "",
+        min: 1,
+        max: 1
+      };
       const char = stream[i];
       if (/\s/.test(char)) {
         i++;
@@ -4809,7 +5079,7 @@ var Nesca_Grammar_Stream = class {
         }
         new_token = {
           type: "anythings-mark",
-          base: "%",
+          mask: "%",
           min: 1,
           max: Infinity
         };
@@ -4836,14 +5106,18 @@ var Nesca_Grammar_Stream = class {
           const parts = garde_stream.split("|").map((part) => part.trim());
           if (parts.length > 2) {
             throw new Error(
-              "Invalid garde_stream: more than one '|' found"
+              "Invalid anythings syntax: more than one '|' found"
             );
           }
           const [consume_part, blocked_part] = parts;
           if (consume_part) {
             const consume_groups = consume_part.split(",").map((group) => group.trim()).filter(Boolean);
             for (const group of consume_groups) {
-              const graphemes = graphemosis(group, this.graphemes).map((g) => this.escape_mapper.restore_escaped_chars(g)).filter(Boolean);
+              const restored_group = this.escape_mapper.get_escaped_chars(group);
+              const graphemes = graphemosis(
+                restored_group,
+                this.graphemorphs
+              ).filter(Boolean);
               if (graphemes.length > 0) {
                 consume.push(graphemes);
               }
@@ -4852,7 +5126,11 @@ var Nesca_Grammar_Stream = class {
           if (blocked_part) {
             const blocked_groups = blocked_part.split(",").map((group) => group.trim()).filter(Boolean);
             for (const group of blocked_groups) {
-              const graphemes = graphemosis(group, this.graphemes).map((g) => this.escape_mapper.restore_escaped_chars(g)).filter(Boolean);
+              const restored_group = this.escape_mapper.get_escaped_chars(group);
+              const graphemes = graphemosis(
+                restored_group,
+                this.graphemorphs
+              ).filter(Boolean);
               if (graphemes.length > 0) {
                 blocked_by.push(graphemes);
               }
@@ -4874,7 +5152,7 @@ var Nesca_Grammar_Stream = class {
             line_num
           );
         }
-        new_token = { type: "wildcard", base: "*", min: 1, max: 1 };
+        new_token = { type: "wildcard", mask: "*", min: 1, max: 1 };
         i++;
       } else if (char == "#") {
         if (mode !== "BEFORE" && mode !== "AFTER") {
@@ -4889,7 +5167,7 @@ var Nesca_Grammar_Stream = class {
             line_num
           );
         }
-        new_token = { type: "word-boundary", base: "#", min: 1, max: 1 };
+        new_token = { type: "word-boundary", mask: "#", min: 1, max: 1 };
         tokens.push(new_token);
         i++;
         continue;
@@ -4902,14 +5180,14 @@ var Nesca_Grammar_Stream = class {
         }
         new_token = {
           type: "syllable-boundary",
-          base: "$",
+          mask: "$",
           min: 1,
           max: 1
         };
         tokens.push(new_token);
         i++;
         continue;
-      } else if (char == "&") {
+      } else if (char === "&") {
         const look_ahead = i + 1;
         if (stream[look_ahead] === "T") {
           if (mode === "TARGET") {
@@ -4918,7 +5196,7 @@ var Nesca_Grammar_Stream = class {
               line_num
             );
           }
-          new_token = { type: "target-mark", base: "&T", min: 1, max: 1 };
+          new_token = { type: "target-mark", mask: "&T", min: 1, max: 1 };
           i = look_ahead;
         } else if (stream[look_ahead] === "M") {
           if (mode === "TARGET") {
@@ -4929,7 +5207,7 @@ var Nesca_Grammar_Stream = class {
           }
           new_token = {
             type: "metathesis-mark",
-            base: "&M",
+            mask: "&M",
             min: 1,
             max: 1
           };
@@ -4941,12 +5219,12 @@ var Nesca_Grammar_Stream = class {
               line_num
             );
           }
-          new_token = { type: "empty-mark", base: "&E", min: 1, max: 1 };
+          new_token = { type: "empty-mark", mask: "&E", min: 1, max: 1 };
           i = look_ahead;
         } else if (stream[look_ahead] === "=") {
           new_token = {
             type: "reference-start-capture",
-            base: "&=",
+            mask: "&=",
             min: 1,
             max: 1
           };
@@ -4967,6 +5245,7 @@ var Nesca_Grammar_Stream = class {
           new_token = {
             type: "reference-capture",
             base: `=${digit}`,
+            mask: `=${digit}`,
             key: digit,
             min: 1,
             max: 1
@@ -4990,6 +5269,7 @@ var Nesca_Grammar_Stream = class {
         new_token = {
           type: "reference-mark",
           base: char,
+          mask: char,
           key: char,
           min: 1,
           max: 1
@@ -5006,33 +5286,38 @@ var Nesca_Grammar_Stream = class {
           line_num
         );
       } else {
-        const escaped_stream = this.escape_mapper.restore_escaped_chars(stream);
-        let is_escaped = false;
-        if (escaped_stream[i] !== stream[i]) {
-          is_escaped = true;
-        }
+        const units = this.escape_mapper.get_escaped_stream(
+          stream.slice(i)
+        );
+        const unit = units[0];
         let matched = false;
-        for (const g of this.graphemes.sort(
-          (a, b) => b.length - a.length
-        )) {
-          if (escaped_stream.startsWith(g, i)) {
-            new_token = { type: "grapheme", base: g, min: 1, max: 1 };
-            i += g.length;
+        for (const g of this.graphemorphs) {
+          if (this.match_units(units, 0, g)) {
+            new_token = {
+              type: "grapheme",
+              mask: g,
+              base: g,
+              min: 1,
+              max: 1
+            };
             matched = true;
+            let advance = 0;
+            for (let k = 0; k < g.length; k++) {
+              advance += units[k].raw_len;
+            }
+            i += advance;
             break;
           }
         }
         if (!matched) {
           new_token = {
             type: "grapheme",
-            base: escaped_stream[i],
+            base: unit.parsed,
+            mask: unit.parsed,
             min: 1,
             max: 1
           };
-          i++;
-        }
-        if (is_escaped && new_token.type === "grapheme") {
-          new_token.escaped = true;
+          i += unit.raw_len;
         }
       }
       const modded = this.parse_modifiers(
@@ -5046,6 +5331,13 @@ var Nesca_Grammar_Stream = class {
       i = modded.next_i;
     }
     return tokens;
+  }
+  match_units(units, ui, g) {
+    for (let k = 0; k < g.length; k++) {
+      if (!units[ui + k]) return false;
+      if (units[ui + k].parsed !== g[k]) return false;
+    }
+    return true;
   }
   parse_modifiers(stream, i, token, mode, line_num) {
     if (!("min" in token) || !("max" in token)) {
@@ -5065,7 +5357,7 @@ var Nesca_Grammar_Stream = class {
       if (char === "+") {
         if (mode === "RESULT") {
           this.logger.validation_error(
-            `Quantifier not allowed in ${mode}`,
+            `Unbounded quantifier not allowed in ${mode}`,
             line_num
           );
         }
@@ -5119,7 +5411,7 @@ var Nesca_Grammar_Stream = class {
           }
           if (max === Infinity && mode === "RESULT") {
             this.logger.validation_error(
-              `In ${mode}, "${token.base}" cannot be reproduced an infinite amount of times`,
+              `In ${mode}, "${token.mask}" cannot be reproduced an infinite amount of times`,
               line_num
             );
           }
@@ -5177,7 +5469,7 @@ var Nesca_Grammar_Stream = class {
     const tokens = [];
     if (stream === "^") {
       if (mode === "RESULT") {
-        return [{ type: "deletion", base: "^" }];
+        return [{ type: "deletion", mask: "^" }];
       } else {
         this.logger.validation_error(
           `Unexpected character "${stream}" in ${mode}`,
@@ -5191,10 +5483,16 @@ var Nesca_Grammar_Stream = class {
           line_num
         );
       }
-      return [{ type: "reject", base: "0" }];
+      return [{ type: "reject", mask: "0" }];
     }
     while (i < stream.length) {
-      let new_token = { type: "pending", base: "", min: 1, max: 1 };
+      let new_token = {
+        type: "pending",
+        mask: "",
+        base: "",
+        min: 1,
+        max: 1
+      };
       const char = stream[i];
       if (/\s/.test(char)) {
         i++;
@@ -5206,15 +5504,17 @@ var Nesca_Grammar_Stream = class {
           line_num
         );
       }
-      const escaped_stream = this.escape_mapper.restore_escaped_chars(stream);
-      let is_escaped = false;
-      if (escaped_stream[i] !== stream[i]) {
-        is_escaped = true;
-      }
+      const escaped_stream = this.escape_mapper.get_escaped_chars(stream);
       let matched = false;
-      for (const g of this.graphemes.sort((a, b) => b.length - a.length)) {
+      for (const g of this.graphemorphs) {
         if (escaped_stream.startsWith(g, i)) {
-          new_token = { type: "grapheme", base: g, min: 1, max: 1 };
+          new_token = {
+            type: "grapheme",
+            base: g,
+            mask: g,
+            min: 1,
+            max: 1
+          };
           i += g.length;
           matched = true;
           break;
@@ -5224,13 +5524,11 @@ var Nesca_Grammar_Stream = class {
         new_token = {
           type: "grapheme",
           base: escaped_stream[i],
+          mask: escaped_stream[i],
           min: 1,
           max: 1
         };
         i++;
-      }
-      if (is_escaped && new_token.type === "grapheme") {
-        new_token.escaped = true;
       }
       if (new_token.type !== "pending") {
         tokens.push(new_token);
@@ -5242,6 +5540,7 @@ var Nesca_Grammar_Stream = class {
     const new_token = {
       type: "recast-category",
       base,
+      mask: base,
       graphemes,
       weights,
       min: 1,
@@ -5343,7 +5642,7 @@ var Category_Resolver = class {
         this.category_distribution
       );
       for (let i = 0; i < new_category_field.graphemes.length; i++) {
-        new_category_field.graphemes[i] = this.escape_mapper.escape_special_chars(
+        new_category_field.graphemes[i] = this.escape_mapper.set_special_char_escape(
           new_category_field.graphemes[i]
         );
       }
@@ -5365,10 +5664,10 @@ var Category_Resolver = class {
     return stack.length === 0;
   }
   valid_category_weights(str) {
-    const asterisk_without_number = /\*(?!\d+(\.\d+)?)/g;
+    const asterisk_without_number = /\*(?!\d+(?:\.\d+)?)/g;
     const asterisk_at_start = /^\*/;
-    const asterisk_after_space_or_comma = /[ ,{}]\*/g;
-    const asterisk_number_bad_suffix = /\*(\d+\.\d+|\d+)(?=[^.\d]|$)(?![ ,\]\n]|$)/g;
+    const asterisk_after_space_or_comma = /[ ,{]\*/g;
+    const asterisk_number_bad_suffix = /\*(\d+\.\d+|\d+)(?=[^.\d]|$)(?![ ,}\n]|$)/g;
     if (asterisk_without_number.test(str) || asterisk_at_start.test(str) || asterisk_after_space_or_comma.test(str) || asterisk_number_bad_suffix.test(str)) {
       return false;
     }
@@ -5476,60 +5775,91 @@ var Generation_Resolver = class {
   logger;
   supra_builder;
   output_mode;
-  optionals_weight;
   units;
-  wordshape_distribution;
-  wordshape_pending;
-  wordshapes;
-  constructor(logger, output_mode, supra_builder, wordshape_distribution, units, wordshape_pending, optionals_weight) {
+  wordshape_classes_pending;
+  wordshape_classes;
+  word_class_choices;
+  constructor(logger, output_mode, supra_builder, units, wordshape_classes_pending, word_class_choices) {
     this.logger = logger;
     this.output_mode = output_mode;
     this.supra_builder = supra_builder;
-    this.optionals_weight = optionals_weight;
     this.units = units;
-    this.wordshape_distribution = wordshape_distribution;
-    this.wordshape_pending = wordshape_pending;
-    this.wordshapes = { items: [], weights: [] };
+    this.wordshape_classes_pending = wordshape_classes_pending;
+    this.wordshape_classes = [];
+    this.word_class_choices = word_class_choices;
     this.expand_units();
     this.expand_wordshape_units();
-    this.set_wordshapes();
+    this.set_wordshape_classes();
     if (this.output_mode === "debug") {
       this.show_debug();
     }
   }
-  set_wordshapes() {
+  set_wordshape_classes() {
+    this.wordshape_classes = [];
+    if (this.wordshape_classes_pending.length === 0) {
+      this.logger.validation_error(
+        "No words directives to choose word-shapes from",
+        null
+      );
+    }
+    if (this.word_class_choices.length > 0) {
+      let matched_any = false;
+      for (const pending of this.wordshape_classes_pending) {
+        if (!pending.name) {
+          continue;
+        }
+        if (this.word_class_choices.includes(pending.name)) {
+          matched_any = true;
+          const parsed = this.set_wordshapes(pending);
+          this.wordshape_classes.push(parsed);
+        }
+      }
+      if (!matched_any) {
+        this.logger.validation_error(
+          `No word-shape classes matched any of the choices: ${this.word_class_choices.join(", ")}`,
+          null
+        );
+      }
+      return;
+    } else {
+      for (const pending of this.wordshape_classes_pending) {
+        const parsed = this.set_wordshapes(pending);
+        this.wordshape_classes.push(parsed);
+      }
+    }
+  }
+  set_wordshapes(pending) {
     const result = [];
     let buffer = "";
     let inside_brackets = 0;
-    if (this.wordshape_pending.content.length == 0) {
+    const masks = [];
+    if (pending.content.trim().length === 0) {
+      const name_display = pending.name ? ` in word-class "${pending.name}"` : "";
       this.logger.validation_error(
-        `No word-shapes to choose from -- expected a "words" directive with word-shapes'`,
-        this.wordshape_pending.line_num
+        `No word-shapes to choose from${name_display}`,
+        pending.line_num
       );
     }
-    this.wordshape_pending.content = this.supra_builder.process_string(
-      this.wordshape_pending.content,
-      this.wordshape_pending.line_num
+    const processed = this.supra_builder.process_string(
+      pending.content,
+      pending.line_num
     );
-    if (!this.valid_words_brackets(this.wordshape_pending.content)) {
+    if (!this.valid_words_brackets(processed)) {
       this.logger.validation_error(
-        `Word-shapes had missmatched brackets`,
-        this.wordshape_pending.line_num
+        `Word-shapes had mismatched brackets in word-class "${pending.name}"`,
+        pending.line_num
       );
     }
-    if (!this.valid_words_weights(this.wordshape_pending.content)) {
+    if (!this.valid_words_weights(processed)) {
       this.logger.validation_error(
-        `Word-shapes had invalid weights -- expected weights to follow an item and look like "*NUMBER" followed by either "," a bracket, or " ", or end of string`,
-        this.wordshape_pending.line_num
+        `Word-shapes had invalid weights in word-class "${pending.name}"`,
+        pending.line_num
       );
     }
-    for (let i = 0; i < this.wordshape_pending.content.length; i++) {
-      const char = this.wordshape_pending.content[i];
-      if (char === "{" || char === "(") {
-        inside_brackets++;
-      } else if (char === "}" || char === ")") {
-        inside_brackets--;
-      }
+    for (let i = 0; i < processed.length; i++) {
+      const char = processed[i];
+      if (char === "{" || char === "(") inside_brackets++;
+      else if (char === "}" || char === ")") inside_brackets--;
       if ((char === " " || char === ",") && inside_brackets === 0) {
         if (buffer.length > 0) {
           result.push(buffer);
@@ -5542,14 +5872,21 @@ var Generation_Resolver = class {
     if (buffer.length > 0) {
       result.push(buffer);
     }
-    const [result_str, result_num] = this.extract_wordshape_value_and_weight(
+    const [items, weights] = this.extract_wordshape_value_and_weight(
       result,
-      this.wordshape_distribution
+      pending.wordshape_distribution
     );
-    for (let i = 0; i < result_str.length; i++) {
-      this.wordshapes.items.push(result_str[i]);
-      this.wordshapes.weights.push(result_num[i]);
+    for (const j of items) {
+      masks.push(this.supra_builder.replace_for_mask(j));
     }
+    console.log(masks);
+    return {
+      wordshapes: { items, masks, weights },
+      optionals_weight: pending.optionals_weight,
+      wordshape_distribution: pending.wordshape_distribution,
+      name: pending.name,
+      line_num: pending.line_num
+    };
   }
   valid_words_brackets(str) {
     const stack = [];
@@ -5639,16 +5976,16 @@ var Generation_Resolver = class {
     return true;
   }
   expand_wordshape_units() {
-    this.wordshape_pending.content = recursive_expansion(
-      this.wordshape_pending.content,
-      this.units
-    );
-    const match = this.wordshape_pending.content.match(/<[A-Za-z+$-]+>/);
-    if (match) {
-      this.logger.validation_error(
-        `Nonexistent unit detected: "${match[0]}"`,
-        this.wordshape_pending.line_num
-      );
+    for (let i = 0; i < this.wordshape_classes_pending.length; i++) {
+      const w_class = this.wordshape_classes_pending[i];
+      w_class.content = recursive_expansion(w_class.content, this.units);
+      const match = w_class.content.match(/<[A-Za-z+$-]+>/);
+      if (match) {
+        this.logger.validation_error(
+          `Nonexistent unit detected in word-class "${w_class.name}": "${match[0]}"`,
+          w_class.line_num
+        );
+      }
     }
   }
   expand_units() {
@@ -5669,20 +6006,28 @@ var Generation_Resolver = class {
     for (const [key, value] of this.units) {
       units.push(`  ${key.slice(1, -1)} = ${value.content}`);
     }
-    const wordshapes = [];
-    for (let i = 0; i < this.wordshapes.items.length; i++) {
-      wordshapes.push(
-        `  ${this.wordshapes.items[i]}*${this.wordshapes.weights[i]}`
+    const classes = [];
+    for (let i = 0; i < this.wordshape_classes.length; i++) {
+      const w_class = this.wordshape_classes[i];
+      const shapes = [];
+      for (let j = 0; j < w_class.wordshapes.items.length; j++) {
+        shapes.push(
+          `    ${w_class.wordshapes.masks[j]}*${w_class.wordshapes.weights[j]}`
+        );
+      }
+      classes.push(
+        `Word-class ${i} "${w_class.name}" {
+  Distribution: ${w_class.wordshape_distribution}
+  Optionals-weight: ${w_class.optionals_weight}
+  Wordshapes:
+` + shapes.join("\n") + `
+}`
       );
     }
-    const info = `Wordshape-distribution: ` + this.wordshape_distribution + `
-Optionals-weight: ` + this.optionals_weight + `
-Units {
+    const info = `Units {
 ` + units.join("\n") + `
 }
-Wordshapes {
-` + wordshapes.join("\n") + `
-}`;
+` + classes.join("\n\n");
     this.logger.diagnostic(info);
   }
 };
@@ -5695,12 +6040,12 @@ var Feature_Resolver = class {
   output_mode;
   feature_pending;
   features;
-  graphemes;
-  constructor(logger, output_mode, escape_mapper, feature_pending, graphemes) {
+  graphemorphs;
+  constructor(logger, output_mode, escape_mapper, feature_pending, graphemorphs) {
     this.logger = logger;
     this.output_mode = output_mode;
     this.escape_mapper = escape_mapper;
-    this.graphemes = graphemes;
+    this.graphemorphs = graphemorphs;
     this.feature_pending = feature_pending;
     this.features = /* @__PURE__ */ new Map();
     this.resolve_features();
@@ -5713,7 +6058,7 @@ var Feature_Resolver = class {
       if (key.startsWith(">")) {
         this.feature_pending.delete(key);
         const to_delete = value.content.split(",").map((str) => "^" + str);
-        const anti_graphemes = to_delete.join(",") + this.graphemes.join(",");
+        const anti_graphemes = to_delete.join(",") + this.graphemorphs.join(",");
         this.feature_pending.set(key.replace(">", "-"), {
           content: anti_graphemes,
           line_num: value.line_num
@@ -5769,7 +6114,7 @@ var Feature_Resolver = class {
         );
       }
       for (let i = 0; i < x_filtered.length; i++) {
-        x_filtered[i] = this.escape_mapper.escape_special_chars(
+        x_filtered[i] = this.escape_mapper.set_special_char_escape(
           x_filtered[i]
         );
       }
@@ -5789,33 +6134,53 @@ var Feature_Resolver = class {
 };
 var feature_resolver_default = Feature_Resolver;
 
-// src/resolvers/canon_graphemes_resolver.ts
-var Canon_Graphemes_Resolver = class {
+// src/resolvers/graphemes_resolver.ts
+var Graphemes_Resolver = class {
   logger;
   escape_mapper;
-  graphemes_pending;
-  graphemes;
+  graphemorphs_pending;
+  graphemorphs;
+  syllable_boundaries_pending;
+  syllable_boundaries;
   associateme_mapper;
-  constructor(logger, escape_mapper, graphemes_pending) {
+  constructor(logger, escape_mapper, graphemorphs_pending, syllable_boundaries_pending) {
     this.logger = logger;
     this.escape_mapper = escape_mapper;
-    this.graphemes_pending = graphemes_pending;
-    this.graphemes = [];
+    this.graphemorphs_pending = graphemorphs_pending;
+    this.graphemorphs = [];
+    this.syllable_boundaries_pending = syllable_boundaries_pending;
+    this.syllable_boundaries = [];
     this.associateme_mapper = [];
-    this.resolve_canon_graphemes();
+    this.resolve_graphemorphs();
+    this.resolve_syllable_boundaries();
     this.resolve_associatemes();
   }
-  resolve_canon_graphemes() {
-    const new_graphemes = this.graphemes_pending.replace(/(<\{|\})/g, ",");
-    const graphemes = new_graphemes.split(/[,\s]+/).filter(Boolean);
-    for (let i = 0; i < graphemes.length; i++) {
-      graphemes[i] = this.escape_mapper.restore_escaped_chars(graphemes[i]);
+  resolve_graphemorphs() {
+    const new_graphemorphs = this.graphemorphs_pending.replace(
+      /(<\{|\})/g,
+      ","
+    );
+    const graphemorphs = new_graphemorphs.split(/[,\s]+/).filter(Boolean);
+    for (let i = 0; i < graphemorphs.length; i++) {
+      graphemorphs[i] = this.escape_mapper.get_escaped_chars(
+        graphemorphs[i]
+      );
     }
-    this.graphemes = Array.from(new Set(graphemes));
+    this.graphemorphs = Array.from(new Set(graphemorphs));
+  }
+  resolve_syllable_boundaries() {
+    const sy_bs = this.syllable_boundaries_pending.split(/[,\s]+/).filter(Boolean);
+    for (let i = 0; i < sy_bs.length; i++) {
+      sy_bs[i] = this.escape_mapper.get_escaped_chars(sy_bs[i]).trim();
+      if (sy_bs[i].length > 1) {
+        this.graphemorphs.push(sy_bs[i]);
+      }
+    }
+    this.syllable_boundaries = Array.from(new Set(sy_bs));
   }
   resolve_associatemes() {
     const mapper = [];
-    const input = this.graphemes_pending ?? "";
+    const input = this.graphemorphs_pending ?? "";
     const setRegex = /\{[^}]+\}(?:\s*<\s*\{[^}]+\})*/g;
     const matches = [...input.matchAll(setRegex)];
     let scrubbed = input;
@@ -5830,7 +6195,7 @@ var Canon_Graphemes_Resolver = class {
     for (const m of matches) {
       const segment = m[0];
       const groups = segment.split("<").map(
-        (g) => g.replace(/[{}]/g, "").trim().split(/[,\s]+/).map((x) => x.trim()).filter((x) => x.length > 0)
+        (g) => g.replace(/[{}]/g, "").trim().split(/[,\s]+/).map((x) => x.trim()).map((x) => this.escape_mapper.get_escaped_chars(x.trim())).filter((x) => x.length > 0)
       );
       if (groups.length === 0) {
         this.logger.validation_error(
@@ -5859,7 +6224,7 @@ var Canon_Graphemes_Resolver = class {
     this.associateme_mapper = mapper;
   }
 };
-var canon_graphemes_resolver_default = Canon_Graphemes_Resolver;
+var graphemes_resolver_default = Graphemes_Resolver;
 
 // src/transforma/chance_mapper.ts
 var Chance_Mapper = class {
@@ -5918,7 +6283,8 @@ function vocabug({
   remove_duplicates = true,
   force_word_limit = false,
   sort_words = true,
-  output_divider = " "
+  output_divider = " ",
+  wordclass_choices = []
 }) {
   const logger = new logger_default();
   const app = "vocabug";
@@ -5954,27 +6320,27 @@ function vocabug({
       logger,
       p.output_mode,
       supra_builder,
-      p.wordshape_distribution,
       p.units,
-      p.wordshape_pending,
-      p.optionals_weight
+      p.wordshape_classes_pending,
+      wordclass_choices
     );
-    const canon_graphemes_resolver = new canon_graphemes_resolver_default(
+    const graphemes_resolver = new graphemes_resolver_default(
       logger,
       escape_mapper,
-      p.graphemes_pending
+      p.graphemorphs_pending,
+      p.syllable_boundaries_pending
     );
     const feature_resolver = new feature_resolver_default(
       logger,
       p.output_mode,
       escape_mapper,
       p.feature_pending,
-      canon_graphemes_resolver.graphemes
+      graphemes_resolver.graphemorphs
     );
     const nesca_grammar_stream = new nesca_grammar_stream_default(
       logger,
-      canon_graphemes_resolver.graphemes,
-      canon_graphemes_resolver.associateme_mapper,
+      graphemes_resolver.graphemorphs,
+      graphemes_resolver.associateme_mapper,
       escape_mapper
     );
     const transform_resolver = new transform_resolver_default(
@@ -5985,27 +6351,26 @@ function vocabug({
       p.stages_pending,
       p.substages_pending,
       feature_resolver.features,
-      p.syllable_boundaries
+      graphemes_resolver.syllable_boundaries
     );
     const word_builder = new word_builder_default(
       escape_mapper,
       supra_builder,
       category_resolver.categories,
-      generation_resolver.wordshapes,
       category_resolver.category_distribution,
-      generation_resolver.optionals_weight,
+      generation_resolver.wordshape_classes,
       p.output_mode
     );
     const transformer = new transformer_default(
       logger,
-      canon_graphemes_resolver.graphemes,
+      graphemes_resolver.graphemorphs,
       p.lettercase_mapper,
       p.chance_mapper,
       transform_resolver.syllable_boundaries,
       transform_resolver.stages,
       transform_resolver.substages,
       p.output_mode,
-      canon_graphemes_resolver.associateme_mapper
+      graphemes_resolver.associateme_mapper
     );
     const text_builder = new text_builder_default(
       logger,
@@ -6020,10 +6385,17 @@ function vocabug({
       p.alphabet,
       p.invisible
     );
-    while (!text_builder.terminated) {
-      let word = word_builder.make_word();
-      word = transformer.do_stages(word);
-      text_builder.add_word(word);
+    for (let i = 0; i < word_builder.get_wordshape_class_length(); i++) {
+      while (!text_builder.terminated) {
+        let word = word_builder.make_word();
+        word = transformer.do_stages(word);
+        text_builder.add_word(word);
+      }
+      text_builder.terminated = false;
+      text_builder.reset_for_wordclass(
+        word_builder.get_current_wordshape_class_name()
+      );
+      word_builder.next_wordshape_class();
     }
     logger.set_payload(text_builder.make_text());
   } catch (e) {
@@ -6035,7 +6407,7 @@ function vocabug({
 }
 
 // src/utils/version.ts
-var VERSION = "1.0.9";
+var VERSION = "1.0.10";
 
 // bin/vocabug/index.ts
 var encodings = [
@@ -6078,6 +6450,11 @@ var argv = yargs(hideBin(process.argv)).usage("Usage: $0 <path> [options]").help
   describe: "Divider between words",
   type: "string",
   default: " "
+}).option("wordclass_choices", {
+  alias: "wc",
+  describe: 'Comma-separated list of word classes to generate (e.g., "noun,verb")',
+  type: "string",
+  default: ""
 }).option("encoding", {
   alias: "e",
   choices: encodings,
@@ -6108,6 +6485,7 @@ var filePath = argv._[0];
 try {
   const file_text = fs.readFileSync(filePath, argv.encoding);
   normal_text(`Generating words with Vocabug version ${VERSION}. This may take up to 30 seconds...`);
+  const parsed_choices = argv.wordclass_choices.split(",").map((choice) => choice.trim()).filter((choice) => choice.length > 0);
   const run = vocabug({
     file: file_text,
     num_of_words: argv.num_of_words,
@@ -6115,7 +6493,8 @@ try {
     remove_duplicates: argv.remove_duplicates,
     force_word_limit: argv.force_word_limit,
     sort_words: argv.sort_words,
-    output_divider: argv.output_divider
+    output_divider: argv.output_divider,
+    wordclass_choices: parsed_choices
   });
   for (const warning of run.warnings) {
     yellow_text(warning);

@@ -10,6 +10,7 @@ export default defineConfig([
          "node_modules/**", "app/vocabug/index.ts", "app/nesca/index.ts",
          "app/vocabug/dist/**", "app/nesca/dist/**",
          "app/vocabug/cm6.bundle.js", "app/nesca/cm6.bundle.js",
+         "app/vocabug/font_awesome.js", "app/nesca/font_awesome.js",
          "build.**"
       ]
    },

@@ -6,7 +6,7 @@ const examples: { [key: string]: string } = {
 ; By default, graphemes in a category furthest to the left
 ; are picked more often than graphemes to the right.
 categories:
-  C = {t*9, tr} n {k*13, kr} m r s {p*12, pr} ch h w y
+  C = t n k m r s p ch h w y
   L = ee oo aa ii uu
   V = a i e o u L
   F = n r s
@@ -35,6 +35,56 @@ stage:
 
 ; Click the green 'Generate' button in the taskbar below to generate words!!
 ; Read the instructions linked above, or by clicking 'Help' in the taskbar below.`,
+  advanced:
+`categories:
+  C = t k p n r b m s d h l w y g
+  
+  I = t k p n ^ m r b s d l h w y g
+  J = t k p n m r b s d ^ l h w y g
+
+  X = y r
+  V = a i o e u
+  W = u a o e
+  T = &[Acute]
+  F = n ' t
+
+units:
+  Onset = C(X|5%) ; Arbitrary onset with a chance of a follow-up <y> or <r>
+  Coda = (F|9%) ; Optional coda
+  $ = <Onset>V<Coda> ; Syllable with no stress
+  X = <Onset>V[T|*2]<Coda>
+  Y = <Onset>V[^|*93]<Coda> ; Penultimate syllable
+  Z = <Onset>V[T|*5]<Coda>
+
+  Onset-a = I(X|5%)
+  Onset-b = J(X|5%)
+  $-a = <Onset-a>V<Coda>
+  $-b = <Onset-b>V<Coda>
+  X-a = <Onset-a>V[T|*2]<Coda>
+  Y-a = <Onset-a>V[^|*93]<Coda>
+
+words:
+  <X-a><Y><Z> <Y-a><X> <$-b> <$-a><X><Y><Z> 
+
+stage:
+  <routine = compose>
+  i <recast-as> W / Cy_
+  r -> ^ / C_ ! {p, b, t, d, k}_
+  y -> ^ / {w, y}_
+
+  C' -> C: ; This yields geminates
+  
+  < t  k  p  n  r  b  m  s  d  h  l  g  y  w
+  n +  +  mp +  r  mb mm +  nd nn l  +  +  +
+  t +  kt pt nt +  pt nt +  tt tt l  kt +  +  
+  >
+
+  e -> ^ / V{p,t,k,s,n,r,l}_#
+  e -> a / _#
+
+  ' -> ^
+
+  CV -> ^ / _&T&T ; Haplology`,
   tonal:
 `; A somewhat Yoruba-like tonal language
 categories:
@@ -87,31 +137,32 @@ units:
   $ = CW(F) ; Gives type C(y)V(ʀ)(ɴ,ɢ)
   L = CW(ɴ) ; Last syllable of type C(y)V(ʀ)(ɴ)
 
-; Where light syllable is (C)V, and heavy is (C){VF,Vʀ(F)}
-; The final two syllables are least likely to be light + heavy...
-
 words:
   <F><$><L> <F><$><$><L> <F> <F><$><$><$><L> <F><L>
 
 graphemes:
-  a b ch d e f g h i j k l m n o p r s sh t ts u w y z
+  ch sh ts
 
 stage:
-V+ -> ^ / ʀ_ ; No vowels after a long vowel.
+V=1(ʀ) -> ^ / 1ʀ_ ; No identical vowels after a long vowel.
 V?[3,] -> V: ; Sequence of 3+ vowels becomes 2.
 
 ɢ -> ɴ / _V
 
-; "Yotsugana": <dz> and <dy> neutralise to <z> and <j>.
 <  i   u   e   o   ya   yu   yo
 s  shi +   +   +   sha  shu  sho
-z  ji  +   +   +   ja   ju   jo 
 t  chi tsu +   +   cha  chu  cho
+; "Yotsugana": <d> and <z> neutralise to <z> and <j> in some conditions.
+z  ji  +   +   +   ja   ju   jo
 d  ji  zu  +   +   ja   ju   jo
+; In the history of Japanese, this was: f -> h ! _u
 h  +   fu  +   +   +    +    +
-w  i   yu  yo  yo  ya   yu   yo
-ɴ  n'a n'u n'e n'o n'ya n'yu n'yo
+; Non-historical way of getting onsetless <y> + V syllables
+w  yu  yu  yo  yo  ya   yu   yo
 >
+
+; An apostrophe is inserted between a syllable final nasal, and a vowel or <y>.
+ɴ -> n' / _W 
 
 ; <ɴ> assimilation, and <ɢ> gemination.
 < ch   sh    ts   j  k   g  s   z  t   d  n  h   b  p   m  r  l  f   w
@@ -119,7 +170,7 @@ w  i   yu  yo  yo  ya   yu   yo
 ɴ nch  nsh   nts  nj nk  ng ns  nz nt  nd nn nh  mb mp  mm nr nl nf  nw
 >
 
-ʀɢ ɴ ɢ -> ^ n ^ ; <ʀ> + <ɢ> is illegal.
+ʀɢ ɴ ɢ -> ^ n ^ ; <ʀ> + <ɢ> is illegal. 
 
 ; Vowel sequences:
 <  a   i   u   e  o
@@ -130,8 +181,7 @@ e  eʀ  eʀ  yoʀ ai yo
 o  oʀ  +   +   +  o
 ʀ  ʀ   ʀ   ʀ   ʀ  ʀ
 >
-
-y -> ^ / sh_ / j_ / ch_
+y -> i / sh_ / j_ / ch_
 
 ʀ -> ^ / #*_# ; Collapse long vowel words into short vowel words.
 
@@ -154,7 +204,7 @@ note:
   p  t  ṭ  č  k
   m  n  ṇ  ň  ŋ
      l  ḷ  y  w
-     r  ṛ  
+     r  ṛ
 
   VOWELS:
   i ii    u uu
@@ -164,7 +214,7 @@ note:
   No monosyllabic words. Disylabic words DON'T begin with <a>
   Medial Singleton consonants are unrestricted.
   There are intervocalic consonant clusters.
-  Any vowel or <ai> occurs bettween any two consonants.
+  Any vowel or <ai> occurs between any two consonants.
   Words end in <a, i, u> or <n, l, r, ṛ, t>
 
 categories:
@@ -207,55 +257,7 @@ stage:
   e -> a
 
   d -> ṛ / u_
-  d -> t`,
-romance:
-`; This gives somewhat Spanish looking words 
-; Let's name this language "Espamogus"
-
-categories:
-  C = {t*9,tr} s ^ {k*12,kr*2,kl} {d*12,dr} n {p*12,pr*2,pl} l m r {b*9,br*2,bl} g h {č*12 f z}
-  V = a i o u e
-  F = n r l s m
-  X = n r l s
-  T = &[Acute]
-
-units:
-  $ = CV(F)
-  X = CV{[T*1]*9,[T*3]F} ; 3rd last syllable
-  Y = CV{[^*80]*9,[^*95]F} ; 2nd last syllable
-  Z = CV{[T*3]*10,[T*9]X} ; last syllable
-
-words:
-  <Y><Z> <X><Y><Z> <$><X><Y><Z> <$><$><X><Y><Z>
-
-stage:
-<routine = compose> ; Get stressed vowels
-{a,e,i,o,u}?[3,] -> {a,e,i,o,u} ; Vowels of 2+ length become 1
-áa,ée,íi,óo,úu -> á,é,í,ó,ú
-{a,e,o,u,á,é,í,ó,ú}V -> 0 / #_#
-
-; Enlace y Hiato
-<  a  e  i  o  u
-a  a  aj aj o  aw
-e  +  e  ej +  ew
-i  ja je i  jo ju
-o  +  e  oj o  ju
-u  wa we wi wo u
->
-
-nj gj gn gl -> ň ň ň ʎ
-jg jn jj jl ww -> ň ň j ʎ w
-
-<  b  k  g  č  d  f  h  l  m  n  p  r  s  t  z  
-m  +  nk ng nč nd nf h  nl m  ň  +  r  +  nt nz 
-n  mb +  +  +  +  +  h  l  ň  ň  mp r  +  +  +  
-r  +  +  +  +  +  +  h  l  +  +  +  +  +  +  z  
-l  +  +  +  +  +  +  h  ʎ  +  ʎ  +  r  +  +  z
-s  +  +  +  +  +  f  h  +  +  +  +  +  s  +  z 
->
-
-; Taco-taco, burrito-burrito
-č ň ʎ j w -> ch ñ ll i u`
+  d -> t`
 };
 
 export { examples };

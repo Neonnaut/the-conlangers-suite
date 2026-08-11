@@ -20439,6 +20439,26 @@ var cm6 = (function (exports) {
       return extension;
     };
 
+    var colour = {
+        darkthemetext: "#eeeeeeff",
+        lightthemetext: "#000000",
+        warmthemetext: "#181e20ff;",
+        red: "#ff7a7a",
+        orange: "#f8a561",
+        yellow: "#ffee90",
+        blue: "#a6d3f7",
+        greygreen: "#b0b7b1",
+        pink: "#e799fa",
+        cyan: "#44ebd0ff",
+        green: "#8eea7eff",
+        royal: "#230682",
+        brown: "#998500",
+        darkred: "#c8302d",
+        darkblue: "#0066b9ff",
+        darkgreen: "#2a8b23",
+        darkpink: "#b800b2",
+        darkcyan: "#3690a0"
+    };
     var defaultSettingsXcodeDark = {
         background: "#23272e",
         foreground: "#23272e",
@@ -20451,7 +20471,7 @@ var cm6 = (function (exports) {
     var Darky = EditorView.theme({
         "&": {
             fontSize: "11pt",
-            color: "#eeeeeeff",
+            color: colour.darkthemetext,
             font: "'JetBrains Mono', monospace"
         },
         ".cm-gutters": {
@@ -20486,29 +20506,31 @@ var cm6 = (function (exports) {
         }
     }, { dark: true });
     var xcodeDarkStyle = [
-        { tag: tags.variableName, color: "#eeeeff" },
+        { tag: tags.variableName, color: colour.darkthemetext },
         // Comment / GREEN / #
-        { tag: tags.comment, color: "#b6ababff" },
-        // Escape char / CREAM ON BLACK
-        { tag: tags.escape, color: "#eeeeff", fontStyle: "italic" },
+        { tag: tags.comment, color: colour.greygreen },
+        // Escape char / YELLOW
+        { tag: tags.escape, color: colour.yellow },
         // Directive / RED / words: alphabet: etc.
-        { tag: [tags.meta, tags.name], color: "#ff7a7a" },
+        { tag: tags.meta, color: colour.red, fontWeight: "bold" },
+        // ...
+        { tag: tags.name, color: colour.red },
         // LIGHT BLUE / commas, equals sign, colon
-        { tag: tags.link, color: "#a6d3f7", fontWeight: "bold" },
+        { tag: tags.link, color: colour.blue, fontWeight: "bold" },
         // CYAN / 0, ->, +, -
-        { tag: tags.operator, color: "#44ebd0ff", fontWeight: "bold" },
+        { tag: tags.operator, color: colour.cyan },
         // PINK / #, +, *, (, {, [
-        { tag: tags.regexp, color: "#eb8af0ff" },
+        { tag: tags.regexp, color: colour.pink },
         // ORANGE / Categories
-        { tag: tags.tagName, color: "#f6be85ff" },
+        { tag: tags.tagName, color: colour.orange },
         // Weights
-        { tag: tags.strong, color: "#bee79d", fontStyle: "italic" },
+        { tag: tags.strong, color: colour.green, fontStyle: "italic" },
         // distribution etc
-        { tag: tags.attributeName, color: "#bee79d" },
+        { tag: tags.attributeName, color: colour.green },
         // + sign
-        { tag: tags.bitwiseOperator, color: "#8eea7eff", fontstyle: "bold" },
+        { tag: tags.bitwiseOperator, color: colour.green, fontweight: "bold" },
         // - sign
-        { tag: tags.processingInstruction, color: "#ea7eb9ff", fontstyle: "bold" }
+        { tag: tags.punctuation, color: colour.pink, fontweight: "bold" }
     ];
     var xcodeDarkInit = function (options) {
         var _a = options || {}, _b = _a.theme, theme = _b === void 0 ? "dark" : _b, _c = _a.settings, settings = _c === void 0 ? {} : _c, _d = _a.styles, styles = _d === void 0 ? [] : _d;
@@ -20565,27 +20587,29 @@ var cm6 = (function (exports) {
     var xcodeLightStyle = [
         { tag: tags.variableName, color: "#000000" },
         // Comment / GREEN / #
-        { tag: tags.comment, color: "#7e7474ff" },
-        // Escape char / CREAM ON BLACK
-        { tag: tags.escape, color: "#000000", backgroundColor: "#e8d9cc" },
+        { tag: tags.comment, color: colour.darkgreen },
+        // Escape char / YELLOW / 
+        { tag: tags.escape, color: colour.brown },
         // Directive / RED / words: alphabet: etc.
-        { tag: [tags.meta, tags.name], color: "#a11c08ff" },
+        { tag: tags.meta, color: colour.royal, fontWeight: "bold" },
+        // things...: etc.
+        { tag: tags.name, color: colour.royal },
         // LIGHT BLUE / commas, equals sign, colon
-        { tag: tags.link, color: "#0066b9ff", fontWeight: "bold" },
+        { tag: tags.link, color: colour.darkblue, fontWeight: "bold" },
         // CYAN / 0, ^
-        { tag: tags.operator, color: "#16657fff", fontWeight: "bold" },
+        { tag: tags.operator, color: colour.royal },
         // PINK / #, +, *, (, {, [
-        { tag: tags.regexp, color: "#8400b8ff" },
-        // ORANGE / Categories
-        { tag: tags.tagName, color: "#7f5700ff" },
+        { tag: tags.regexp, color: colour.darkpink },
+        // Red / Categories
+        { tag: tags.tagName, color: colour.darkred },
         // Weights
-        { tag: tags.strong, color: "#12770aff", fontStyle: "italic" },
+        { tag: tags.strong, color: colour.darkcyan, fontStyle: "italic" },
         // distribution etc
-        { tag: tags.attributeName, color: "#12770aff" },
+        { tag: tags.attributeName, color: colour.darkcyan },
         // + sign
-        { tag: tags.bitwiseOperator, color: "#12770aff", fontstyle: "bold" },
+        { tag: tags.bitwiseOperator, color: colour.darkgreen, fontweight: "bold" },
         // - sign
-        { tag: tags.processingInstruction, color: "#bb0067ff", fontstyle: "bold" }
+        { tag: tags.punctuation, color: colour.darkpink, fontweight: "bold" }
     ];
     function xcodeLightInit(options) {
         var _a = options || {}, _b = _a.theme, theme = _b === void 0 ? "light" : _b, _c = _a.settings, settings = _c === void 0 ? {} : _c, _d = _a.styles, styles = _d === void 0 ? [] : _d;
@@ -20643,29 +20667,31 @@ var cm6 = (function (exports) {
         }
     });
     var xcodeWarmStyle = [
-        { tag: tags.variableName, color: "#000000" },
+        { tag: tags.variableName, color: colour.warmthemetext },
         // Comment / GREEN / #
-        { tag: tags.comment, color: "#7e7474ff" },
-        // Escape char / CREAM ON BLACK
-        { tag: tags.escape, color: "#000000", fontStyle: "italic" },
+        { tag: tags.comment, color: colour.darkgreen },
+        // Escape char / YELLOW / 
+        { tag: tags.escape, color: colour.brown },
         // Directive / RED / words: alphabet: etc.
-        { tag: [tags.meta, tags.name], color: "#a11c08ff" },
+        { tag: tags.meta, color: colour.royal, fontWeight: "bold" },
+        // things...: etc.
+        { tag: tags.name, color: colour.royal },
         // LIGHT BLUE / commas, equals sign, colon
-        { tag: tags.link, color: "#0066b9ff", fontWeight: "bold" },
-        // CYAN / 0, ->, +, -
-        { tag: tags.operator, color: "#16657fff", fontWeight: "bold" },
+        { tag: tags.link, color: colour.darkblue, fontWeight: "bold" },
+        // CYAN / 0, ^
+        { tag: tags.operator, color: colour.royal },
         // PINK / #, +, *, (, {, [
-        { tag: tags.regexp, color: "#8400b8ff" },
+        { tag: tags.regexp, color: colour.darkpink },
         // ORANGE / Categories
-        { tag: tags.tagName, color: "#b07c0bff" },
+        { tag: tags.tagName, color: colour.darkred },
         // Weights
-        { tag: tags.strong, color: "#338f2cff", fontStyle: "italic" },
+        { tag: tags.strong, color: colour.darkcyan, fontStyle: "italic" },
         // distribution etc
-        { tag: tags.attributeName, color: "#338f2cff" },
+        { tag: tags.attributeName, color: colour.darkcyan },
         // + sign
-        { tag: tags.bitwiseOperator, color: "#338f2cff", fontstyle: "bold" },
+        { tag: tags.bitwiseOperator, color: colour.darkgreen, fontweight: "bold" },
         // - sign
-        { tag: tags.processingInstruction, color: "#bb0067ff", fontstyle: "bold" }
+        { tag: tags.punctuation, color: colour.darkpink, fontweight: "bold" }
     ];
     function xcodeWarmInit(options) {
         var _a = options || {}, _b = _a.theme, theme = _b === void 0 ? "light" : _b, _c = _a.settings, settings = _c === void 0 ? {} : _c, _d = _a.styles, styles = _d === void 0 ? [] : _d;
@@ -20682,18 +20708,24 @@ var cm6 = (function (exports) {
     /***********************
      * Syntax highlighting *
      ***********************/
-    var cappa = "[A-Z" +
-        // Latin acute
-        "\u00C1\u0106\u00C9\u01F4\u00CD\u1E30\u0139\u1E3E\u0143\u00D3\u1E54\u0154\u015A\u00DA\u1E82\u00DD\u0179" +
-        // Diaeresis
-        "\u00C4\u00CB\u1E26\u00CF\u00D6\u00DC\u1E84\u1E8C\u0178" +
-        // Caron
-        "\u01CD\u010C\u010E\u011A\u01E6\u021E\u01CF\u01E8\u013D\u0147\u01D1\u0158\u0160\u0164\u01D3\u017D" +
-        // Grave
-        "\u00C0\u00C8\u00CC\u01F8\u00D2\u00D9\u1E80\u1EF2" +
-        // Γ Δ Θ Λ Ξ Π Σ Φ Ψ Ω
-        "\u0393\u0394\u0398\u039B\u039E\u03A0\u03A3\u03A6\u03A8\u03A9]";
-    var escapeRegex = /\\[^\s]|&\[(?:Space|Tab|Newline|Acute|DoubleAcute|Grave|DoubleGrave|Circumflex|Caron|Breve|InvertedBreve|TildeAbove|TildeBelow|Macron|Dot|DotBelow|Diaeresis|DiaeresisBelow|Ring|RingBelow|Horn|Hook|CommaAbove|CommaBelow|Cedilla|Ogonek|VerticalLineBelow|VerticalLineAbove|DoubleVerticalLineBelow|PlusSignBelow|PlusSignStandalone|uptackBelow|UpTackStandalone|LeftTackBelow|rightTackBelow|DownTackBelow|DownTackStandalone|BreveBelow|InvertedBreveBelow|MacronBelow|MacronBelowStandalone|BridgeBelow|BridgeAbove|InvertedBridgeBelow|SquareBelow|SeagullBelow|LeftBracketBelow)\]/;
+    /*
+    const cappa = "[A-Z" +
+       // Latin acute
+       "\u00C1\u0106\u00C9\u01F4\u00CD\u1E30\u0139\u1E3E\u0143\u00D3\u1E54\u0154\u015A\u00DA\u1E82\u00DD\u0179" +
+
+       // Diaeresis
+       "\u00C4\u00CB\u1E26\u00CF\u00D6\u00DC\u1E84\u1E8C\u0178" +
+
+       // Caron
+       "\u01CD\u010C\u010E\u011A\u01E6\u021E\u01CF\u01E8\u013D\u0147\u01D1\u0158\u0160\u0164\u01D3\u017D" +
+
+       // Grave
+       "\u00C0\u00C8\u00CC\u01F8\u00D2\u00D9\u1E80\u1EF2" +
+
+       // Γ Δ Θ Λ Ξ Π Σ Φ Ψ Ω
+       "\u0393\u0394\u0398\u039B\u039E\u03A0\u03A3\u03A6\u03A8\u03A9]";
+    */
+    var escapeRegex = /\\[^\s]|&\[(?:Space|Tab|Newline|Acute|DoubleAcute|Grave|DoubleGrave|Circumflex|Caron|Breve|InvertedBreve|TildeAbove|Tilde|TildeBelow|Macron|Dot|DotBelow|Diaeresis|DiaeresisBelow|Ring|RingBelow|Horn|Hook|CommaAbove|Comma|CommaBelow|Cedilla|Ogonek|VerticalLineBelow|VerticalLineAbove|VerticalLine|DoubleVerticalLineBelow|PlusSignBelow|PlusSignStandalone|uptackBelow|UpTackStandalone|LeftTackBelow|rightTackBelow|DownTackBelow|DownTackStandalone|BreveBelow|InvertedBreveBelow|MacronBelow|MacronBelowStandalone|BridgeBelow|BridgeAbove|Bridge|InvertedBridgeBelow|SquareBelow|SeagullBelow|LeftBracketBelow)\]/;
     var routineRules = [
         {
             token: "attributeName", regex: /(compose|decompose|capitalise|decapitalise|capitalize|decapitalize|to-uppercase|to-lowercase|xsampa-to-ipa|ipa-to-xsampa|latin-to-hangul|latin-to-hangeul|hangul-to-latin|hangeul-to-latin|greek-to-latin|latin-to-greek|cyrillic-to-latin|latin-to-cyrillic|reverse)/
@@ -20713,12 +20745,12 @@ var cm6 = (function (exports) {
     ];
     var decoratorRulesVocabug = [
         { token: "link", regex: /\.|=/ },
-        { token: "meta", regex: /categories|words|units|alphabet|invisible|graphemes|syllable-boundaries|features|feature-field|stage|letter-case-field|distribution|optionals-weight|disabled|name/ },
-        { token: "attributeName", regex: /flat|zipfian|gusein-zade|shallow|\d{1,2}%/ }
+        { token: "name", regex: /categories|words|units|alphabet|invisible|graphemes|syllable-boundaries|features|feature-field|stage|letter-case-field|distribution|optionals-weight|disabled|name/ },
+        { token: "attributeName", regex: /word-class|flat|zipfian|gusein-zade|shallow|\d{1,2}%/ }
     ];
     var decoratorRulesNesca = [
         { token: "link", regex: /\.|=/ },
-        { token: "meta", regex: /categories|alphabet|invisible|graphemes|syllable-boundaries|features|feature-field|stage|letter-case-field|schema|distribution|optionals-weight|disabled/ },
+        { token: "name", regex: /categories|alphabet|invisible|graphemes|syllable-boundaries|features|feature-field|stage|letter-case-field|schemadistribution|optionals-weight|disabled/ },
         { token: "attributeName", regex: /flat|zipfian|gusein-zade|shallow|\d{1,2}%/ }
     ];
     var graphemesRules = [
@@ -20756,9 +20788,10 @@ var cm6 = (function (exports) {
     ];
     var transformRules = [
         { token: "escape", regex: escapeRegex },
-        { token: "link", regex: />>|->|=>|⇒|→|\/|!|,|_|<recast-as>/ },
+        { token: "link", regex: />|>>|->|=>|⇒|→|\/|!|,|_|<recast-as>/ },
         { token: "operator", regex: /0|\^/ },
-        { token: "regexp", regex: /&=|=[1-9]|\]|\(|\)|\{|\}|#|\$|\+|\?\[|\*|:|%\[|~|\|/ },
+        { token: "regexp", regex: /&=|=[1-9]|\]|\(|\)|\{|\}|#|\$|\+|\?\[|\*|:|%\[|~/ },
+        { token: "processingInstruction", regex: /\|/ },
         { token: "tagName", regex: /1|2|3|4|5|6|7|8|9|&T|&M|&E/ }
     ];
     var clusterRules = [
@@ -20770,7 +20803,7 @@ var cm6 = (function (exports) {
         { token: "escape", regex: escapeRegex },
         { token: "link", regex: /\./ },
         { token: "attributeName", regex: /\+/ },
-        { token: "processingInstruction", regex: /-/ }
+        { token: "punctuation", regex: /-/ }
     ];
     function parser(app) {
         return {
@@ -20786,7 +20819,8 @@ var cm6 = (function (exports) {
                     featureList: [],
                     we_on_newline: true,
                     header_for_feature_field: 0,
-                    insideUnit: false
+                    insideUnit: false,
+                    pendingOptionalWeight: false
                 };
             },
             token: function (stream, state) {
@@ -20910,36 +20944,34 @@ var cm6 = (function (exports) {
                     if (state.we_on_newline) {
                         stream.match(/\s*/);
                         // A new Category
-                        var catRegex = new RegExp("(".concat(cappa, ")(?=\\s*=)"), "u");
+                        var catRegex = /^([^<>@⇒→_{}\[\]()\/\\!#$+?^:*&%|~=,\d])(?=\s*=)/u;
+                        state.we_on_newline = false;
                         var match = stream.match(catRegex);
                         if (match) {
                             state.catList.push(match[1]);
-                            state.we_on_newline = false;
                             return "tagName";
                         }
                     }
+                    if (app === "vocabug") {
+                        for (var _b = 0, categoryRulesVocabug_1 = categoryRulesVocabug; _b < categoryRulesVocabug_1.length; _b++) {
+                            var rule = categoryRulesVocabug_1[_b];
+                            if (stream.match(rule.regex)) {
+                                return rule.token;
+                            }
+                        }
+                    }
                     else {
-                        if (app === "vocabug") {
-                            for (var _b = 0, categoryRulesVocabug_1 = categoryRulesVocabug; _b < categoryRulesVocabug_1.length; _b++) {
-                                var rule = categoryRulesVocabug_1[_b];
-                                if (stream.match(rule.regex)) {
-                                    return rule.token;
-                                }
+                        for (var _c = 0, categoryRules_1 = categoryRules; _c < categoryRules_1.length; _c++) {
+                            var rule = categoryRules_1[_c];
+                            if (stream.match(rule.regex)) {
+                                return rule.token;
                             }
                         }
-                        else {
-                            for (var _c = 0, categoryRules_1 = categoryRules; _c < categoryRules_1.length; _c++) {
-                                var rule = categoryRules_1[_c];
-                                if (stream.match(rule.regex)) {
-                                    return rule.token;
-                                }
-                            }
-                        }
-                        for (var _d = 0, _e = state.catList; _d < _e.length; _d++) {
-                            var cato = _e[_d];
-                            if (stream.match(cato)) {
-                                return "tagName";
-                            }
+                    }
+                    for (var _d = 0, _e = state.catList; _d < _e.length; _d++) {
+                        var cato = _e[_d];
+                        if (stream.match(cato)) {
+                            return "tagName";
                         }
                     }
                 }
@@ -20968,6 +21000,21 @@ var cm6 = (function (exports) {
                                 return "tagName";
                             }
                         }
+                        if (state.pendingOptionalWeight) {
+                            if (stream.match(/\s*(\d+)%/)) {
+                                state.pendingOptionalWeight = false;
+                                return "strong"; // highlight the weight
+                            }
+                        }
+                        // Optional-set weight pipe: |10%)
+                        if (stream.match(/\|\s*(?=\d+%\))/)) {
+                            state.pendingOptionalWeight = true;
+                            return "name"; // highlight the pipe
+                        }
+                        // Supra-set weight: |*10]
+                        if (stream.match(/\|\s*(?=\*\d+\])/)) {
+                            return "name"; // highlight the pipe
+                        }
                         for (var _k = 0, wordRules_1 = wordRules; _k < wordRules_1.length; _k++) {
                             var rule = wordRules_1[_k];
                             if (stream.match(rule.regex)) {
@@ -20989,6 +21036,21 @@ var cm6 = (function (exports) {
                         }
                     }
                     else {
+                        if (state.pendingOptionalWeight) {
+                            if (stream.match(/\s*(\d+)%/)) {
+                                state.pendingOptionalWeight = false;
+                                return "strong"; // highlight the weight
+                            }
+                        }
+                        // Optional-set weight pipe: |10%)
+                        if (stream.match(/\|\s*(?=\d+%\))/)) {
+                            state.pendingOptionalWeight = true;
+                            return "name"; // highlight the pipe
+                        }
+                        // Supra-set weight: |*10]
+                        if (stream.match(/\|\s*(?=\*\d+\])/)) {
+                            return "name"; // highlight the pipe
+                        }
                         for (var _l = 0, wordRules_2 = wordRules; _l < wordRules_2.length; _l++) {
                             var rule = wordRules_2[_l];
                             if (stream.match(rule.regex)) {
@@ -21158,30 +21220,34 @@ var cm6 = (function (exports) {
                         if (stream.match(/< /)) {
                             state.sub_directive = 'cluster-block';
                             state.we_on_newline = false;
-                            return "meta";
+                            return "name";
                         }
                         // End of clusterfield
                         if (state.sub_directive == 'cluster-block') {
                             if (stream.match(/>(?=\s*($|;))/)) {
                                 state.sub_directive = 'none';
-                                return "meta";
+                                return "name";
                             }
                         }
                         // Routine
                         if (stream.match(/<routine/)) {
                             state.sub_directive = 'routine';
                             state.we_on_newline = false;
-                            return "meta";
+                            return "name";
                         }
                         // chance
                         if (stream.match(/<@chance/)) {
                             state.sub_directive = 'chance';
                             state.we_on_newline = false;
-                            return "meta";
+                            return "name";
                         }
                         if (stream.match(/>/)) {
                             if (state.we_on_newline) {
-                                return "meta";
+                                // If > by itself on a line, it's the end of a chance or routine block
+                                var rest = stream.string.slice(stream.pos);
+                                if (/^\s*$/.test(rest)) {
+                                    return "name"; // > is alone on its line
+                                }
                             }
                         }
                     }

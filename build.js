@@ -17,8 +17,8 @@ function main() {
    const output = `// Auto-generated -- do not edit.\nexport const VERSION = '${projectVersion}';\n`;
    writeFileSync(resolve('./src/utils/version.ts'), output);
 
-   //log("Running linter...");
-   //run("npm run lint");
+   log("Running linter...");
+   run("npm run lint");
 
    log("Running formatter...");
    run("npm run format");
