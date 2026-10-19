@@ -10,18 +10,15 @@
    <meta name="robots" content="index, follow">
    <meta name="author" content="Neonnaut">
    <!-- Scripts and stylings -->
-   <link href="../style.css" rel="stylesheet" type="text/css" media="all">
-   <script src="./cm6.bundle.js"></script>
+   <link href="./style.css" rel="stylesheet" type="text/css" media="all">
+   <script src="./dist/cm6.bundle.js"></script>
    <!-- Fonts -->
-   <script src="./font_awesome.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/js/all.js"></script>
    <!-- Icons -->
 </head>
 <body>
    <nav id="myNav">
       <ol class="breadcrumbs">
-         <li>
-
-         </li>
          <li style="float: right;">
             <button id="main_menu"><i class="fa fa-bars"></i> Menu</button>
          </li>
@@ -29,7 +26,7 @@
    </nav>
 
    <div id="content">
-      <section id="top">
+      <section id="top" class="interface">
 
          <div>
             <img src="img/vocabug_logo.svg" alt="Logo of letter V with bug antennae" style="float: left;">
@@ -41,9 +38,6 @@
                <a href="./vocabug_docs.html">Read the documentation here</a>
             </div>
          </div>
-
-         <br>
-         <p>Vocabug randomly generates vocabulary from a given definition of graphemes and word patterns. It can be used to generate words for a fictional language, original nicknames or passwords, or just for fun.</p>
 
          <!-- Da-na-na-naaah! -->
          <div id="editor"></div>
@@ -68,36 +62,45 @@
             <fieldset style="float: left;" id="config">
                <legend>Config</legend>
                <div>
+
                   <div style="float:left; display: inline; margin: 4px 10px 2px 0;">
-                     <label for="my_mode">Mode:</label>
-                     <select id="my_mode" aria-label="Generation mode" style="margin-bottom: 2px;">
-                        <option value="word-list" selected>Word-list</option>
-                        <option value="debug">Debug</option>
-                        <option value="paragraph">Paragraph</option>
-                     </select> <br>
+                     <div class="input-container">
+                        <label for="my_mode">Mode</label>
+                        <select id="my_mode" aria-label="Generation mode" style="margin-bottom: 2px;">
+                           <option value="word-list" selected>Word-list</option>
+                           <option value="debug">Debug</option>
+                           <option value="paragraph">Paragraph</option>
+                        </select>
+                     </div>
 
-                                    <label for="num-of-words">Nº Words:</label>
-               <input type="number" style="width:52px; margin-bottom:2px;" min="1" max="9999" placeholder="100" autocomplete="off" id="num-of-words"><br>
-   
+                     <div class="input-container">
+                        <label for="num-of-words">Nº of Words</label>
+                        <input type="number" style="width:70px; margin-bottom:2px;" min="1" max="9999" placeholder="100" autocomplete="off" id="num-of-words"><br>
+                     </div>
 
-               <label for="word-divider">Divider:</label>
-               <input type="text" autocomplete="off" id="word-divider" style="width: 70px; ">
-
-
-
+                     <div class="input-container">
+                        <label for="word-divider">Word divider</label>
+                        <input type="text" autocomplete="off" id="word-divider" style="width: 67px; " placeholder="space">
+                     </div>
                   </div>
+
                   <div style="float: left; display: inline; margin: 4px 10px 2px 0;">
-                     <input type="checkbox" id="remove-duplicates" checked>
-                     <label for="remove-duplicates">No duplicates</label><br>
-   
-                     <input type="checkbox" id="force-words">
-                     <label for="force-words">Force word limit</label><br>
-   
-                     <input type="checkbox" id="sort-words" checked>
-                     <label for="sort-words">Sort words</label><br>
+                     <div class="input-container">
+                        <input type="checkbox" id="remove-duplicates" checked>
+                        <label for="remove-duplicates">No duplicates</label>
+                     </div>
+                     
+                     <div class="input-container">
+                        <input type="checkbox" id="force-words">
+                        <label for="force-words">Force word limit</label>
+                     </div>
+                     
+                     <div class="input-container">
+                        <input type="checkbox" id="sort-words" checked>
+                        <label for="sort-words">Sort words</label>
+                     </div>
                   </div>
                </div>
-   
                <div style="clear: left;"></div>
             
             </fieldset>
@@ -106,43 +109,49 @@
             <fieldset id="file-save-load" style="float: left;">
                <legend>File save / load</legend>
    
-               <label for="file-name">File name:</label>
-               <input type="text" autocomplete="off" id="file-name" placeholder="vocabug" style="width:132px"><br>
-               <button type="submit" class="styled-button" id="save-file"><i class="fa fa-save"></i>Save file</button>
-               <button type="submit" class="styled-button" id="load-file"><i class="fa fa-file-import"></i>Load file</button>
-               <button type="submit" class="styled-button clear-editor"><i class="fa fa-trash-can"></i>Clear editor</button>
-               <br>
+               <div class="input-container">
+                  <label for="file-name">File name</label>
+                  <input type="text" autocomplete="off" id="file-name" placeholder="vocabug" style="width:132px">
+               </div>
+               <div class="button-container">
+                  <button type="submit" class="styled-button" id="save-file"><i class="fa fa-save"></i>Save file</button>
+                  <button type="submit" class="styled-button" id="load-file"><i class="fa fa-file-import"></i>Load file</button>
+                  <button type="submit" class="styled-button clear-editor"><i class="fa fa-trash-can"></i>Clear editor</button>
+               </div>
 
                <details class="dropdown-group">
                   <summary class="dropdown-btn"><i class="fa fa-caret-down"></i>Examples</summary>
-                  <button class="dropdown-itm-btn voc-example" value="default">Default</button>
-                  <button class="dropdown-itm-btn voc-example" value="advanced">Advanced</button>
-                  <button class="dropdown-itm-btn voc-example" value="japanese">Japanese-like</button>
-                  <button class="dropdown-itm-btn voc-example" value="tonal">Tonal</button>
-                  <button class="dropdown-itm-btn voc-example" value="australian">Australian-like</button>
+                  <div class="button-container">
+                     <button class="dropdown-itm-btn voc-example" value="default">Default</button>
+                     <button class="dropdown-itm-btn voc-example" value="advanced">Advanced</button>
+                     <button class="dropdown-itm-btn voc-example" value="japanese">Japanese-like</button>
+                     <button class="dropdown-itm-btn voc-example" value="tonal">Tonal</button>
+                     <button class="dropdown-itm-btn voc-example" value="australian">Australian-like</button>
+                  </div>
                </details>
             </fieldset>
             <br style="clear: left;">
 
             <fieldset style="float: left;">
-                  <legend>Editor options</legend>
-                  <div style="float: left; display: inline; margin: 4px 10px 2px 0;">
+               <legend>Editor options</legend>
+               <div style="float: left; display: inline; margin: 4px 10px 2px 0;">
+                  <div class="input-container">
                      <input type="checkbox" id="editor-wrap-lines">
                      <label for="editor-wrap-lines">Wrap lines</label>
                   </div>
-
-                  <div style="float: left; display: inline; margin: 4px 10px 2px 0;">
+                  <div class="input-container">
                      <input type="checkbox" id="show-keyboard-section">
                      <label for="show-keyboard-section">Show keyboard</label>
                   </div>
-                  <br style="clear: left;">
 
                   <details class="dropdown-group" id="colour-switch-field">
                      <summary class="dropdown-btn"><i class="fa fa-caret-down"></i>Themes</summary>
-                     <button class="dropdown-itm-btn" id="system-mode" value="System*" name="changeThemeButton">System</button>
-                     <button class="dropdown-itm-btn" id="light-mode" value="Light" name="changeThemeButton">Light</button>
-                     <button class="dropdown-itm-btn" id="warm-mode" value="Warm" name="changeThemeButton">Warm</button>
-                     <button class="dropdown-itm-btn" id="dark-mode" value="Dark" name="changeThemeButton">Dark</button>
+                     <div class="button-container">
+                        <button class="dropdown-itm-btn" id="system-mode" value="System*" name="changeThemeButton">System</button>
+                        <button class="dropdown-itm-btn" id="light-mode" value="Light" name="changeThemeButton">Light</button>
+                        <button class="dropdown-itm-btn" id="warm-mode" value="Warm" name="changeThemeButton">Warm</button>
+                        <button class="dropdown-itm-btn" id="dark-mode" value="Dark" name="changeThemeButton">Dark</button>
+                     </div>
                   </details>
 
             </fieldset>

@@ -34,10 +34,10 @@
       "dev-nesca": "vite --config app/nesca/vite.config.ts",
       "build:app-vocabug": "vite build --config app/vocabug/vite.config.js",
       "build:app-nesca": "vite build --config app/nesca/vite.config.js",
-      "build:cli-vocabug": "tsup bin/vocabug/index.ts --format esm --no-dts minify --target node18 --out-dir bin/vocabug",
-      "build:cli-nesca": "tsup bin/nesca/index.ts --format esm --no-dts minify --target node18 --out-dir bin/nesca",
-      "build:cm6-vocabug": "cd codemirror && npx rollup src/editor.ts -f iife -o ../app/vocabug/cm6.bundle.js -p @rollup/plugin-node-resolve -p @rollup/plugin-typescript --output.name cm6",
-      "build:cm6-nesca": "cd codemirror && npx rollup src/editor.ts -f iife -o ../app/nesca/cm6.bundle.js -p @rollup/plugin-node-resolve -p @rollup/plugin-typescript --output.name cm6"
+      "build:cli-vocabug": "tsup bin/vocabug/index.ts --format esm --no-dts minify --target node18 --out-dir bin/dist/vocabug",
+      "build:cli-nesca": "tsup bin/nesca/index.ts --format esm --no-dts minify --target node18 --out-dir bin/dist/nesca",
+      "build:cm6-vocabug": "cd codemirror && npx rollup src/editor.ts -f iife -o ../app/vocabug/dist/cm6.bundle.js -p @rollup/plugin-node-resolve -p @rollup/plugin-typescript --output.name cm6",
+      "build:cm6-nesca": "cd codemirror && npx rollup src/editor.ts -f iife -o ../app/nesca/dist/cm6.bundle.js -p @rollup/plugin-node-resolve -p @rollup/plugin-typescript --output.name cm6"
    },
    "devDependencies": {
       "@eslint/eslintrc": "^3.3.1",
@@ -54,13 +54,13 @@
       "prettier": "3.6.2",
       "rollup": "^4.53.5",
       "terser": "^5.44.0",
-      "tsup": "^8.5.1",
+      "tsup": "^9.0.0",
       "typescript": "~5.8.3",
       "typescript-eslint": "^8.46.0",
       "vite": "^6.3.5",
       "vite-plugin-banner": "^0.8.1",
-      "vite-plugin-dts": "^1.0.5",
-      "vitest": "^3.2.4"
+      "vite-plugin-dts": "^5.1.2",
+      "vitest": "^5.0.5"
    },
    "main": "./dist/the-conlangers-suite.cjs.js",
    "module": "./dist/the-conlangers-suite.es.js",
@@ -79,10 +79,10 @@
       "README"
    ],
    "bin": {
-      "vocabug": "./bin/vocabug/index.js",
-      "nesca": "./bin/nesca/index.js"
+      "vocabug": "./bin/vocabug/dist/index.js",
+      "nesca": "./bin/nesca/dist/index.js"
    },
    "dependencies": {
-      "yargs": "^18.0.0"
+      "commander": "^15.0.0"
    }
 }

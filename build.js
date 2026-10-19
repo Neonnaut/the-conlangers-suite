@@ -26,21 +26,21 @@ function main() {
    log("Running tests...");
    run("npm run test");
 
-   log("Building app-folder scripts");
+   log("Building app-folder scripts...");
    run("npm run build:app-vocabug");
    run("npm run build:app-nesca");
 
-   log("creating codemirror bundle...")
+   log("Creating codemirror bundle...")
    run("npm run build:cm6-vocabug")
    run("npm run build:cm6-nesca")
 
-   log("Building main scripts");
+   log("Building main scripts...");
    run("npm run build:ts");
 
-   log("Making modules/ for index.d.ts");
+   log("Making modules/ for index.d.ts...");
    run("npm run build:win")
 
-   log("Building CLI scripts");
+   log("Building CLI scripts...");
    run("npm run build:cli-vocabug");
    run("npm run build:cli-nesca");
 

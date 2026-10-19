@@ -240,7 +240,7 @@
          <div class="prog-pre"><code class="link">@</code><code class="directive">stage</code><code class="link">.</code><code class="directive">disabled</code><br><code class="directive">stage</code><code class="link">:</code><br>  example<br></div>
 
          <h3 id="chapComments"><a class="head-num">3.1</a>Comments</h3>
-         <p>If a line contains a semicolon <code class="example">;</code> everything after it on that line is ignored and not interpreted as Nesca syntax -- unless <code class="example">;</code> is <a href="#vocEscapeWord">escaped</a>. You can use this to leave notes about what something does or why you made certain decisions.</p>
+         <p>If a line contains a semicolon <code class="example">;</code> everything after it on that line is ignored and not interpreted as Nesca syntax -- unless <code class="example">;</code> is <a href="#chapEscapingCharacters">escaped</a>. You can use this to leave notes about what something does or why you made certain decisions.</p>
 
          <h4 id="chapNote"><a class="head-num">3.1.1</a>The note directive</h4>
          <p>The <code class="example">note</code> directive allows you to write a comment that spans multiple lines. It should be noted that a new directive or decorator can interrupt a note.</p>
@@ -266,7 +266,7 @@
             <tbody>
                <tr>
                   <td><code class="example">;</code></td>
-                  <td><a href="#vocComments">Comment</a></td>
+                  <td><a href="#chapComments">Comment</a></td>
                </tr>
                <tr>
                   <td><code class="example">\</code></td>
@@ -602,7 +602,7 @@
          <p>If you are using this, you should be very interested in the <a href="#chapRoutine">Compose routine</a>.</p>
 
          <h2 id="chapCategories"><a class="head-num">4</a>Categories</h2>
-         <p>Categories are declared inside the <code class="example">categories</code> directive on a line each. A category is a set of <a href="#vocAboutGraphemes">graphemes</a> with a key. The key is a singular-length capital letter. For example:</p>
+         <p>Categories are declared inside the <code class="example">categories</code> directive on a line each. A category is a set of <a href="#chapAboutGraphemes">graphemes</a> with a key. The key is a singular-length capital letter. For example:</p>
          <div class="prog-pre"><span class="directive">categories</span><code class="link">:</code><br>  <span class="catkey">C</span> <span class="link">=</span> t<span class="link">,</span> n<span class="link">,</span> k<span class="link">,</span> m<span class="link">,</span> ch<span class="link">,</span> l<span class="link">,</span> ꞌ<span class="link">,</span> s<span class="link">,</span> r<span class="link">,</span> d<span class="link">,</span> h<span class="link">,</span> w<span class="link">,</span> b<span class="link">,</span> y<span class="link">,</span> p<span class="link">,</span> g</div>
 
          <p>This creates two groups of graphemes. <code class="example">C</code> is the group of all consonants and <code class="example">V</code> is the group of all vowels.</p>
@@ -662,7 +662,7 @@
 
          <p>The default transform is a <a href="#chapRules">rule</a>. These should be familiar to anyone who knows a little about phonological rules. The two other types of transforms are <a href="#chapClusterfield">cluster-fields</a> and <a href="#chapRoutine">routines</a>.</p>
 
-         <p>If you want to capture graphemes that are normally syntax characters in transforms, you will need to <a href="#vocEscapeTransform">escape them</a>.</p>
+         <p>If you want to capture graphemes that are normally syntax characters in transforms, you will need to <a href="#chapEscapingCharacters">escape them</a>.</p>
 
          <p>When this document uses examples to explain transformations, the last comment shows an example word transforming. For example <code class="example">; amda ==> ampa</code> means the rule will transform the word <code class="example">amda</code> into <code class="example">ampa</code></p>
 
@@ -1387,7 +1387,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
          <ul class="paragraphian">
             <li>A reference-mark may not be used in the <code class='example'>TARGET</code> of a rule.</li>
             <li>In each condition or exception of a rule, a reference-mark cannot be used before content has been bound to its reference with a reference-capture. For example <code class="example">a -> e / 1x=1_</code> is invalid, and so is <code class="example">a -> e / 1_x=1</code>. Reference is not recursive in conditions and exceptions.</li>
-            <li>If a reference-mark is used where a reference-capture has not captured anything yet, it fails silently and outputs the number of the backrefence.</li>
+            <li>If a reference-mark is used where a reference-capture has not captured anything yet, it fails silently and outputs the number of the reference.</li>
          </ul>
 
          <p>Here are some examples:</p>
@@ -1396,7 +1396,7 @@ n mp <span class="attribute">+</span>  <span class="attribute">+</span>  nn <spa
   ʔ <span class="link">-&gt;</span> <span class="operator">^</span> <span class="regexp">/</span> <span class="catkey">[+vowel]</span><span class="regexp">=1</span><span class="link">_</span><span class="catkey">1</span>
 <span class="comment">; baʔaʔe ==> baaʔe</span></div>
 
-         <p>In the rule above, we are binding the <code class='example'>[+vowel]</code> feature-matrix to the reference <code class='example'>1</code>, by appending <code class='example'>=1</code> to it. Whatever this grapheme from <code class='example'>[+vowel]</code> is when the condition is met, is captured as the value of <code class='example'>1</code>. Then the value of backrefence <code class='example'>1</code> is in <code class='example'>AFTER</code> by invoking its reference-mark.</p>
+         <p>In the rule above, we are binding the <code class='example'>[+vowel]</code> feature-matrix to the reference <code class='example'>1</code>, by appending <code class='example'>=1</code> to it. Whatever this grapheme from <code class='example'>[+vowel]</code> is when the condition is met, is captured as the value of <code class='example'>1</code>. Then the value of reference <code class='example'>1</code> is in <code class='example'>AFTER</code> by invoking its reference-mark.</p>
 
         <div class="prog-pre"><span class="comment">; Insert an "echo vowel" at the end of &lt;ʔ&gt; final words</span>
   <span class="operator">^</span> <span class="link">-&gt;</span> <span class="catkey">1</span> <span class="regexp">/</span> <span class="catkey">[+vowel]</span><span class="regexp">=1</span>ʔ<span class="link">_</span><span class="regexp">#</span>

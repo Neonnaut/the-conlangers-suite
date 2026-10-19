@@ -157,6 +157,8 @@ class Parser {
          this.remove_duplicates = false;
          this.force_word_limit = false;
          this.output_divider = "\n\n";
+      } else if (this.output_mode === "old-to-new") {
+         this.output_divider = "\n";
       }
 
       this.category_distribution = "gusein-zade";

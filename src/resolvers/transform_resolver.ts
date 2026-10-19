@@ -1038,11 +1038,11 @@ class Transform_Resolver {
       const associatemes: string = parts.join("\n");
 
       const info: string =
-         `Graphemes { ` +
+         `Graphemes {\n ` +
          this.nesca_grammar_stream.graphemorphs.join(", ") +
-         `\n}\nSyllable Boundaries { ` +
+         `\n}\nSyllable Boundaries {\n ` +
          this.syllable_boundaries.join(", ") +
-         `\n}\nAssociatemes { \n` +
+         `\n}\nAssociatemes {\n` +
          associatemes +
          `\n}\nFeatures {\n` +
          features.join("\n") +
@@ -1050,7 +1050,11 @@ class Transform_Resolver {
          format_stages
             .map(
                (stage) =>
-                  `stage "${stage.name}" {\n  ` + stage.transforms.join("\n  "),
+                  `stage${
+                     stage.name === null || stage.name === ""
+                        ? ""
+                        : ` "${stage.name}"`
+                  } {\n  ` + stage.transforms.join("\n  "),
             )
             .join("\n") +
          `\n}`;

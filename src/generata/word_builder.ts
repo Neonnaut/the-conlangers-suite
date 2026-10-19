@@ -71,6 +71,7 @@ class Word_Builder {
          this.wordshape_classes[this.cwc_index].wordshapes.weights,
       );
 
+      // The mask
       let mask: string =
          this.wordshape_classes[this.cwc_index].wordshapes.masks[wordshape_id];
       mask = this.escape_mapper.get_mask_stream(mask);

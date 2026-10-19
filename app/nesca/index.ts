@@ -566,6 +566,12 @@ function mode_buttons() {
             output_divider.disabled = true;
          }
          break;
+      case "paragraph":
+         if (sort_words){
+            sort_words.disabled = true;
+            output_divider.disabled = true;
+         }
+         break;
       default:
          if (sort_words){
             sort_words.disabled = false;

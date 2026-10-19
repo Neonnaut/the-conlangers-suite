@@ -1,175 +1,139 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-import fs from 'fs';
-import yargs from 'yargs/yargs';
 
-import { hideBin } from 'yargs/helpers';
+import fs from "fs";
+import { Command, InvalidArgumentError } from "commander";
 
-// Type-only import (safe in CommonJS with TypeScript)
-import type { Arguments } from 'yargs';
+import { nesca } from "../../src/main";
+import { VERSION } from "../../src/utils/version";
 
-import { nesca } from '../../src/main';
-import { VERSION } from '../../src/utils/version';
+// ---- Output modes ----
+type Output_Modes = "word-list" | "debug" | "paragraph";
 
-
-type CLI_Args = Arguments<{
-   output_mode: string;
-   sort_words: boolean;
-   input_words: string;
-   input_divider: string;
-   output_divider: string;
-   encoding: BufferEncoding;
-}> & {
-   _: string[]; // positional args
-};
-
-type Output_Modes = 'word-list' | 'debug' | 'paragraph';
-
-
+// ---- Encodings ----
 const encodings: readonly BufferEncoding[] = [
-   'ascii',
-   'binary',
-   'latin1',
-   'ucs-2',
-   'ucs2',
-   'utf-8',
-   'utf16le',
-   'utf8'
+  "ascii",
+  "binary",
+  "latin1",
+  "ucs-2",
+  "ucs2",
+  "utf-8",
+  "utf16le",
+  "utf8"
 ];
 
-const argv = yargs(hideBin(process.argv))
-   .usage('Usage: $0 <path> [options]')
+// ---- Encoding coercion ----
+function coerceEncoding(enc: string): BufferEncoding {
+  const littleEnc = enc.toLowerCase();
 
-   // aliases for default flags
-     .help("help")
-     .wrap(null) // prevents line wrapping
-     .epilog("For full documentation, visit: https://neonnaut.neocities.org/nesca_docs")
-   .alias({ help: '?', version: 'v' })
-   // custom options
+  if (littleEnc === "utf-16le") {
+    return "utf16le";
+  }
 
-   .option('output_mode', {
-      alias: 'm',
-      describe: 'Output mode',
-      choices: ['word-list', 'debug', 'old-to-new'] as const,
-      default: 'word-list'
-   })
-   .option('sort_words', {
-      alias: 's',
-      describe: 'Sort generated words',
-      type: 'boolean',
-      default: true
-   })
-   .option('input_words', {
-      alias: 'iw',
-      describe: 'Input words to transform',
-      type: 'string',
-      default: ''
-   })
-   .option('input_divider', {
-      alias: 'id',
-      describe: 'Divider between words',
-      type: 'string',
-      default: ' '
-   })
-   .option('output_divider', {
-      alias: 'od',
-      describe: 'Divider between words',
-      type: 'string',
-      default: ' '
-   })
-   .option('encoding', {
-         alias:       'e',
-         choices:     encodings,
-         describe:    'What file encoding to use',
-         default:     'utf8',
-         requiresArg: true,
-         coerce:      (enc: string) => {
-            // ignore case, and allow 'utf-16le' as a synonym for 'utf16le'
-            const littleEnc = enc.toLowerCase();
-            if (littleEnc === 'utf-16le') {
-               return 'utf16le';
-            } else if (!(<string[]>encodings).includes(littleEnc)) {
-               // throw an error indicating an invalid encoding
-               let errorString = 'Invalid values:\n  Argument: encoding, '
-                     + `Given: "${enc}", Choices: `;
+  if (!(encodings as string[]).includes(littleEnc)) {
+    let errorString =
+      'Invalid values:\n  Argument: encoding, ' +
+      `Given: "${enc}", Choices: ` +
+      encodings.map((e) => `"${e}"`).join(", ");
+    throw new InvalidArgumentError(errorString);
+  }
 
-               for (let i = 0; i < encodings.length; ++i) {
-                     if (i !== 0) {
-                        errorString += ', ';
-                     }
-                     errorString += `"${encodings[i]}"`;
-               }
-               throw new Error(errorString);
-            }
-            return littleEnc;
-         }
-   })
-
-   .check((argv) => {
-      // No checks yet
-      return true;
-   })
-   .parseSync() as CLI_Args;
-
-   const filePath = argv._[0]; // first positional arg
-
-   const file_text = fs.readFileSync(filePath, argv.encoding);
-
-   try {
-      normal_text(`Transforming words with Nesca version ${VERSION}...`);
-
-   const run = 
-         nesca({
-         file: file_text,
-         input_words: argv.input_words,
-         output_mode: argv.output_mode  as Output_Modes,
-         input_divider: argv.input_divider,
-         output_divider: argv.output_divider,
-         sort_words: argv.sort_words
-      } )
-
-   for (const warning of run.warnings) {
-      yellow_text(warning);
-   }
-   for (const error of run.errors) {
-      red_text(error);
-   }
-   for (const info of run.infos) {
-      green_text(info);
-   }
-   for (const debug of run.diagnostics) {
-      normal_text(debug);
-   }
-   if (run.payload) {
-      payload_text(
-         run.payload
-      );
-   }
-   
-} catch (err: any) {
-   if (err.code === "ENOENT") {
-      red_text(`Error: File not found with path "` + err.path +`"`);
-   } else if (err.code === "EISDIR") {
-      red_text(`Error: Path was a directory where a file was required, with path "` + err.path +`"`);
-   } else if (err.code === "EACCES" || err.code === "EPERM") {
-      red_text(`Error: Denied permission to read or write this file, with path "` + err.path +`"`);
-   } else {
-      red_text("Error: " + err.message);
-   }
+  return littleEnc as BufferEncoding;
 }
 
+const program = new Command();
+
+program
+  .name("nesca")
+  .usage("<path> [options]")
+  .version(VERSION, "-v, --version")
+  .helpOption("-?, --help", "Show help")
+  .addHelpText(
+    "after",
+    "\nFor full documentation, visit: https://neonnaut.neocities.org/nesca_docs"
+  );
+
+// ---- Options ----
+program
+  .argument("<path>", "Path to input file")
+
+  .option(
+    "-m, --output_mode <mode>",
+    "Output mode",
+    (value) => value,
+    "word-list"
+  )
+  .option("-s, --sort_words", "Sort generated words", true)
+  .option("-iw, --input_words <string>", "Input words to transform", "")
+  .option("-id, --input_divider <string>", "Divider between words", " ")
+  .option("-od, --output_divider <string>", "Divider between words", " ")
+  .option(
+    "-e, --encoding <enc>",
+    "What file encoding to use",
+    coerceEncoding,
+    "utf8"
+  );
+
+// ---- Main ----
+program.action((filePath: string, options) => {
+  try {
+    // Always convert to string to avoid NonSharedBuffer issues
+    const raw = fs.readFileSync(filePath);
+    const file_text = raw.toString(options.encoding);
+
+    normal_text(`Transforming words with Nesca version ${VERSION}...`);
+
+    const run = nesca({
+      file: file_text,
+      input_words: options.input_words,
+      output_mode: options.output_mode as Output_Modes,
+      input_divider: options.input_divider,
+      output_divider: options.output_divider,
+      sort_words: Boolean(options.sort_words)
+    });
+
+    for (const warning of run.warnings) yellow_text(warning);
+    for (const error of run.errors) red_text(error);
+    for (const info of run.infos) green_text(info);
+    for (const debug of run.diagnostics) normal_text(debug);
+
+    if (run.payload) payload_text(run.payload);
+  } catch (err: any) {
+    if (err.code === "ENOENT") {
+      red_text(`Error: File not found with path "` + err.path + `"`);
+    } else if (err.code === "EISDIR") {
+      red_text(
+        `Error: Path was a directory where a file was required, with path "` +
+          err.path +
+          `"`
+      );
+    } else if (err.code === "EACCES" || err.code === "EPERM") {
+      red_text(
+        `Error: Denied permission to read or write this file, with path "` +
+          err.path +
+          `"`
+      );
+    } else {
+      red_text("Error: " + err.message);
+    }
+  }
+});
+
+program.parse();
+
+// ---- Color functions ----
 function green_text(s: string) {
-   process.stderr.write(`\x1b[32m${s}\x1b[0m\n`);
+  process.stderr.write(`\x1b[32m${s}\x1b[0m\n`);
 }
 function yellow_text(s: string) {
-   process.stderr.write(`\x1b[33m${s}\x1b[0m\n`);
+  process.stderr.write(`\x1b[33m${s}\x1b[0m\n`);
 }
 function red_text(s: string) {
-   process.stderr.write(`\x1b[31m${s}\x1b[0m\n`);
+  process.stderr.write(`\x1b[31m${s}\x1b[0m\n`);
 }
 function normal_text(s: string) {
-   process.stderr.write(`${s}\n`);
+  process.stderr.write(`${s}\n`);
 }
 function payload_text(s: string) {
-   process.stdout.write(s);
+  process.stdout.write(s);
 }

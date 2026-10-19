@@ -9,22 +9,15 @@
    <meta name="keywords" content="conlangs">
    <meta name="author" content="Neonnaut">
    <!-- Scripts and stylings -->
-   <link href="style.css" rel="stylesheet" type="text/css" media="all">
-   <style>
-      #myNav, #content, footer {
-         max-width: 1000px;
-      }
-   </style>
-   <script src="./cm6.bundle.js"></script>
+   <link href="./style.css" rel="stylesheet" type="text/css" media="all">
+   <script src="./dist/cm6.bundle.js"></script>
    <!-- Fonts -->
-   <script src="./font_awesome.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/js/all.js"></script>
    <!-- Icons -->
 </head>
 <body>
    <nav id="myNav">
       <ol class="breadcrumbs">
-         <li>
-         </li>
          <li style="float: right;">
          <button id="main_menu"><i class="fa fa-bars"></i> Menu</button>
          </li>
@@ -32,7 +25,7 @@
    </nav>
 
    <div id="content">
-      <section id="top">
+      <section id="top" class="interface">
          <div>
             <img src="img/nesca.svg" alt="Logo of a spaceman" style="float: left;">
             <h1 style="margin: 15px 0 10px 0; padding-top: 10px;">Nesca SC</h1>
@@ -75,64 +68,79 @@
          <fieldset id="config" style="display: inline-block;">
             <legend>Config</legend>
 
-            <label for="my_mode">Mode:</label>
-            <select id="my_mode" aria-label="Output mode" style="margin-bottom: 2px;">
-               <option value="word-list" selected>Word-list</option>
-               <option value="debug">Debug</option>
-               <option value="old-to-new">Old-to-new</option>
-               <option value="paragraph">Paragraph</option>
-            </select> <br>
+            <div class="input-container">
+               <label for="my_mode">Mode</label>
+               <select id="my_mode" aria-label="Output mode" style="margin-bottom: 2px;">
+                  <option value="word-list" selected>Word-list</option>
+                  <option value="old-to-new">Old-to-new</option>
+                  <option value="debug">Debug</option>
+                  <option value="paragraph">Paragraph</option>
+               </select>
+            </div>
 
-            <label for="nesca-input-divider">Input divider:</label>
-            <input type="text" autocomplete="off" id="nesca-input-divider" style="width: 70px; margin-bottom: 2px;"><br>
 
-            <label for="nesca-output-divider">Output divider:</label>
-            <input type="text" autocomplete="off" id="nesca-output-divider" style="width: 70px; margin-bottom: 5px;"><br>
+            <div class="input-container">
+               <label for="nesca-input-divider">Input divider</label>
+               <input type="text" autocomplete="off" id="nesca-input-divider" style="width: 70px; margin-bottom: 2px;" placeholder="\n">
+            </div>
 
-            <input type="checkbox" id="sort-words">
-            <label for="sort-words">Sort words</label><br>
+            <div class="input-container">
+               <label for="nesca-output-divider">Output divider</label>
+               <input type="text" autocomplete="off" id="nesca-output-divider" style="width: 70px; margin-bottom: 5px;" placeholder="\n">
+            </div>
+
+            <div class="input-container">
+               <input type="checkbox" id="sort-words">
+               <label for="sort-words">Sort words</label>
+            </div>
+            
          </fieldset><br>
 
          <fieldset id="file-save-load" style="display: inline-block;">
             <legend>File save / load</legend>
 
-            <label for="file-name">File name:</label>
-            <input type="text" autocomplete="off" id="file-name" placeholder="nesca" style="width: 130px"><br>
-            <button type="submit" class="styled-button" id="save-file"><i class="fa fa-save"></i>Save file</button>
-            <button type="submit" class="styled-button" id="load-file"><i class="fa fa-file-import"></i>Load file</button>
-            <button type="submit" class="styled-button clear-editor"><i class="fa fa-trash-can"></i>Clear editor</button>
-            <br>
+            <div class="input-container">
+               <label for="file-name">File name</label>
+               <input type="text" autocomplete="off" id="file-name" placeholder="nesca" style="width: 130px">
+            </div>
+
+            <div class="button-container">
+               <button type="submit" class="styled-button" id="save-file"><i class="fa fa-save"></i>Save file</button>
+               <button type="submit" class="styled-button" id="load-file"><i class="fa fa-file-import"></i>Load file</button>
+               <button type="submit" class="styled-button clear-editor"><i class="fa fa-trash-can"></i>Clear editor</button>
+            </div>
 
             <details class="dropdown-group">
             <summary class="dropdown-btn"><i class="fa fa-caret-down"></i>Examples</summary>
-            <button class="dropdown-itm-btn nesca-example" value="default">Basic</button>
-            <button class="dropdown-itm-btn nesca-example" value="latin_to_portuguese">Latin to portuguese</button>
+            <div class="button-container">
+               <button class="dropdown-itm-btn nesca-example" value="default">Basic</button>
+               <button class="dropdown-itm-btn nesca-example" value="latin_to_portuguese">Latin to portuguese</button>
+            </div>
             </details>
 
          </fieldset><br>
 
          <fieldset style="display: inline-block;">
             <legend>Editor options</legend>
-            <div style="float: left; display: inline; margin: 4px 10px 2px 0;">
+            <div class="input-container">
                <input type="checkbox" id="editor-wrap-lines">
                <label for="editor-wrap-lines">Wrap lines</label>
             </div>
-
-            <div style="float: left; display: inline; margin: 4px 10px 2px 0;">
+            <div class="input-container">
                <input type="checkbox" id="show-keyboard-section">
                <label for="show-keyboard-section">Show keyboard</label>
             </div>
-            <br style="clear: left;">
 
             <details class="dropdown-group" id="colour-switch-field">
                <summary class="dropdown-btn"><i class="fa fa-caret-down"></i>Themes</summary>
+               <div class="button-container">
                <button class="dropdown-itm-btn" id="system-mode" value="System*" name="changeThemeButton">System</button>
                <button class="dropdown-itm-btn" id="light-mode" value="Light" name="changeThemeButton">Light</button>
                <button class="dropdown-itm-btn" id="warm-mode" value="Warm" name="changeThemeButton">Warm</button>
                <button class="dropdown-itm-btn" id="dark-mode" value="Dark" name="changeThemeButton">Dark</button>
+               </div>
             </details>
          </fieldset>
-   
          
       </section>
 

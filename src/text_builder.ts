@@ -310,7 +310,7 @@ class Text_Builder {
          `\n  Remove duplicates: ${this.remove_duplicates}` +
          `\n  Force word limit: ${this.force_word_limit}` +
          `\n  Sort words: ${this.sort_words}` +
-         `\n  Output divider: "${this.output_divider}"` +
+         `\n  Output divider: "${this.output_divider.replace(/\n/g, "\\n")}"` +
          `\n}`;
 
       this.logger.diagnostic(option_info);

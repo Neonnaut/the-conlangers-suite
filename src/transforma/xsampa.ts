@@ -146,7 +146,7 @@ const xsampa_to_ipa_code_map: Record<string, number> = {
    _f: 846, // whistled [◌͎]
    _i: 8595, // ingressive [◌↓]
    _s: 845, // spread lips [◌͍]
-   _u: 840, // tenseness [◌͈]
+   _V: 840, // tenseness [◌͈]
    _W: 841, // weak articulation [◌͉]
    _z: 842, // denasalisation [◌͊]
 };
@@ -297,7 +297,7 @@ const ipa_code_map_to_xsampa: Record<number, string> = {
    846: "_f", // whistled [◌͎]
    8595: "_i", // ingressive [◌↓]
    845: "_s", // spread lips [◌͍]
-   840: "_u", // tenseness [◌͈]
+   840: "_V", // tenseness [◌͈]
    841: "_W", // weak articulation [◌͉]
    842: "_z", // denasalisation [◌͊]
 };

@@ -181,7 +181,6 @@ class Generation_Resolver {
       for (const j of items) {
          masks.push(this.supra_builder.replace_for_mask(j));
       }
-      console.log(masks);
 
       // Stage 5: return a fully-formed class object
       return {
@@ -372,7 +371,7 @@ class Generation_Resolver {
          }
 
          classes.push(
-            `Word-class ${i} "${w_class.name}" {\n` +
+            `Word-class "${w_class.name === null ? "default" : w_class.name}" {\n` +
                `  Distribution: ${w_class.wordshape_distribution}\n` +
                `  Optionals-weight: ${w_class.optionals_weight}\n` +
                `  Wordshapes:\n` +

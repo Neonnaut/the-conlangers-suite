@@ -1,187 +1,131 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-import fs from 'fs';
-import yargs from 'yargs/yargs';
 
-import { hideBin } from 'yargs/helpers';
+import fs from "fs";
+import { Command, InvalidArgumentError } from "commander";
 
-// Type-only import (safe in CommonJS with TypeScript)
-import type { Arguments } from 'yargs';
+import { vocabug } from "../../src/main";
+import { VERSION } from "../../src/utils/version";
 
-import { vocabug } from '../../src/main';
-import { VERSION } from '../../src/utils/version';
+import {
+  Output_Modes,
+  encodings,
+  green_text,
+  yellow_text,
+  red_text,
+  normal_text,
+  payload_text
+} from "../cli_arg_helpers";
 
+// ---- Encoding coercion ----
+function coerceEncoding(enc: string): BufferEncoding {
+  const littleEnc = enc.toLowerCase();
 
-type CLI_Args = Arguments<{
-   num_of_words: number;
-   output_mode: string;
-   remove_duplicates: boolean;
-   force_word_limit: boolean;
-   sort_words: boolean;
-   output_divider: string;
-   wordclass_choices: string;
-   encoding: BufferEncoding;
-}> & {
-   _: string[]; // positional args
-};
+  if (littleEnc === "utf-16le") {
+    return "utf16le";
+  }
 
-type Output_Modes = 'word-list' | 'debug' | 'paragraph';
+  if (!(encodings as string[]).includes(littleEnc)) {
+    let errorString =
+      'Invalid values:\n  Argument: encoding, ' +
+      `Given: "${enc}", Choices: ` +
+      encodings.map((e) => `"${e}"`).join(", ");
+    throw new InvalidArgumentError(errorString);
+  }
 
+  return littleEnc as BufferEncoding;
+}
 
-const encodings: readonly BufferEncoding[] = [
-   'ascii',
-   'binary',
-   'latin1',
-   'ucs-2',
-   'ucs2',
-   'utf-8',
-   'utf16le',
-   'utf8'
-];
+const program = new Command();
 
-const argv = yargs(hideBin(process.argv))
-   .usage('Usage: $0 <path> [options]')
+program
+  .name("vocabug")
+  .usage("<path> [options]")
+  .version(VERSION, "-v, --version")
+  .helpOption("-?, --help", "Show help")
+  .addHelpText(
+    "after",
+    "\nFor full documentation, visit: https://neonnaut.neocities.org/vocabug_docs"
+  );
 
-   // aliases for default flags
-     .help("help")
-     .wrap(null) // prevents line wrapping
-     .epilog("For full documentation, visit: https://neonnaut.neocities.org/vocabug_docs")
-   .alias({ help: '?', version: 'v' })
-   // custom options
+// ---- Options ----
+program
+  .argument("<path>", "Path to input file")
 
-   .option('num_of_words', {
-      alias: 'n',
-      describe: 'Number of words to generate',
-      type: 'number',
-      default: 100,
-   })
-   .option('output_mode', {
-      alias: 'm',
-      describe: 'Output mode',
-      choices: ['word-list', 'debug', 'paragraph'] as const,
-      default: 'word-list'
-   })
-   .option('remove_duplicates', {
-      alias: 'r',
-      describe: 'Remove duplicate words',
-      type: 'boolean',
-      default: true
-   })
-   .option('force_word_limit', {
-      alias: 'l',
-      describe: 'Force word limit',
-      type: 'boolean',
-      default: false
-   })
-   .option('sort_words', {
-      alias: 's',
-      describe: 'Sort generated words',
-      type: 'boolean',
-      default: true
-   })
-   .option('output_divider', {
-      alias: 'od',
-      describe: 'Divider between words',
-      type: 'string',
-      default: ' '
-   })
-   .option('wordclass_choices', {
-      alias: 'wc',
-      describe: 'Comma-separated list of word classes to generate (e.g., "noun,verb")',
-      type: 'string',
-      default: ''
-   })
-   .option('encoding', {
-      alias:       'e',
-      choices:     encodings,
-      describe:    'What file encoding to use',
-      default:     'utf8',
-      requiresArg: true,
-      coerce:      (enc: string) => {
-         // ignore case, and allow 'utf-16le' as a synonym for 'utf16le'
-         const littleEnc = enc.toLowerCase();
-         if (littleEnc === 'utf-16le') {
-            return 'utf16le';
-         } else if (!(<string[]>encodings).includes(littleEnc)) {
-            // throw an error indicating an invalid encoding
-            let errorString = 'Invalid values:\n  Argument: encoding, '
-               + `Given: "${enc}", Choices: `;
+  .option("-n, --num_of_words <number>", "Number of words to generate", "100")
+  .option(
+    "-m, --output_mode <mode>",
+    "Output mode",
+    (value) => value,
+    "word-list"
+  )
+  .option("-r, --remove_duplicates", "Remove duplicate words", true)
+  .option("-l, --force_word_limit", "Force word limit", false)
+  .option("-s, --sort_words", "Sort generated words", true)
+  .option("-od, --output_divider <string>", "Divider between words", " ")
+  .option(
+    "-wc, --wordclass_choices <list>",
+    'Comma-separated list of word classes (e.g., "noun,verb")',
+    ""
+  )
+  .option(
+    "-e, --encoding <enc>",
+    "What file encoding to use",
+    coerceEncoding,
+    "utf8"
+  );
 
-            for (let i = 0; i < encodings.length; ++i) {
-               if (i !== 0) {
-                  errorString += ', ';
-               }
-               errorString += `"${encodings[i]}"`;
-            }
-            throw new Error(errorString);
-         }
-         return littleEnc;
-      }
-   })
+// ---- Main ----
+program.action((filePath: string, options) => {
+  try {
+    // Always convert to string to avoid NonSharedBuffer issues
+    const raw = fs.readFileSync(filePath);
+    const file_text = raw.toString(options.encoding);
 
-   .check(argv => {
-      return true;
-   })
-   .parseSync() as CLI_Args;
+    normal_text(
+      `Generating words with Vocabug version ${VERSION}. This may take up to 30 seconds...`
+    );
 
-const filePath = argv._[0]; // first positional arg
-
-try {
-   const file_text = fs.readFileSync(filePath, argv.encoding);
-   normal_text(`Generating words with Vocabug version ${VERSION}. This may take up to 30 seconds...`);
-
-   const parsed_choices: string[] = argv.wordclass_choices
+    const parsed_choices: string[] = options.wordclass_choices
       .split(",")
-      .map((choice) => choice.trim())
-      .filter((choice) => choice.length > 0);
+      .map((choice: string) => choice.trim())
+      .filter((choice: string) => choice.length > 0);
 
-   const run = vocabug({
+    const run = vocabug({
       file: file_text,
-      num_of_words: argv.num_of_words,
-      output_mode: argv.output_mode as Output_Modes,
-      remove_duplicates: argv.remove_duplicates,
-      force_word_limit: argv.force_word_limit,
-      sort_words: argv.sort_words,
-      output_divider: argv.output_divider,
+      num_of_words: Number(options.num_of_words),
+      output_mode: options.output_mode as Output_Modes,
+      remove_duplicates: Boolean(options.remove_duplicates),
+      force_word_limit: Boolean(options.force_word_limit),
+      sort_words: Boolean(options.sort_words),
+      output_divider: options.output_divider,
       wordclass_choices: parsed_choices
-   });
+    });
 
-   for (const warning of run.warnings) {
-      yellow_text(warning);
-   }
-   for (const error of run.errors) {
-      red_text(error);
-   }
-   for (const info of run.infos) {
-      green_text(info);
-   }
-   if (run.payload) {
-      payload_text(run.payload);
-   }
-} catch (err: any) {
-   if (err.code === "ENOENT") {
-      red_text(`Error: File not found with path "` + err.path +`"`);
-   } else if (err.code === "EISDIR") {
-      red_text(`Error: You passed a directory where a file was required with path "` + err.path +`"`);
-   } else if (err.code === "EACCES" || err.code === "EPERM") {
-      red_text(`Error: You do not have permission to read or write this file, with path "` + err.path +`"`);
-   } else {
+    for (const warning of run.warnings) yellow_text(warning);
+    for (const error of run.errors) red_text(error);
+    for (const info of run.infos) green_text(info);
+
+    if (run.payload) payload_text(run.payload);
+  } catch (err: any) {
+    if (err.code === "ENOENT") {
+      red_text(`Error: File not found with path "` + err.path + `"`);
+    } else if (err.code === "EISDIR") {
+      red_text(
+        `Error: You passed a directory where a file was required with path "` +
+          err.path +
+          `"`
+      );
+    } else if (err.code === "EACCES" || err.code === "EPERM") {
+      red_text(
+        `Error: You do not have permission to read or write this file, with path "` +
+          err.path +
+          `"`
+      );
+    } else {
       red_text("Error: " + err.message);
-   }
-}
+    }
+  }
+});
 
-function green_text(s: string) {
-   process.stderr.write(`\x1b[32m${s}\x1b[0m\n`);
-}
-function yellow_text(s: string) {
-   process.stderr.write(`\x1b[33m${s}\x1b[0m\n`);
-}
-function red_text(s: string) {
-   process.stderr.write(`\x1b[31m${s}\x1b[0m\n`);
-}
-function normal_text(s: string) {
-   process.stderr.write(`${s}\n`);
-}
-function payload_text(s: string) {
-   process.stdout.write(s);
-}
+program.parse();

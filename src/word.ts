@@ -2,6 +2,8 @@ import type { Output_Mode, Word_Step } from "./utils/types";
 
 class Word {
    static output_mode: Output_Mode = "word-list";
+   // This above means that the default output mode is "word-list"
+   // But it is set soon after in the Word_Builder constructor
 
    current_form: string;
    rejected: boolean;
@@ -15,7 +17,7 @@ class Word {
    static field_delimiters: string[] = [];
 
    constructor(action: string | null, fields: Record<string, string>) {
-      this.rejected = false; // This may be changed in transforms or when the word is ""
+      this.rejected = false; // This may be changed via REJECTS or when the word is 0 length
       this.current_form = fields["word"];
       this.num_of_transformations = 0;
 
@@ -30,7 +32,7 @@ class Word {
             line_num: null,
          });
       } else {
-         // The only action can be creating a word from a word-shape
+         // The only <action> in the constructor is creating a word from a word-shape
          this.steps.push({
             action: action,
             form: fields["word"],
@@ -76,7 +78,7 @@ class Word {
          if (first_step) {
             first_form = first_step.form || "";
          }
-         output.push(`${first_form} => ${this.current_form}`);
+         output.push(`⟨${first_form}⟩ ➤ ⟨${this.current_form}⟩`);
          return output.join("");
       }
       output.push(`${this.current_form}`);

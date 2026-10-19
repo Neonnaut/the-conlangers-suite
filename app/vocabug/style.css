@@ -1,3 +1,8 @@
+@font-face {
+  font-family: Charis; /* set name */
+  src: url(./font/Charis-Regular.ttf) format("truetype");
+}
+
 
 html {
    font-size: 62.5%;
@@ -118,8 +123,8 @@ html {
    --input-box-border-focus: #000000;
 
    --disabled-button-bg: #eee;
-   --disabled-button-text: #6c6c6c;
-   --delete-button-bg: #ffc7d9;
+   --disabled-button-text: #444444;
+   --delete-button-bg: #a31313;
 
    --textbox-bg: #fff;
    --textbox-text: #000;
@@ -169,7 +174,7 @@ html {
 
    --active-bg: #aa2f02;
    --active-text: #fff;
-   --select-bg: #f4852b;
+   --select-bg: #d26d1b;
    --select-text: #fff;
 
    --error-text: #8b0000;
@@ -187,7 +192,7 @@ html {
    /* CODE & BUTTON & TEXTBOX */
    --code-bg: #eedfdf;
    --code-text: #000;
-   --button-bg: #cd7b23;
+   --button-bg: #b76c1d;
    --button-text: #ffffff;
    --select-border: #4c4c80;
 
@@ -195,8 +200,8 @@ html {
    --input-box-border-focus: #262626;
 
    --disabled-button-bg: #dadada;
-   --disabled-button-text: #6c6c6c;
-   --delete-button-bg: #ffc7d9;
+   --disabled-button-text: #444444;
+   --delete-button-bg: #a31313;
 
    --textbox-bg: #f9f9f9;
    --textbox-text: #073642;
@@ -266,6 +271,9 @@ section {
    background: var(--section-bg);
    color: var(--text);
    margin: 10px 0 0 0;
+   padding: 15px;
+}
+section.interface {
    padding: 8px;
 }
 section#top {
@@ -549,9 +557,30 @@ fieldset {
    padding: 5px 5px;
    margin-bottom: 8px;
 }
+
+
+.button-container {
+  display: flex;
+  flex-wrap: wrap;   /* allow buttons to overflow onto new lines */
+  gap: 0.3em;
+  margin-bottom: 5px;
+}
+.input-container {
+  display: flex;
+  flex-wrap: wrap;   /* allow buttons to overflow onto new lines */
+  gap: 0.3em;
+  margin: 2px 0;
+}
+.input-container label {
+   padding: 3px 0;
+}
+
+
+
 fieldset legend {
    font-weight: bold;
    padding: 0 2px;
+   user-select: none;
 }
 input[type='checkbox'], input[type='radio'], input[type='range'], progress {
    accent-color: var(--active-bg);
@@ -567,17 +596,19 @@ select option:hover {
    color: var(--hover-text);
 }
 select {
-   padding: 6px;
    color: var(--textbox-text);
    background: var(--textbox-bg);
-   border-radius: 3px;
-   font-size: inherit;
-
-   -webkit-appearance: none;
-   appearance: none;
-   
-   line-height: 16px; /*ios*/
    cursor: pointer;
+
+   border-radius: 3px;
+   border-color: var(--input-box-border);
+   font-size: inherit;
+   padding: 6px;
+   line-height: 16px; /* ios */
+}
+select,
+select::picker(select) {
+  appearance: base-select;
 }
 
 select:disabled {
@@ -590,7 +621,7 @@ input[type='color'],
 input[type='number'], input[type='date'], input[type='month'], input[type='week'],
 input[type='datetime-local'], input[type='text'], input[type='password'],
 input[type='url'], input[type='email'], input[type='tel'], input[type='search'],
-textarea, .fake-textbox, select {
+textarea, .fake-textbox {
    border: 1px solid var(--input-box-border);
    outline: none;
 
@@ -667,7 +698,7 @@ textarea {
    font-size: 1.2em;
    font-weight: 500;
    line-height: 1;
-   margin: 2px 0 2px 0;
+   margin: 3px 0 3px 0;
    padding: 7px 10px 5px 10px;
    text-align: center;
    transition: all 0.1s ease-in-out;
@@ -675,8 +706,11 @@ textarea {
    user-select: none;
    cursor: pointer;
 
-   border: 1px solid rgba(0,0,0,0.4);
-   box-shadow: inset 0 1px 3px rgba(140,140,140,0.5), 0 1px rgba(140,140,140,0.2);
+   border: 0;
+   transition: all 150ms ease-in-out;
+   box-shadow: rgba(255, 255, 255, 0.2) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.9) 0px 0px 0px 1px;
+   border-radius: 6px;
+   background-image: radial-gradient(76% 151% at 52% -52%, rgba(255, 255, 255, 0.23) 0%, transparent 100%);
 }
 .styled-button[type="disabled"], .styled-button:disabled {
    background: var(--disabled-button-bg);
@@ -685,7 +719,8 @@ textarea {
 }
 
 .styled-button:hover:not(:disabled), #main_menu:hover, .dropdown-btn:hover {
-   box-shadow: inset 0 2px 3px rgba(180, 180, 180, 0.6), 0 1px rgba(180, 180, 180, 0.2);
+   filter: brightness(1.03);
+   box-shadow: #ffffff33 0px 1px 0px 0px inset, #666666e6 0px 0px 0px 1px;
 }
 
 .styled-button:active:not(:disabled), 
@@ -699,7 +734,8 @@ textarea {
 .dropdown-btn, #main_menu {
    border-radius: 3px;
 }
-textarea:disabled {
+
+textarea:disabled, input:disabled{
    background: var(--disabled-button-bg);
    color: var(--disabled-button-text);
 }
@@ -717,23 +753,28 @@ textarea:disabled {
    border: none;
    font-size: 0.90em;
 
-   box-shadow: inset 0 1px 3px rgb(0 0 0 / 50%);
-   -webkit-box-shadow: inset 0 1px 3px rgb(0 0 0 / 50%);
-   text-decoration: none;
+   border: 0;
+   transition: all 150ms ease-in-out;
+   box-shadow: rgba(255, 255, 255, 0.2) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.9) 0px 0px 0px 1px;
+   border-radius: 3px;
+   background-image: radial-gradient(76% 151% at 52% -52%, rgba(255, 255, 255, 0.23) 0%, transparent 100%);
 
+   text-decoration: none;
    -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;
    user-select: none;
 }
 .dropdown-group .dropdown-itm-btn:hover {
    cursor: pointer;
-   box-shadow: inset 0 1px 3px rgba(140,140,140,0.5), 0 1px rgba(140,140,140,0.2);
+
    text-decoration: none;
+
+   filter: brightness(1.03);
+   box-shadow: #ffffff33 0px 1px 0px 0px inset, #666666e6 0px 0px 0px 1px;
 }
 .dropdown-group .dropdown-itm-btn:active {
    color: var(--select-text);
    background: var(--select-bg);
-   -webkit-box-shadow: none;
-            box-shadow: none;
+   box-shadow: 1px var(--select-bg);
 }
 
 /*-- Embedded content --*/
@@ -744,10 +785,12 @@ meter::-moz-meter-bar {
    background: var(--active-bg);
    border: none;
 }
-video, audio, iframe, embed, object {
-   width:100%;
+iframe, embed, object {
    border: solid var(--dark-grey-border) 1px;
    border-radius: 3px;
+}
+video, audio, iframe, embed, object {
+   width:100%;
 }
 img {
    max-width: 580px;
@@ -809,22 +852,15 @@ div .gll {
 }
 #voc-output-words-field, #GMGOutput{
    font-family: monospace;
-   resize: vertical;
 }
 #out {
    margin: 10px 0;
 }
-.switch-field {
-   margin: 10px 0;
-}
-.switch-field .checked {
+
+.button-container .checked, .dropdown-group .checked,
+.button-container .checked:hover, .dropdown-group .checked:hover {
    background: var(--active-bg);
-   box-shadow: none;
-   color: var(--active-text)
-}
-.dropdown-group .checked {
-   background: var(--active-bg);
-   box-shadow: none;
+   box-shadow: var(--active-bg) 0px 0px 0px 1px;
    color: var(--active-text)
 }
 
@@ -868,7 +904,7 @@ div .gll {
    display: inline-block;
 }
 
-.ipa-keyboard-seperator {
+.ipa-keyboard-separator {
  padding: 10px;
 }
 
@@ -879,25 +915,31 @@ div .gll {
    white-space: nowrap;
    overflow-y: hidden;
    align-items: center;
+   border-collapse: collapse;
+}
+
+.ipa-table, ipa-table tr, .ipa-table td {
+   border: 1px solid var(--section-bg);
 }
 
 
 .ipa-table tr td{
- padding: 1px 1px 0 0;
- width: 28px;
- height: 28px;
+ padding: 0;
+ height: 30px;
+ width: 30px;
+ 
 }
 .ipa-table button, .keyboard-button {
    color: #000;
    margin: 0 auto;
    padding: 0;
-   width: 27px;
+   width: 100%;
    height: 100%;
    border: none;
    border-radius: 0;
    cursor: pointer;
 
-   font-size: 19px;
+   font-size: 1.3em;
 
    box-shadow: inset 0 1px 3px rgba(88,88,88,0.4), 0 1px rgb(88 88 88 / 10%);
    -webkit-box-shadow: inset 0 1px 3px rgba(88,88,88,0.4), 0 1px rgb(88 88 88 / 10%);
@@ -914,46 +956,29 @@ div .gll {
    box-shadow: none;
 }
 
-@media only screen and (min-width: 660px) {
+@media only screen and (min-width: 600px) {
 
    .ipa-table button, .keyboard-button {
       font-size: 1em;
-      width: 24px;
    }
    .ipa-table tr td{
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 25px;
    }
-
-
-   .ipa-keyboard-section, .ipa-keyboard-seperator {
+   .ipa-keyboard-section, .ipa-keyboard-separator {
       float:left;
       display: inline;
    }
-
 }
 
-@media only screen and (min-width: 797px) {
+@media only screen and (min-width: 812px) {
    .ipa-table button, .keyboard-button {
-      font-size: 21px;
-      width: 28px;
+      font-size: 1.2em;
    }
    .ipa-table tr td{
       width: 28px;
-      height: 28px;
+      height: 30px;
    }
-
-
-
-    .ipa-table button, .keyboard-button {
-      font-size: 21px;
-      width: 28px;
-   }
-   .ipa-table tr td{
-
-      width: 28px;
-      height: 28px;
-    }
 }
 
 #ipa-output-toolbar {
@@ -1013,7 +1038,6 @@ div .gll {
 }
 
 #ipa-output {
-   font-family: "Charis SIL", "Doulos SIL", Gentium, Arial, Serif;
    position:fixed;
    bottom: 0;
    left: 0;
@@ -1022,9 +1046,9 @@ div .gll {
    overflow-x: hidden;
 }
 
-#ipa-output textarea, .ipa-table button, #ipa-output #sampaBox, keyboard-button
+#ipa-output textarea, .ipa-table button, #ipa-output #sampaBox,
 #ipa-output-toolbar #symbols-used a {
-font-family: "Charis SIL", "Doulos SIL", Gentium, Arial, Serif;
+  font-family: "Charis SIL", Charis, "Doulos SIL", Gentium, Arial, Serif;
 }
 
 .iss {
@@ -1093,7 +1117,8 @@ font-family: "Charis SIL", "Doulos SIL", Gentium, Arial, Serif;
 
 /* --Mobile first, because that's the hipster thing to do I guess-- */
 @media only screen and (min-width: 701px) {
-   section { padding: 30px 30px;}
+   section { padding: 30px 46px;}
+   section.interface { padding: 15px 15px;}
 }
 
 
@@ -1218,8 +1243,13 @@ font-family: "Charis SIL", "Doulos SIL", Gentium, Arial, Serif;
 
 
 .voca-delete {
-      border: 1px solid rgba(0,0,0,0.4);
-   box-shadow: inset 0 1px 3px rgb(0 0 0 / 50%), 0 1px rgb(0 0 0 / 20%);
+   border: 0;
+   transition: all 150ms ease-in-out;
+   box-shadow: #ffffff33 0px 1px 0px 0px inset, #212121e6 0px 0px 0px 1px;
+   border-radius: 6px;
+   background-image: radial-gradient(76% 151% at 52% -52%, #ffffff3b 0%, transparent 100%);
+   
+   color: var(--button-text);
    background: var(--delete-button-bg);
    padding: 6px;
    border: none;
@@ -1227,7 +1257,7 @@ font-family: "Charis SIL", "Doulos SIL", Gentium, Arial, Serif;
    cursor: pointer;
 }
 .voca-delete:hover {
-   box-shadow: inset 0 1px 3px rgba(140,140,140,0.5), 0 1px rgba(140, 140, 140, 0.274);
+   box-shadow: #ffffff33 0px 1px 0px 0px inset, #a05050e6 0px 0px 0px 1px;
 }
 
 
@@ -1253,10 +1283,6 @@ details>summary::marker {
 }
 
 
-@media only screen and (min-width: 570px) {
-
-}
-
 #nesca-divider {
   display: none;
   width: 6px;
@@ -1268,13 +1294,12 @@ details>summary::marker {
     transparent 4px,
     transparent 8px
   );
-  margin: 58px 2px 32px 2px;
+  margin: 60px 2px 44px 2px;
 }
 
 .nesca-pane textarea {
   width: 100%;
 }
-
 .nesca-pane-label {
    font-size: 1.7em;
    margin: 10px 0;
@@ -1317,4 +1342,8 @@ details>summary::marker {
     flex: 1;
     box-sizing: border-box;
   }
+}
+
+strong {
+   color: var(--bold);
 }

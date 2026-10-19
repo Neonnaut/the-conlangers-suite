@@ -1,6 +1,10 @@
 const examples: { [key: string]: string } = {
   default: 
-`; Anything after a semicolon is a comment until the end of the line.
+`; Vocabug randomly generates vocabulary from a given definition of graphemes
+; and word patterns. It can be used to generate words for a fictional language,
+; original nicknames or passwords, or just for fun.
+
+; Anything after a semicolon is a comment until the end of the line.
 
 ; A Category is a group of graphemes assigned to a key.
 ; By default, graphemes in a category furthest to the left
@@ -198,34 +202,43 @@ note:
 `note:
   This does not represent a single Australian language,
   nor does it represent the average Australian language,
-  it creates Australian looking words.
+  but it does create Australian looking words.
 
   CONSONANTS:
-  p  t  ṭ  č  k
-  m  n  ṇ  ň  ŋ
-     l  ḷ  y  w
-     r  ṛ
+  p  t  th  j   k
+  m  n  nh  ny  ng
+     l  lh  y   w
+     r  rh
 
   VOWELS:
   i ii    u uu
   a aa ai
 
-  Words begin with <a> or a consonant that is not <r, ṛ, l, ḷ, ṇ>.
-  No monosyllabic words. Disylabic words DON'T begin with <a>
-  Medial Singleton consonants are unrestricted.
-  There are intervocalic consonant clusters.
-  Any vowel or <ai> occurs between any two consonants.
-  Words end in <a, i, u> or <n, l, r, ṛ, t>
+  TRANSCRIPTION:
+  - <th, nh, lh, rh> are retroflex consonants
+  - <j> is a palatal voicless stop
+  - <ny, ng> are palatal and velar nasals
+  - Double vowels are long vowels
+
+  PHONOTACTICS:
+  - Words begin with <a> or a consonant that is not <r, rh, l, lh, nh>.
+  - No monosyllabic words. Disylabic words DON'T begin with <a>
+  - Medial Singleton consonants are unrestricted.
+  - There are intervocalic consonant clusters.
+  - Any vowel or <ai> occurs between any two consonants.
+  - Vowel sequences other than <ai> don't occur
+  - Words end in <a, i, u> or <n, l, r, rh, t>
 
 categories:
 ; Initials:
-  I = k p m w ŋ y n t č ň ṭ
+  I = k p m w ng y n t j ny th
 ; Clusters
-  X = {mp nt ṇṭ nč ňč ŋk nk} {rp rč rk rm lk lp} {rm rň} {ḷp ḷṭ ḷk} {nm nň nŋ np}
+  X = {mp nt nht nj nyj ngk nk} {rp rj rk rm lk lp} {rm rny}
+      {lhp lht lhk} {nm nny nng np}
 ; Medials
-  C = k m ṛ l r w y n t č p ŋ ḷ ṭ ň X {d ṇ}
+  C = k m rh l r w y n t j p ng lh th nh X nh
 ; Finals
-  F = n l r ṛ t
+  F = n l r rh t
 ; Vowels
   V = a i u {aa*1 ii {uu e ai}} 
   W = a i u
@@ -242,22 +255,21 @@ words:
   <First><Medial><Medial><Medial><Medial><Last>
 
 graphemes:
-  č ň ṛ aa uu ii
+  aa uu ii ai th nh lh rh ny ng
 
 stage:
-  i -> ^ / a_{y,ň,č,w} ; <ai> becomes <a> before palatals or <w>
+; <ai> becomes <a> before palatals or <w>
+  i -> ^ / a_{y,ny,j,w}
 
+; Merge <e> into the other vowels
   e -> a / _#
   <@chance = 70%
-    e → u / _(C)u
+    e → u / _(C)(C)u
   >
   <@chance = 70%
-    e → i / _(C)i
+    e → i / _(C)(C)i
   >
-  e -> a
-
-  d -> ṛ / u_
-  d -> t`
+  e -> a`
 };
 
 export { examples };
