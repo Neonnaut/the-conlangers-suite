@@ -79,8 +79,8 @@
       "README"
    ],
    "bin": {
-      "vocabug": "./bin/vocabug/dist/index.js",
-      "nesca": "./bin/nesca/dist/index.js"
+      "vocabug": "./bin/dist/vocabug/index.js",
+      "nesca": "./bin/dist/nesca/index.js"
    },
    "dependencies": {
       "commander": "^15.0.0"

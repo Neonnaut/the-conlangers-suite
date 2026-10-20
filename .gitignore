@@ -12,8 +12,6 @@ dist
 dist-ssr
 *.local
 
-./bin/nesca/index.js
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

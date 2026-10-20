@@ -79,7 +79,7 @@ Documentation lives online at [neonnaut.neocities.org/nesca_docs](neonnaut.neoci
 
 ## Development
 
-To build use `npm run build`. For live testing use `npm run dev-vocabug` or `npm run dev-nesca`.
+To build, you will need to download the source files, install dependencies, change directory into the codemirror folder and install its dependencies, and use `npm run build`. For live testing use `npm run dev-vocabug` or `npm run dev-nesca`.
 
 [1]: https://img.shields.io/npm/v/the-conlangers-suite
 [2]: https://www.npmjs.com/package/the-conlangers-suite "npm package"
@@ -92,6 +92,3 @@ To build use `npm run build`. For live testing use `npm run dev-vocabug` or `npm
 
 [badge-link]: https://github.com/Neonnaut/the-conlangers-suite/actions/workflows/ci.yml
 [Tests]: https://github.com/Neonnaut/the-conlangers-suite/actions/workflows/ci.yml/badge.svg
-
-
-

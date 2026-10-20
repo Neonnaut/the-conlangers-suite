@@ -13,7 +13,10 @@ Below is a minimal use of the program:
 import the_conlangers_suite from 'the-conlangers-suite';
 const text = "example"
 const def = the_conlangers_suite.nesca({
-    file: text
+    file: text,
+    input_words: "nesca, doctor, a",
+    input_divider: ", ",
+    output_divider: ", "
 });
 
 console.log(def.payload);
