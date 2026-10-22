@@ -1,11 +1,11 @@
-import the_conlangers_suite from '../src/index'
+import { vocabug } from '../src/index'
 import { examples } from '../app/vocabug/examples'
 import { describe, it, expect } from 'vitest';
 
 describe('vocabug', () => {
    it('returns generated words', () => {
       for (const [name, example] of Object.entries(examples)) {
-         const run = the_conlangers_suite.vocabug({
+         const run = vocabug({
             file: example,
             num_of_words: 6
          });

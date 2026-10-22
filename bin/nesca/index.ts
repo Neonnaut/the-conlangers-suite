@@ -21,6 +21,7 @@ program
   .name("nesca")
   .usage("<path> [options]")
   .version(VERSION, "-v, --version")
+  .helpOption("-?, --help")
   .addHelpText("after", "\nFor full documentation, visit: https://neonnaut.neocities.org/nesca_docs");
 
 // Options

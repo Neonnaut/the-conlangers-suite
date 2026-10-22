@@ -1,11 +1,11 @@
-import the_conlangers_suite from '../src/index'
+import { nesca } from '../src/index'
 import { examples } from '../app/nesca/examples'
 import { describe, it, expect } from 'vitest';
 
 describe('nesca', () => {
    it('returns changed words', () => {
       for (const [name, example] of Object.entries(examples)) {
-         const run = the_conlangers_suite.nesca({
+         const run = nesca({
             file: example.file,
             input_words: example.input_words
          });

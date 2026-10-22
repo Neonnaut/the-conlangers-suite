@@ -135,3 +135,15 @@
 - The API for vocabug can now access individual word-classes
 - The CLI can now access individual word-classes
 - Added "Advanced" Vocabug example
+
+## [1.0.11] - 2026-OCT-22
+
+### Modified
+
+- Modified the 'Australian' example to use digraphs instead of diacritics
+- Migrated from the dependency "Yargs" to "Commander" for the command line interface. There was nothing wrong with this package, but Commander does not rely on other dependencies, is a lot more popular, and I think the syntax is a little nicer for me
+- Migrated from the dependency "Tsup" to "Tsdown". There was nothing wrong with Tsup, but it was no longer being maintained, and the author recommends migrating to Tsdown
+- I had compiled js code from codemirror, and compiled js code for the app on the repository, as well as unused dev dependancies. I have removed all of these things
+- Some small changes to the CSS used in the app
+- Fixed some small mistakes in the docs
+- The API entrypoint now uses named exports instead of a default export

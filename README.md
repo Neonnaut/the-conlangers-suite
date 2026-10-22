@@ -3,13 +3,13 @@
 [![version][1]][2] [![license][3]][4] [![Tests]][badge-link]
 [![issue count][5]][6] [![git activity][7]][8]
 
-A suite of applications for conlangers built with typescript and the wonderful Vite tool. Each application has its own web-app, CLI, and main function in the API. This allows applications to share modules between themselves to accomplish their tasks.
+A suite of applications for conlangers built with typescript and the wonderful Vite tool. Each application has its own web-app, CLI, and API enty-point. This shared architecture allows the applications to reuse modules across the suite.
 
 ## Vocabug
 
 ![Vocabug logo](./app/vocabug/img/vocabug_logo.svg?raw=true "Vocabug")
 
-Vocabug is a word generator designed to be a successor to the Williams' [Lexifer](https://github.com/bbrk24/lexifer-ts) and to [Awkwords](https://github.com/nai888/awkwords).
+Vocabug is a vocabulary generator inspired by and intended as a successor to the Williams' [Lexifer](https://github.com/bbrk24/lexifer-ts) and to [Awkwords](https://github.com/nai888/awkwords).
 
 Vocabug randomly generates vocabulary from a given definition of graphemes, frequencies and word patterns. You can use it to make words for a constructed language, to get an original nickname or password, or just for fun.
 
@@ -45,7 +45,7 @@ Documentation (also called "help", "instructions" or "manual") lives online at [
 
 ![Nesca logo](./app/nesca/img/nesca.svg?raw=true "Nesca")
 
-Nesca, a "sound change applier", applies transformation rules to words to change them. It can be used for historical or fictional sound changes, to spell words differently, or to convert words to other alphabets. Nesca is an easy to use but powerful tool for conlangers and linguists.
+Nesca is a sound-change engine that applies transformation rules to words. It can be used for historical or fictional sound changes, to spell words differently, or to convert words to other alphabets. Nesca is an easy to use but powerful tool for conlangers and linguists.
 
 ### Major features
 
@@ -79,7 +79,24 @@ Documentation lives online at [neonnaut.neocities.org/nesca_docs](neonnaut.neoci
 
 ## Development
 
-To build, you will need to download the source files, install dependencies, change directory into the codemirror folder and install its dependencies, and use `npm run build`. For live testing use `npm run dev-vocabug` or `npm run dev-nesca`.
+Install dependencies:
+
+```
+npm install
+```
+
+Install the CodeMirror dependencies:
+
+```
+cd codemirror
+npm install
+```
+
+Build the project:
+
+```
+npm run build
+```
 
 [1]: https://img.shields.io/npm/v/the-conlangers-suite
 [2]: https://www.npmjs.com/package/the-conlangers-suite "npm package"

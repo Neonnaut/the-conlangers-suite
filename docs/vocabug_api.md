@@ -3,17 +3,17 @@
 Install with `npm install the-conlangers-suite`, or `yarn add the-conlangers-suite` and import it with either:
 
 ```ts
-const the_conlangers_suite = require('the-conlangers-suite'); // CommonJS (Node.js)
+import { vocabug } from 'the-conlangers-suite'; // ES modules
 
-import the_conlangers_suite from 'the-conlangers-suite'; // ES modules
+const { vocabug } = require('the-conlangers-suite'); // CommonJS (Node.js)
 ```
 
 Below is a minimal use of the program:
 ```ts
-import the_conlangers_suite from 'the-conlangers-suite';
-const text = "example"
-const def = the_conlangers_suite.vocabug({
-    file: text
+import { vocabug } from 'the-conlangers-suite';
+const file_text = ...
+const def = vocabug({
+    file: file_text
 });
 
 console.log(def.payload);
@@ -22,9 +22,9 @@ console.log(def.errors.join(", "));
 console.log(def.infos.join(", "));
 ```
 
-The input signature for `the_conlangers_suite.vocabug()` is:
+The input signature for `vocabug()` is:
 ```ts
-type vocabug_options = {
+type Vocabug_Options = {
     file: string; // Your definition file
     num_of_words?: number | string = 100; // Number of words to generate. Must be in range 1 to 100,000
     output_mode?: 'word-list'|'debug'|'paragraph' = "word-list";
@@ -36,9 +36,9 @@ type vocabug_options = {
 };
 ```
 
-The properties of the return of `the_conlangers_suite.vocabug()` are:
+The properties of the return of `vocabug()` are:
 ```ts
-type vocabug_output = {
+type Vocabug_Output = {
     payload: string; // The generated corpus of words.
     errors: string[]; // A list of errors that occurred, that terminated generation.
     warnings: string[]; // A list of warnings that occurred.

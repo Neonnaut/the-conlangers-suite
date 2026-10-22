@@ -3,17 +3,17 @@
 Install with `npm install the-conlangers-suite`, or `yarn add the-conlangers-suite` and import it with either:
 
 ```ts
-const the_conlangers_suite = require('the-conlangers-suite'); // CommonJS (Node.js)
+import { nesca } from 'the-conlangers-suite'; // ES modules
 
-import the_conlangers_suite from 'the-conlangers-suite'; // ES modules
+const { nesca } = require('the-conlangers-suite'); // CommonJS (Node.js)
 ```
 
 Below is a minimal use of the program:
 ```ts
-import the_conlangers_suite from 'the-conlangers-suite';
-const text = "example"
-const def = the_conlangers_suite.nesca({
-    file: text,
+import { nesca } from 'the-conlangers-suite';
+const file_text = ...
+const def = nesca({
+    file: file_text,
     input_words: "nesca, doctor, a",
     input_divider: ", ",
     output_divider: ", "
@@ -25,7 +25,7 @@ console.log(def.errors.join(", "));
 console.log(def.infos.join(", "));
 ```
 
-The input signature for `the_conlangers_suite.nesca()` is:
+The input signature for `nesca()` is:
 ```ts
 type Nesca_Options = {
    file: string;
@@ -37,9 +37,9 @@ type Nesca_Options = {
 };
 ```
 
-The properties of the return of `the_conlangers_suite.nesca()` are:
+The properties of the return of `nesca()` are:
 ```ts
-type nesca_output = {
+type Nesca_Output = {
     payload: string; // The generated corpus of words.
     errors: string[]; // A list of errors that occurred, that terminated generation.
     warnings: string[]; // A list of warnings that occurred.
