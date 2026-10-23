@@ -37,7 +37,7 @@ class Word_Bank {
       schema_input: Schema,
       schema_output: Schema,
 
-      input_words: string,
+      input_words: string | string[],
       input_divider: string,
 
       output_mode: Output_Mode,
@@ -75,7 +75,13 @@ class Word_Bank {
       this.alphabet = alphabet;
       this.invisible = invisible;
 
-      const input_word_array = input_words.split(this.input_divider);
+      let input_word_array;
+
+      if (Array.isArray(input_words)) {
+         input_word_array = input_words;
+      } else {
+         input_word_array = input_words.split(this.input_divider);
+      }
 
       for (let i = 0; i < input_word_array.length; i++) {
          if (input_word_array[i] === "") {

@@ -37,7 +37,7 @@ type Vocabug_Options = {
 };
 type Nesca_Options = {
    file: string;
-   input_words: string;
+   input_words: string | string[];
    output_mode?: Output_Mode;
    sort_words?: boolean;
    input_divider?: string;

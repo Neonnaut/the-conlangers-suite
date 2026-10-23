@@ -136,7 +136,7 @@
 - The CLI can now access individual word-classes
 - Added "Advanced" Vocabug example
 
-## [1.0.11] - 2026-OCT-22
+## [1.1.0] - 2026-OCT-23
 
 ### Modified
 
@@ -146,4 +146,5 @@
 - I had compiled js code from codemirror, and compiled js code for the app on the repository, as well as unused dev dependancies. I have removed all of these things
 - Some small changes to the CSS used in the app
 - Fixed some small mistakes in the docs
-- The API entrypoint now uses named exports instead of a default export
+- The API entrypoint now uses named exports, "nesca" and "vocabug", instead of a default export.
+- For the API entrypoint for nesca, input_words can now be an array or a string

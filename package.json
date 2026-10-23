@@ -1,7 +1,6 @@
 {
    "name": "the-conlangers-suite",
-   "version": "1.0.11",
-   "type": "module",
+   "version": "1.1.0",
    "description": "Vocabulary generator and sound change applier",
    "author": "Neonnaut",
    "license": "MIT",
@@ -24,7 +23,7 @@
       "sound change applier"
    ],
    "scripts": {
-      "build": "node build.js",
+      "build": "node build.mjs",
       "lint": "eslint ./ --fix",
       "format": "prettier --write 'src/**/*.{ts,js,json,md}'",
       "test": "vitest run",
@@ -32,16 +31,16 @@
       "build:win": "tsc.cmd",
       "dev-vocabug": "vite --config app/vocabug/vite.config.ts",
       "dev-nesca": "vite --config app/nesca/vite.config.ts",
-      "build:app-vocabug": "vite build --config app/vocabug/vite.config.js",
-      "build:app-nesca": "vite build --config app/nesca/vite.config.js",
-      "build:cli-vocabug": "tsdown bin/vocabug/index.ts --format esm --no-dts --minify --target node18 --out-dir bin/dist/vocabug",
-      "build:cli-nesca": "tsdown bin/nesca/index.ts --format esm --no-dts --minify --target node18 --out-dir bin/dist/nesca",
+      "build:app-vocabug": "vite build --config app/vocabug/vite.config.ts",
+      "build:app-nesca": "vite build --config app/nesca/vite.config.ts",
+      "build:cli-vocabug": "tsdown bin/src/vocabug.ts --format esm --no-dts --minify --target node18 --out-dir bin/dist --clean false",
+      "build:cli-nesca": "tsdown bin/src/nesca.ts --format esm --no-dts --minify --target node18 --out-dir bin/dist --clean false",
       "build:cm6-vocabug": "cd codemirror && npx rollup src/editor.ts -f iife -o ../app/vocabug/dist/cm6.bundle.js -p @rollup/plugin-node-resolve -p @rollup/plugin-typescript --output.name cm6",
       "build:cm6-nesca": "cd codemirror && npx rollup src/editor.ts -f iife -o ../app/nesca/dist/cm6.bundle.js -p @rollup/plugin-node-resolve -p @rollup/plugin-typescript --output.name cm6"
    },
    "devDependencies": {
       "@eslint/js": "^9.37.0",
-      "@types/node": "^24.12.4",
+      "@types/node": "^24.19.2",
       "eslint": "^9.37.0",
       "globals": "^16.4.0",
       "jiti": "^2.6.1",
@@ -71,12 +70,12 @@
    },
    "files": [
       "dist",
-      "bin",
+      "bin/dist",
       "LICENSE",
       "README"
    ],
    "bin": {
-      "vocabug": "./bin/dist/vocabug/index.js",
-      "nesca": "./bin/dist/nesca/index.js"
+      "vocabug": "./bin/dist/vocabug.mjs",
+      "nesca": "./bin/dist/nesca.mjs"
    }
 }

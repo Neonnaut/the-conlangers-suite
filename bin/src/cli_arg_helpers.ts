@@ -1,9 +1,10 @@
-import fs from 'fs';
+/// <reference types="node" />
 
 export type Output_Modes = 'word-list' | 'debug' | 'old-to-new' | 'paragraph';
 export const output_modes:string[] = ['word-list', 'debug', 'old-to-new' , 'paragraph'];
 
 import { InvalidArgumentError } from "commander";
+import { exit, exitCode } from "process";
 
 export const encodings: readonly BufferEncoding[] = [
    'ascii',
@@ -17,26 +18,26 @@ export const encodings: readonly BufferEncoding[] = [
 ];
 
 export function parse_encoding(enc: string): BufferEncoding {
-  const littleEnc = enc.toLowerCase();
-  if (littleEnc === "utf-16le") {return "utf16le";}
-  if (!(encodings as string[]).includes(littleEnc)) {
-    let errorString =
-      'Invalid values for encoding, ' +
-      `Given: "${enc}", Choices: ` +
-      encodings.map((e) => `"${e}"`).join(", ");
-    throw new InvalidArgumentError(errorString);
+  const little_enc = enc.toLowerCase();
+  if (little_enc === "utf-16le") {return "utf16le";}
+  if (!(encodings as string[]).includes(little_enc)) {
+    let error_string =
+      `Invalid encoding "${enc}", Encodings: ` +
+      encodings.map((e) => `"${e}"`).join(", ") + `.`;
+      red_text(error_string);
+      process.exit(1);
   }
-  return littleEnc as BufferEncoding;
+  return little_enc as BufferEncoding;
 }
 
 export function parse_mode(mode: string): Output_Modes {
    const little_mode = mode.toLowerCase();
    if (!output_modes.includes(little_mode)) {
-      let errorString =
-         'Invalid values for output mode, ' +
-         `Given: "${mode}", Choices: ` +
-         output_modes.map((e) => `"${e}"`).join(", ");
-      throw new InvalidArgumentError(errorString);
+      let error_string =
+         `Invalid choice "${mode}". The choices are: ` +
+         output_modes.map((e) => `"${e}"`).join(", ") + `.`;
+      red_text(error_string);
+      process.exit(1);
    }
    return little_mode as Output_Modes;
 }
