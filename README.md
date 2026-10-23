@@ -1,7 +1,14 @@
 # The Conlanger's Suite
 
-[![version][1]][2] [![license][3]][4] [![Tests]][badge-link]
-[![issue count][5]][6] [![git activity][7]][8]
+<div>
+	<p>
+		<a href="https://www.npmjs.com/package/the-conlangers-suite"><img src="https://img.shields.io/npm/v/the-conlangers-suite.svg?maxAge=3600" alt="NPM version"></a>
+		<a href="https://github.com/Neonnaut/the-conlangers-suite/actions/workflows/ci.yml"><img src="https://github.com/Neonnaut/the-conlangers-suite/actions/workflows/ci.yml/badge.svg?logo=github&logoColor=ffffff" alt="Tests status"></a>
+		<a href="https://github.com/Neonnaut/the-conlangers-suite/issues"><img src="https://img.shields.io/github/issues-raw/Neonnaut/the-conlangers-suite.svg?logo=github&logoColor=ffffff" alt="Open Issues"></a>
+		<a href="https://github.com/neonnaut/the-conlangers-suite/commits/main"><img src="https://img.shields.io/github/last-commit/neonnaut/the-conlangers-suite.svg?logo=github&logoColor=ffffff" alt="Last commit"></a>
+      <a href="https://github.com/Neonnaut/the-conlangers-suite/blob/master/LICENSE"><img src="https://img.shields.io/npm/l/the-conlangers-suite.svg" alt="Open Issues"></a>
+	</p>
+</div>
 
 A suite of applications for conlangers built with typescript and the wonderful Vite tool. Each application has its own web-app, CLI, and API enty-point. This shared architecture allows the applications to reuse modules across the suite.
 
@@ -97,15 +104,3 @@ Build the project:
 ```
 npm run build
 ```
-
-[1]: https://img.shields.io/npm/v/the-conlangers-suite
-[2]: https://www.npmjs.com/package/the-conlangers-suite "npm package"
-[3]: https://img.shields.io/npm/l/the-conlangers-suite
-[4]: https://github.com/Neonnaut/the-conlangers-suite/blob/master/LICENSE "license text"
-[5]: https://img.shields.io/github/issues-raw/Neonnaut/the-conlangers-suite
-[6]: https://github.com/Neonnaut/the-conlangers-suite/issues "issues page"
-[7]: https://img.shields.io/github/commit-activity/m/Neonnaut/the-conlangers-suite
-[8]: https://github.com/Neonnaut/the-conlangers-suite/commits "commit log"
-
-[badge-link]: https://github.com/Neonnaut/the-conlangers-suite/actions/workflows/ci.yml
-[Tests]: https://github.com/Neonnaut/the-conlangers-suite/actions/workflows/ci.yml/badge.svg
