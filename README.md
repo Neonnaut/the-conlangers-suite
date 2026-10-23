@@ -3,7 +3,7 @@
 <div>
 	<p>
 		<a href="https://www.npmjs.com/package/the-conlangers-suite"><img src="https://img.shields.io/npm/v/the-conlangers-suite.svg?maxAge=3600" alt="NPM version"></a>
-		<a href="https://github.com/Neonnaut/the-conlangers-suite/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Neonnaut/the-conlangers-suite/ci.yml?branch=main&logo=github&logoColor=white" alt="Tests status"></a>
+		<a href="https://github.com/Neonnaut/the-conlangers-suite/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Neonnaut/the-conlangers-suite/ci.yml?branch=main&label=tests&logo=github&logoColor=white" alt="Tests status"></a>
 		<a href="https://github.com/Neonnaut/the-conlangers-suite/issues"><img src="https://img.shields.io/github/issues-raw/Neonnaut/the-conlangers-suite.svg?logo=github&logoColor=ffffff" alt="Open Issues"></a>
 		<a href="https://github.com/neonnaut/the-conlangers-suite/commits/main"><img src="https://img.shields.io/github/last-commit/neonnaut/the-conlangers-suite.svg?logo=github&logoColor=ffffff" alt="Last commit"></a>
       <a href="https://github.com/Neonnaut/the-conlangers-suite/blob/master/LICENSE"><img src="https://img.shields.io/npm/l/the-conlangers-suite.svg" alt="Open Issues"></a>
